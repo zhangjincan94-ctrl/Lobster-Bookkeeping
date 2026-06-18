@@ -1,0 +1,189 @@
+.page {
+  padding-bottom: 40rpx;
+  min-height: 100vh;
+}
+
+.filter-card {
+  margin: 16rpx 24rpx;
+  padding: 16rpx 24rpx;
+}
+
+.filter-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.picker-item {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.picker-label {
+  font-size: 22rpx;
+  color: #999999;
+}
+
+.picker-value {
+  font-size: 28rpx;
+  color: #333333;
+  margin-top: 4rpx;
+}
+
+.picker-sep {
+  font-size: 26rpx;
+  color: #999999;
+  padding: 0 16rpx;
+}
+
+.overview-card {
+  margin: 0 24rpx 16rpx;
+  padding: 24rpx;
+}
+
+.overview-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  margin-bottom: 16rpx;
+}
+
+.overview-row:last-child {
+  margin-bottom: 0;
+}
+
+.overview-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.overview-value {
+  font-size: 34rpx;
+  font-weight: bold;
+  margin-bottom: 8rpx;
+}
+
+.overview-label {
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.chart-card {
+  margin: 0 24rpx 16rpx;
+  padding: 24rpx;
+}
+
+.chart-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.chart-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333333;
+}
+
+.dimension-tabs {
+  display: flex;
+  flex-direction: row;
+  background-color: #f5f5f5;
+  border-radius: 24rpx;
+  overflow: hidden;
+}
+
+.dimension-tab {
+  padding: 8rpx 24rpx;
+  font-size: 24rpx;
+  color: #666666;
+}
+
+.dimension-tab-active {
+  background-color: #FF6B35;
+  color: #ffffff;
+}
+
+.trend-list {
+  margin-top: 16rpx;
+}
+
+.trend-item {
+  margin-bottom: 24rpx;
+}
+
+.trend-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8rpx;
+}
+
+.trend-row-sub {
+  margin-top: 6rpx;
+  margin-bottom: 0;
+}
+
+.trend-period {
+  font-size: 26rpx;
+  color: #333333;
+}
+
+.trend-amount {
+  font-size: 28rpx;
+  font-weight: bold;
+}
+
+.trend-sub {
+  font-size: 22rpx;
+}
+
+.trend-bar-bg {
+  width: 100%;
+  height: 12rpx;
+  background-color: #f0f0f0;
+  border-radius: 6rpx;
+  overflow: hidden;
+}
+
+.trend-bar-fill {
+  height: 100%;
+  background-color: #FF6B35;
+  border-radius: 6rpx;
+}
+
+.empty-state {
+  padding: 48rpx 0;
+  text-align: center;
+}
+
+.empty-text {
+  font-size: 26rpx;
+  color: #999999;
+}
+
+.link-card {
+  margin: 0 24rpx 16rpx;
+  padding: 24rpx;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.link-title {
+  font-size: 30rpx;
+  color: #333333;
+}
+
+.link-arrow {
+  font-size: 36rpx;
+  color: #cccccc;
+}

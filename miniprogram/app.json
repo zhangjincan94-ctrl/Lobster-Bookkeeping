@@ -11,7 +11,11 @@
     "pages/buyer/list/list",
     "pages/buyer/detail/detail",
     "pages/supplier/list/list",
-    "pages/share/records/records"
+    "pages/supplier/detail/detail",
+    "pages/share/records/records",
+    "pages/stats/overview/overview",
+    "pages/stats/debt/debt",
+    "pages/stats/product/product"
   ],
   "window": {
     "backgroundTextStyle": "light",

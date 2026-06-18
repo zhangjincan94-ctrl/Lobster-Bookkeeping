@@ -1,0 +1,88 @@
+<view class="page">
+  <view class="card filter-card">
+    <view class="filter-row">
+      <picker mode="date" value="{{startDate}}" bindchange="onStartDateChange">
+        <view class="picker-item">
+          <text class="picker-label">开始</text>
+          <text class="picker-value">{{startDate || '选择日期'}}</text>
+        </view>
+      </picker>
+      <text class="picker-sep">至</text>
+      <picker mode="date" value="{{endDate}}" bindchange="onEndDateChange">
+        <view class="picker-item">
+          <text class="picker-label">结束</text>
+          <text class="picker-value">{{endDate || '选择日期'}}</text>
+        </view>
+      </picker>
+    </view>
+  </view>
+
+  <view class="card overview-card">
+    <view class="overview-row">
+      <view class="overview-item">
+        <text class="overview-value text-primary">{{overview.orderCount}}</text>
+        <text class="overview-label">交易笔数</text>
+      </view>
+      <view class="overview-item">
+        <text class="overview-value text-price">{{overview.totalAmountDisplay}}</text>
+        <text class="overview-label">总收入</text>
+      </view>
+    </view>
+    <view class="overview-row">
+      <view class="overview-item">
+        <text class="overview-value text-success">{{overview.paidAmountDisplay}}</text>
+        <text class="overview-label">已收款</text>
+      </view>
+      <view class="overview-item">
+        <text class="overview-value text-debt">{{overview.unpaidAmountDisplay}}</text>
+        <text class="overview-label">未收款</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="card chart-card">
+    <view class="chart-header">
+      <text class="chart-title">收入趋势</text>
+      <view class="dimension-tabs">
+        <view
+          wx:for="{{dimensions}}"
+          wx:key="key"
+          class="dimension-tab {{item.key === activeDimension ? 'dimension-tab-active' : ''}}"
+          bindtap="onDimensionTap"
+          data-key="{{item.key}}"
+        >
+          <text>{{item.label}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{trendList.length === 0 && !loading}}" class="empty-state">
+      <text class="empty-text">暂无数据</text>
+    </view>
+
+    <view wx:else class="trend-list">
+      <view class="trend-item" wx:for="{{trendList}}" wx:key="period">
+        <view class="trend-row">
+          <text class="trend-period">{{item.period}}</text>
+          <text class="trend-amount text-price">{{item.totalAmountDisplay}}</text>
+        </view>
+        <view class="trend-bar-bg">
+          <view class="trend-bar-fill" style="width: {{item.ratio}}%"></view>
+        </view>
+        <view class="trend-row trend-row-sub">
+          <text class="trend-sub text-muted">{{item.orderCount}} 笔</text>
+          <text class="trend-sub text-muted">已收 {{item.paidAmountDisplay}} / 未收 {{item.unpaidAmountDisplay}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="card link-card" bindtap="goDebtRanking">
+    <text class="link-title">欠款排行</text>
+    <text class="link-arrow">›</text>
+  </view>
+  <view class="card link-card" bindtap="goProductAnalysis">
+    <text class="link-title">品种销量分析</text>
+    <text class="link-arrow">›</text>
+  </view>
+</view>

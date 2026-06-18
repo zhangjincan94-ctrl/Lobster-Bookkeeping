@@ -22,7 +22,11 @@ var api = {
   purchaseAdd: '/api/purchases',
   purchaseDetail: function (id) { return '/api/purchases/' + id },
   purchaseUpdate: function (id) { return '/api/purchases/' + id },
-  purchasePayment: function (id) { return '/api/purchases/' + id + '/payments' }
+  purchasePayment: function (id) { return '/api/purchases/' + id + '/payments' },
+  statsOverview: '/api/stats/overview',
+  statsTrend: '/api/stats/trend',
+  statsDebtRanking: '/api/stats/debt-ranking',
+  statsProductAnalysis: '/api/stats/product-analysis'
 }
 
 module.exports = {

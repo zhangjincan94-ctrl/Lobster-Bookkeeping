@@ -52,6 +52,12 @@
         </view>
         <text class="action-label">供应商</text>
       </view>
+      <view class="action-item" bindtap="goStats">
+        <view class="action-icon action-icon-stats">
+          <text class="action-icon-text">📊</text>
+        </view>
+        <text class="action-label">统计</text>
+      </view>
     </view>
   </view>
 

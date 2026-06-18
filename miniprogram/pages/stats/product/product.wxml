@@ -1,0 +1,54 @@
+<view class="page">
+  <view class="card filter-card">
+    <view class="filter-row">
+      <picker mode="date" value="{{startDate}}" bindchange="onStartDateChange">
+        <view class="picker-item">
+          <text class="picker-label">开始</text>
+          <text class="picker-value">{{startDate || '选择日期'}}</text>
+        </view>
+      </picker>
+      <text class="picker-sep">至</text>
+      <picker mode="date" value="{{endDate}}" bindchange="onEndDateChange">
+        <view class="picker-item">
+          <text class="picker-label">结束</text>
+          <text class="picker-value">{{endDate || '选择日期'}}</text>
+        </view>
+      </picker>
+    </view>
+  </view>
+
+  <view class="card summary-card">
+    <view class="summary-item">
+      <text class="summary-value text-price">{{totalAmountDisplay}}</text>
+      <text class="summary-label">总收入</text>
+    </view>
+    <view class="summary-item">
+      <text class="summary-value text-primary">{{totalWeightDisplay}}</text>
+      <text class="summary-label">总斤数</text>
+    </view>
+    <view class="summary-item">
+      <text class="summary-value text-success">{{list.length}}</text>
+      <text class="summary-label">品种数</text>
+    </view>
+  </view>
+
+  <view wx:if="{{list.length === 0 && !loading}}" class="empty-state">
+    <text class="empty-text">暂无数据</text>
+  </view>
+
+  <view wx:else class="product-list">
+    <view class="product-item card" wx:for="{{list}}" wx:key="lobsterSize">
+      <view class="product-row">
+        <text class="product-name">{{item.lobsterSize}}</text>
+        <text class="product-amount text-price">{{item.totalAmountDisplay}}</text>
+      </view>
+      <view class="product-bar-bg">
+        <view class="product-bar-fill" style="width: {{item.ratioPercent}}%"></view>
+      </view>
+      <view class="product-row product-row-sub">
+        <text class="product-sub text-muted">{{item.totalWeightDisplay}} 斤 · {{item.orderCount}} 笔</text>
+        <text class="product-sub product-ratio">{{item.ratioDisplay}}</text>
+      </view>
+    </view>
+  </view>
+</view>

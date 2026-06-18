@@ -1,0 +1,97 @@
+<view class="page" wx:if="{{supplier}}">
+  <view class="supplier-card card">
+    <view class="supplier-head">
+      <text class="supplier-name">{{supplier.name}}</text>
+      <text class="supplier-edit" bindtap="onEditSupplier">编辑</text>
+    </view>
+    <view class="supplier-row" bindtap="callPhone">
+      <text class="supplier-phone text-muted">{{supplier.phone || '未填写电话'}}</text>
+      <text wx:if="{{supplier.phone}}" class="supplier-call">拨打</text>
+    </view>
+    <text wx:if="{{supplier.remark}}" class="supplier-remark text-muted">备注：{{supplier.remark}}</text>
+  </view>
+
+  <view class="stats-card card">
+    <view class="stats-row">
+      <view class="stats-item">
+        <text class="stats-value text-price">{{supplier.totalCostDisplay}}</text>
+        <text class="stats-label">累计采购</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-value text-success">{{supplier.paidAmountDisplay}}</text>
+        <text class="stats-label">已付款</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-value text-debt">{{supplier.totalDebtDisplay}}</text>
+        <text class="stats-label">未付款</text>
+      </view>
+    </view>
+    <view class="stats-foot text-muted">
+      <text>共 {{supplier.purchaseCount}} 笔，累计 {{supplier.totalWeightDisplay}} 斤</text>
+    </view>
+  </view>
+
+  <view class="action-bar card">
+    <button class="action-btn action-btn-primary" bindtap="goAddPurchase">新增进货</button>
+  </view>
+
+  <view class="section-header">
+    <text class="section-title">采购记录</text>
+  </view>
+
+  <view wx:if="{{purchases.length === 0 && !loading}}" class="empty-state">
+    <text class="empty-text">暂无采购记录</text>
+  </view>
+
+  <view wx:else class="purchase-list">
+    <view
+      class="purchase-item card"
+      wx:for="{{purchases}}"
+      wx:key="id"
+      bindtap="goPurchaseDetail"
+      data-id="{{item.id}}"
+    >
+      <view class="purchase-left">
+        <text class="purchase-type">{{item.lobsterSize}}</text>
+        <text class="purchase-sub text-muted">{{item.netWeightDisplay}}</text>
+      </view>
+      <view class="purchase-right">
+        <text class="purchase-amount text-price">{{item.totalCostDisplay}}</text>
+        <view class="purchase-bottom-row">
+          <text class="purchase-time text-muted">{{item.timeDisplay}}</text>
+          <text class="tag {{item.settlementStatusClass}}">{{item.settlementStatusText}}</text>
+        </view>
+      </view>
+    </view>
+    <view wx:if="{{loading}}" class="loading-tip">
+      <text class="text-muted">加载中...</text>
+    </view>
+    <view wx:if="{{!hasMore && purchases.length > 0}}" class="loading-tip">
+      <text class="text-muted">没有更多了</text>
+    </view>
+  </view>
+
+  <view class="modal-mask" wx:if="{{showEditModal}}" bindtap="onCloseEditModal">
+    <view class="modal-content" catchtap="noop">
+      <view class="modal-title">编辑供应商</view>
+      <view class="modal-body">
+        <view class="modal-field">
+          <text class="modal-label">名称</text>
+          <input class="modal-input" placeholder="输入供应商名称" value="{{editName}}" bindinput="onEditNameInput" />
+        </view>
+        <view class="modal-field">
+          <text class="modal-label">电话</text>
+          <input class="modal-input" placeholder="输入联系电话" value="{{editPhone}}" bindinput="onEditPhoneInput" type="number" />
+        </view>
+        <view class="modal-field">
+          <text class="modal-label">备注</text>
+          <input class="modal-input" placeholder="输入备注" value="{{editRemark}}" bindinput="onEditRemarkInput" />
+        </view>
+      </view>
+      <view class="modal-actions">
+        <button class="modal-btn modal-btn-cancel" bindtap="onCloseEditModal">取消</button>
+        <button class="modal-btn modal-btn-confirm" bindtap="onSubmitEdit">保存</button>
+      </view>
+    </view>
+  </view>
+</view>

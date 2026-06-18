@@ -84,6 +84,13 @@ Page({
     }
   },
 
+  goDetail: function (e) {
+    var id = e.currentTarget.dataset.id
+    wx.navigateTo({
+      url: '/pages/supplier/detail/detail?id=' + id
+    })
+  },
+
   goPurchases: function (e) {
     var id = e.currentTarget.dataset.id
     wx.navigateTo({

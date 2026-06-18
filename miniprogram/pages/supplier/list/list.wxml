@@ -22,7 +22,7 @@
       class="supplier-item card"
       wx:for="{{suppliers}}"
       wx:key="id"
-      bindtap="goPurchases"
+      bindtap="goDetail"
       data-id="{{item.id}}"
     >
       <view class="supplier-left">

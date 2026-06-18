@@ -84,6 +84,10 @@
   background-color: #F3E5F5;
 }
 
+.action-icon-stats {
+  background-color: #E1F5FE;
+}
+
 .action-icon-text {
   font-size: 40rpx;
 }

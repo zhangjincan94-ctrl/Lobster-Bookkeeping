@@ -116,6 +116,12 @@ Page({
     })
   },
 
+  goStats: function () {
+    wx.navigateTo({
+      url: '/pages/stats/overview/overview'
+    })
+  },
+
   goTransactionDetail: function (e) {
     var id = e.currentTarget.dataset.id
     wx.navigateTo({
