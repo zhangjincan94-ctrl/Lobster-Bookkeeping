@@ -1,0 +1,124 @@
+<view class="page" wx:if="{{purchase}}">
+  <view class="detail-card card">
+    <view class="card-title">供应商信息</view>
+    <view class="info-row">
+      <text class="info-label">名称</text>
+      <text class="info-value">{{purchase.supplierName || '-'}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">电话</text>
+      <text class="info-value">{{purchase.supplierPhone || '-'}}</text>
+    </view>
+  </view>
+
+  <view class="detail-card card">
+    <view class="card-title">采购信息</view>
+    <view class="info-row">
+      <text class="info-label">龙虾规格</text>
+      <text class="info-value">{{purchase.lobsterSize || '-'}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">毛重</text>
+      <text class="info-value">{{purchase.grossWeight ? purchase.grossWeight + '斤' : '-'}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">皮重</text>
+      <text class="info-value">{{purchase.tareWeight ? purchase.tareWeight + '斤' : '-'}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">扣重</text>
+      <text class="info-value">{{purchase.deductWeight ? purchase.deductWeight + '斤' : '-'}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">净重</text>
+      <text class="info-value">{{purchase.netWeight ? purchase.netWeight + '斤' : '-'}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">剩余库存</text>
+      <text class="info-value text-success">{{purchase.remainingWeight ? purchase.remainingWeight + '斤' : '0斤'}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">单价</text>
+      <text class="info-value">{{purchase.unitCost ? '¥' + purchase.unitCost + '/斤' : '-'}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">总成本</text>
+      <text class="info-value text-price">{{purchase.totalCostDisplay}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">收货时间</text>
+      <text class="info-value">{{purchase.receivedAt || '-'}}</text>
+    </view>
+    <view wx:if="{{purchase.cancelledAt}}" class="info-row">
+      <text class="info-label">取消时间</text>
+      <text class="info-value">{{purchase.cancelledAt}}</text>
+    </view>
+  </view>
+
+  <view class="detail-card card">
+    <view class="card-title">结算信息</view>
+    <view class="info-row">
+      <text class="info-label">结算状态</text>
+      <text class="tag {{purchase.settlementStatusClass}}">{{purchase.settlementStatusText}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">已付金额</text>
+      <text class="info-value text-success">{{purchase.paidAmountDisplay}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">未付金额</text>
+      <text class="info-value text-danger">{{purchase.unpaidAmountDisplay}}</text>
+    </view>
+    <view wx:if="{{purchase.canAddPayment}}" class="payment-action">
+      <button class="btn-primary btn-small" bindtap="onAddPayment">补录付款</button>
+    </view>
+  </view>
+
+  <view wx:if="{{purchase.remark}}" class="detail-card card">
+    <view class="card-title">备注</view>
+    <text class="remark-text">{{purchase.remark}}</text>
+  </view>
+
+  <view wx:if="{{purchase.payments && purchase.payments.length > 0}}" class="detail-card card">
+    <view class="card-title">付款记录</view>
+    <view class="payment-record" wx:for="{{purchase.payments}}" wx:key="id">
+      <view class="payment-record-left">
+        <text class="payment-record-amount">{{item.amountDisplay}}</text>
+        <text class="payment-record-method text-muted">{{item.method || '未记录'}}</text>
+      </view>
+      <text class="payment-record-time text-muted">{{item.timeDisplay}}</text>
+    </view>
+  </view>
+
+  <view class="bottom-bar">
+    <button wx:if="{{purchase.canCancel}}" class="btn-danger bottom-btn" bindtap="onCancelOrder" loading="{{canceling}}" disabled="{{canceling}}">取消采购单</button>
+  </view>
+</view>
+
+<view class="modal-mask" wx:if="{{showPaymentModal}}" bindtap="onClosePaymentModal">
+  <view class="modal-content" catchtap="noop">
+    <view class="modal-title">补录付款</view>
+    <view class="modal-body">
+      <view class="modal-field">
+        <text class="modal-label">付款金额</text>
+        <input class="modal-input" placeholder="输入付款金额" value="{{paymentAmount}}" bindinput="onPaymentAmountInput" type="digit" focus="{{showPaymentModal}}" cursor-spacing="80" />
+      </view>
+      <view class="modal-field">
+        <text class="modal-label">付款方式</text>
+        <input class="modal-input" placeholder="如：微信/支付宝/现金" value="{{paymentMethod}}" bindinput="onPaymentMethodInput" />
+      </view>
+      <view class="modal-field">
+        <text class="modal-label">付款时间</text>
+        <picker mode="date" value="{{paymentTime}}" bindchange="onPaymentTimeChange">
+          <view class="modal-picker">
+            <text>{{paymentTime || '选择日期'}}</text>
+          </view>
+        </picker>
+      </view>
+    </view>
+    <view class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" bindtap="onClosePaymentModal">取消</button>
+      <button class="modal-btn modal-btn-confirm" bindtap="onPaymentSubmit" loading="{{paymentSubmitting}}" disabled="{{paymentSubmitting}}">确认</button>
+    </view>
+  </view>
+</view>

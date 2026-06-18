@@ -1,0 +1,73 @@
+<view class="page">
+  <view class="search-bar">
+    <view class="search-input-wrap">
+      <text class="search-icon">搜</text>
+      <input
+        class="search-input"
+        placeholder="搜索供应商名称或电话"
+        value="{{keyword}}"
+        bindinput="onSearchInput"
+        bindconfirm="onSearch"
+        confirm-type="search"
+      />
+    </view>
+  </view>
+
+  <view wx:if="{{suppliers.length === 0 && !loading}}" class="empty-state">
+    <text class="empty-text">暂无供应商记录</text>
+  </view>
+
+  <view wx:else class="supplier-list">
+    <view
+      class="supplier-item card"
+      wx:for="{{suppliers}}"
+      wx:key="id"
+      bindtap="goPurchases"
+      data-id="{{item.id}}"
+    >
+      <view class="supplier-left">
+        <text class="supplier-name">{{item.name}}</text>
+        <text class="supplier-phone text-muted">{{item.phone || '未填写电话'}}</text>
+        <text class="supplier-count text-muted">{{item.purchaseCount}} 笔采购</text>
+      </view>
+      <view class="supplier-right">
+        <text class="supplier-cost text-price">{{item.totalCostDisplay}}</text>
+        <text wx:if="{{item.totalDebt > 0}}" class="supplier-debt text-debt">{{item.totalDebtDisplay}}</text>
+      </view>
+    </view>
+    <view wx:if="{{loading}}" class="loading-tip">
+      <text class="text-muted">加载中...</text>
+    </view>
+    <view wx:if="{{!hasMore && suppliers.length > 0}}" class="loading-tip">
+      <text class="text-muted">没有更多了</text>
+    </view>
+  </view>
+
+  <view class="fab" bindtap="goAddSupplier">
+    <text class="fab-icon">+</text>
+  </view>
+
+  <view class="modal-mask" wx:if="{{showAddModal}}" bindtap="onCloseAddModal">
+    <view class="modal-content" catchtap="noop">
+      <view class="modal-title">新增供应商</view>
+      <view class="modal-body">
+        <view class="modal-field">
+          <text class="modal-label">名称</text>
+          <input class="modal-input" placeholder="输入供应商名称" value="{{newName}}" bindinput="onNameInput" />
+        </view>
+        <view class="modal-field">
+          <text class="modal-label">电话</text>
+          <input class="modal-input" placeholder="输入联系电话" value="{{newPhone}}" bindinput="onPhoneInput" type="number" />
+        </view>
+        <view class="modal-field">
+          <text class="modal-label">备注</text>
+          <input class="modal-input" placeholder="输入备注" value="{{newRemark}}" bindinput="onRemarkInput" />
+        </view>
+      </view>
+      <view class="modal-actions">
+        <button class="modal-btn modal-btn-cancel" bindtap="onCloseAddModal">取消</button>
+        <button class="modal-btn modal-btn-confirm" bindtap="onSubmitAdd">确认</button>
+      </view>
+    </view>
+  </view>
+</view>

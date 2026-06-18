@@ -1,0 +1,88 @@
+<view class="container">
+  <view class="greeting-section">
+    <text class="greeting-text">你好，{{merchantName}}</text>
+  </view>
+
+  <view class="card stats-card">
+    <view class="stats-row">
+      <view class="stats-item">
+        <text class="stats-value text-primary">{{todayCount}}</text>
+        <text class="stats-label">今日交易数</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-value text-income">{{todayIncome}}</text>
+        <text class="stats-label">今日收入</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-value text-debt">{{todayUnpaid}}</text>
+        <text class="stats-label">今日未收款</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="card quick-actions">
+    <view class="actions-row">
+      <view class="action-item" bindtap="goAddTransaction">
+        <view class="action-icon action-icon-add">
+          <text class="action-icon-text">+</text>
+        </view>
+        <text class="action-label">记一笔</text>
+      </view>
+      <view class="action-item" bindtap="goTransactionList">
+        <view class="action-icon action-icon-list">
+          <text class="action-icon-text">☰</text>
+        </view>
+        <text class="action-label">查看交易</text>
+      </view>
+      <view class="action-item" bindtap="goBuyerList">
+        <view class="action-icon action-icon-buyer">
+          <text class="action-icon-text">👤</text>
+        </view>
+        <text class="action-label">买家管理</text>
+      </view>
+      <view class="action-item" bindtap="goPurchaseList">
+        <view class="action-icon action-icon-purchase">
+          <text class="action-icon-text">采</text>
+        </view>
+        <text class="action-label">采购记录</text>
+      </view>
+      <view class="action-item" bindtap="goSupplierList">
+        <view class="action-icon action-icon-supplier">
+          <text class="action-icon-text">供</text>
+        </view>
+        <text class="action-label">供应商</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="card recent-section">
+    <view class="section-header">
+      <text class="section-title">最近交易</text>
+      <text class="section-more" bindtap="goTransactionList">查看全部</text>
+    </view>
+    <view wx:if="{{recentTransactions.length === 0}}" class="empty-state">
+      <text class="empty-text">暂无交易记录</text>
+    </view>
+    <view wx:else class="transaction-list">
+      <view
+        class="transaction-item"
+        wx:for="{{recentTransactions}}"
+        wx:key="id"
+        bindtap="goTransactionDetail"
+        data-id="{{item.id}}"
+      >
+        <view class="transaction-left">
+          <text class="transaction-buyer">{{item.buyerName}}</text>
+          <text class="transaction-type">{{item.lobsterSize}}</text>
+        </view>
+        <view class="transaction-right">
+          <text class="transaction-amount text-price">{{item.totalAmount}}</text>
+          <view class="transaction-bottom">
+            <text class="tag {{item.paymentStatusClass}}">{{item.paymentStatusText}}</text>
+            <text class="transaction-time text-muted">{{item.time}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

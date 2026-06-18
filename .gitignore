@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+server/node_modules/
+
+# Environment
+.env
+.env.*
+!.env.example
+server/.env
+server/.env.*
+!server/.env.example
+
+# Logs
+*.log
+server/npm-dev*.log
+server/npm-dev*.out.log
+server/npm-dev*.err.log
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Mini program local settings
+miniprogram/project.private.config.json

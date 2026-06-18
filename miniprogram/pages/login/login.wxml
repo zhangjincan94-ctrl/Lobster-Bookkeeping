@@ -1,0 +1,19 @@
+<view class="login-page">
+  <view class="login-container">
+    <view class="logo-area">
+      <text class="logo-icon">🦞</text>
+      <text class="logo-text">龙虾记账</text>
+    </view>
+    <text class="subtitle">轻松记账，高效管理</text>
+    <button
+      class="login-btn"
+      open-type="getUserInfo"
+      bindgetuserinfo="onGetUserInfo"
+      loading="{{loading}}"
+      disabled="{{loading}}"
+    >
+      微信一键登录
+    </button>
+    <text class="terms-text">登录即同意用户协议和隐私政策</text>
+  </view>
+</view>

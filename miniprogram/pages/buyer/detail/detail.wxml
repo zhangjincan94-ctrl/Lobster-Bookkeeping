@@ -1,0 +1,64 @@
+<view class="page" wx:if="{{buyer}}">
+  <view class="buyer-card card">
+    <text class="buyer-name">{{buyer.name}}</text>
+    <text class="buyer-phone text-muted">{{buyer.phone || '未填写电话'}}</text>
+  </view>
+
+  <view class="stats-card card">
+    <view class="stats-row">
+      <view class="stats-item">
+        <text class="stats-value text-price">{{buyer.totalSpentDisplay}}</text>
+        <text class="stats-label">累计消费</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-value text-success">{{buyer.paidAmountDisplay}}</text>
+        <text class="stats-label">已付款</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-value text-debt">{{buyer.totalDebtDisplay}}</text>
+        <text class="stats-label">当前欠款</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="action-bar card">
+    <button class="action-btn action-btn-primary" bindtap="goAddTransaction">记一笔</button>
+    <button class="action-btn action-btn-share" open-type="share">分享给买家</button>
+  </view>
+
+  <view class="section-header">
+    <text class="section-title">交易记录</text>
+  </view>
+
+  <view wx:if="{{transactions.length === 0 && !loading}}" class="empty-state">
+    <text class="empty-text">暂无交易记录</text>
+  </view>
+
+  <view wx:else class="transaction-list">
+    <view
+      class="transaction-item card"
+      wx:for="{{transactions}}"
+      wx:key="id"
+      bindtap="goTransactionDetail"
+      data-id="{{item.id}}"
+    >
+      <view class="transaction-left">
+        <text class="transaction-type">{{item.lobsterSize}}</text>
+        <text class="transaction-sub text-muted">{{item.weightDisplay}} | {{item.unitPriceDisplay}}</text>
+      </view>
+      <view class="transaction-right">
+        <text class="transaction-amount text-price">{{item.totalAmountDisplay}}</text>
+        <view class="transaction-bottom-row">
+          <text class="transaction-time text-muted">{{item.timeDisplay}}</text>
+          <text class="tag {{item.paymentStatusClass}}">{{item.paymentStatusText}}</text>
+        </view>
+      </view>
+    </view>
+    <view wx:if="{{loading}}" class="loading-tip">
+      <text class="text-muted">加载中...</text>
+    </view>
+    <view wx:if="{{!hasMore && transactions.length > 0}}" class="loading-tip">
+      <text class="text-muted">没有更多了</text>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,177 @@
+.greeting-section {
+  padding: 24rpx 0 16rpx 0;
+}
+
+.greeting-text {
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #333333;
+}
+
+.stats-card {
+  padding: 32rpx 24rpx;
+}
+
+.stats-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.stats-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stats-value {
+  font-size: 36rpx;
+  font-weight: bold;
+  line-height: 1.4;
+}
+
+.stats-label {
+  font-size: 22rpx;
+  color: #999999;
+  margin-top: 8rpx;
+}
+
+.quick-actions {
+  padding: 32rpx 24rpx;
+}
+
+.actions-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.action-item {
+  width: 33.3333%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24rpx;
+}
+
+.action-icon {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12rpx;
+}
+
+.action-icon-add {
+  background-color: #FFF3E0;
+}
+
+.action-icon-list {
+  background-color: #E3F2FD;
+}
+
+.action-icon-buyer {
+  background-color: #E8F5E9;
+}
+
+.action-icon-purchase {
+  background-color: #FFF8E1;
+}
+
+.action-icon-supplier {
+  background-color: #F3E5F5;
+}
+
+.action-icon-text {
+  font-size: 40rpx;
+}
+
+.action-label {
+  font-size: 24rpx;
+  color: #333333;
+}
+
+.recent-section {
+  padding: 24rpx;
+}
+
+.section-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333333;
+}
+
+.section-more {
+  font-size: 24rpx;
+  color: #FF6B35;
+}
+
+.transaction-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.transaction-item {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.transaction-item:last-child {
+  border-bottom: none;
+}
+
+.transaction-left {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin-right: 24rpx;
+}
+
+.transaction-buyer {
+  font-size: 28rpx;
+  color: #333333;
+  font-weight: 500;
+  margin-bottom: 8rpx;
+}
+
+.transaction-type {
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.transaction-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.transaction-amount {
+  font-size: 30rpx;
+  font-weight: bold;
+  margin-bottom: 8rpx;
+}
+
+.transaction-bottom {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.transaction-time {
+  font-size: 22rpx;
+  margin-left: 12rpx;
+}

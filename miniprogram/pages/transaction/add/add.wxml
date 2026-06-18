@@ -1,0 +1,218 @@
+<view class="page">
+  <view class="form-card">
+    <view class="section-title">买家信息</view>
+    <view class="form-item">
+      <text class="form-label">买家姓名</text>
+      <input
+        class="form-input"
+        placeholder="输入姓名搜索或新增"
+        value="{{buyerName}}"
+        bindinput="onBuyerInput"
+        bindfocus="onBuyerFocus"
+        bindblur="onBuyerBlur"
+      />
+    </view>
+    <view wx:if="{{showBuyerDropdown && buyerList.length > 0}}" class="buyer-dropdown">
+      <view
+        class="buyer-dropdown-item"
+        wx:for="{{buyerList}}"
+        wx:key="id"
+        bindtap="onSelectBuyer"
+        data-index="{{index}}"
+      >
+        <text>{{item.name}}</text>
+        <text class="text-muted" wx:if="{{item.phone}}">{{item.phone}}</text>
+      </view>
+    </view>
+    <view class="form-item">
+      <text class="form-label">联系电话</text>
+      <input
+        class="form-input"
+        placeholder="输入联系电话"
+        value="{{buyerPhone}}"
+        bindinput="onBuyerPhoneInput"
+        type="number"
+      />
+    </view>
+  </view>
+
+  <view class="form-card">
+    <view class="section-title">交易信息</view>
+    <view class="form-item">
+      <text class="form-label">龙虾规格</text>
+      <picker
+        range="{{lobsterSizes}}"
+        value="{{lobsterSizeIndex}}"
+        bindchange="onLobsterSizeChange"
+      >
+        <view class="form-picker">
+          <text>{{lobsterSizes[lobsterSizeIndex]}}</text>
+          <text class="picker-arrow">▸</text>
+        </view>
+      </picker>
+    </view>
+    <view class="form-item">
+      <text class="form-label">重量(斤)</text>
+      <input
+        class="form-input"
+        placeholder="输入重量"
+        value="{{weight}}"
+        bindinput="onWeightInput"
+        type="digit"
+      />
+    </view>
+    <view class="form-item">
+      <text class="form-label">单价(元/斤)</text>
+      <input
+        class="form-input"
+        placeholder="输入单价"
+        value="{{unitPrice}}"
+        bindinput="onUnitPriceInput"
+        type="digit"
+      />
+    </view>
+    <view class="form-item">
+      <text class="form-label">总金额</text>
+      <text class="total-amount text-price">{{totalAmount || '¥0.00'}}</text>
+    </view>
+  </view>
+
+  <view class="form-card">
+    <view class="section-title">付款信息</view>
+    <view class="form-item">
+      <text class="form-label">付款状态</text>
+      <radio-group class="radio-group" bindchange="onPaymentStatusChange">
+        <label
+          class="radio-item"
+          wx:for="{{paymentStatusOptions}}"
+          wx:key="index"
+        >
+          <radio
+            value="{{index}}"
+            checked="{{paymentStatusIndex === index}}"
+            color="#FF6B35"
+          />
+          <text>{{item}}</text>
+        </label>
+      </radio-group>
+    </view>
+    <view wx:if="{{paymentStatusIndex === 2}}" class="form-item">
+      <text class="form-label">已付金额</text>
+      <input
+        class="form-input"
+        placeholder="输入已付金额"
+        value="{{paidAmount}}"
+        bindinput="onPaidAmountInput"
+        type="digit"
+      />
+    </view>
+  </view>
+
+  <view class="form-card">
+    <view class="section-title">配送信息</view>
+    <view class="form-item">
+      <text class="form-label">配送地址</text>
+      <input
+        class="form-input"
+        placeholder="输入配送地址"
+        value="{{deliveryAddress}}"
+        bindinput="onDeliveryAddressInput"
+      />
+    </view>
+    <view class="form-item">
+      <text class="form-label">配送状态</text>
+      <picker
+        range="{{deliveryStatusOptions}}"
+        value="{{deliveryStatusIndex}}"
+        bindchange="onDeliveryStatusChange"
+      >
+        <view class="form-picker">
+          <text>{{deliveryStatusOptions[deliveryStatusIndex]}}</text>
+          <text class="picker-arrow">▸</text>
+        </view>
+      </picker>
+    </view>
+    <view class="form-item">
+      <text class="form-label">配送时间</text>
+      <picker mode="time" value="{{deliveryTime}}" bindchange="onDeliveryTimeChange">
+        <view class="form-picker">
+          <text>{{deliveryTime || '选择时间'}}</text>
+          <text class="picker-arrow">▸</text>
+        </view>
+      </picker>
+    </view>
+  </view>
+
+  <view class="form-card">
+    <view class="section-title">其他</view>
+    <view class="form-item">
+      <text class="form-label">备注</text>
+      <textarea
+        class="form-textarea"
+        placeholder="输入备注信息"
+        value="{{remark}}"
+        bindinput="onRemarkInput"
+        maxlength="200"
+      />
+    </view>
+    <view class="form-item">
+      <text class="form-label">交易时间</text>
+      <picker mode="date" value="{{transactionDate}}" bindchange="onTransactionDateChange">
+        <view class="form-picker">
+          <text>{{transactionDate}}</text>
+          <text class="picker-arrow">▸</text>
+        </view>
+      </picker>
+      <picker mode="time" value="{{transactionTime}}" bindchange="onTransactionTimeChange">
+        <view class="form-picker ml-sm">
+          <text>{{transactionTime}}</text>
+          <text class="picker-arrow">▸</text>
+        </view>
+      </picker>
+    </view>
+  </view>
+
+  <view class="form-card">
+    <view class="section-title">货源库存</view>
+    <view class="source-summary">
+      <view class="source-summary-text">
+        <text>已分摊 {{sourceTotalWeight}} 斤</text>
+        <text class="{{sourceUnallocatedWeight === '0.00' ? 'text-success' : 'text-debt'}}">未分摊 {{sourceUnallocatedWeight}} 斤</text>
+      </view>
+      <button class="source-select-btn" bindtap="onOpenSourceModal">选择货源</button>
+    </view>
+    <view wx:if="{{selectedSources.length === 0}}" class="source-empty text-muted">
+      不选择货源也可以保存，库存不会自动扣减
+    </view>
+    <view wx:for="{{selectedSources}}" wx:key="purchaseRecordId" class="source-selected-item">
+      <view class="source-selected-info">
+        <text class="source-name">{{item.supplierName}}</text>
+        <text class="source-meta text-muted">剩余 {{item.remainingWeightDisplay}} 斤 | 进价 {{item.unitCost}} 元/斤</text>
+      </view>
+      <input class="source-weight-input" value="{{item.weight}}" type="digit" data-index="{{index}}" bindinput="onSourceWeightInput" />
+      <text class="source-remove" data-index="{{index}}" bindtap="onRemoveSource">移除</text>
+    </view>
+  </view>
+
+  <view class="source-modal-mask" wx:if="{{showSourceModal}}" bindtap="onCloseSourceModal">
+    <view class="source-modal-content" catchtap="noop">
+      <view class="source-modal-title">选择货源</view>
+      <view wx:if="{{sourceLoading}}" class="source-modal-empty text-muted">加载中...</view>
+      <view wx:elif="{{sourceOptions.length === 0}}" class="source-modal-empty text-muted">暂无可用库存</view>
+      <scroll-view wx:else class="source-option-list" scroll-y="true">
+        <view class="source-option-item" wx:for="{{sourceOptions}}" wx:key="id">
+          <view class="source-option-info">
+            <text class="source-name">{{item.supplierName}}</text>
+            <text class="source-meta text-muted">{{item.lobsterSize}} | 剩余 {{item.remainingWeightDisplay}} 斤 | 进价 {{item.unitCost}} 元/斤</text>
+          </view>
+          <button class="source-option-btn" data-index="{{index}}" bindtap="onSelectSource">选择</button>
+        </view>
+      </scroll-view>
+      <button class="source-modal-close" bindtap="onCloseSourceModal">完成</button>
+    </view>
+  </view>
+
+  <view class="submit-bar">
+    <button class="submit-btn" bindtap="onSubmit" disabled="{{submitting}}">保存</button>
+  </view>
+</view>

@@ -1,0 +1,158 @@
+.page {
+  padding-bottom: 40rpx;
+  min-height: 100vh;
+}
+
+.buyer-card {
+  margin: 16rpx 24rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32rpx 24rpx;
+}
+
+.buyer-name {
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #333333;
+  margin-bottom: 8rpx;
+}
+
+.buyer-phone {
+  font-size: 28rpx;
+}
+
+.stats-card {
+  margin: 0 24rpx 16rpx;
+}
+
+.stats-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+
+.stats-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.stats-value {
+  font-size: 32rpx;
+  font-weight: bold;
+  margin-bottom: 8rpx;
+}
+
+.stats-label {
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.action-bar {
+  margin: 0 24rpx 16rpx;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 16rpx 24rpx;
+}
+
+.action-btn {
+  flex: 1;
+  font-size: 28rpx;
+  padding: 16rpx 0;
+  text-align: center;
+  border-radius: 12rpx;
+  line-height: 1.5;
+  margin: 0 8rpx;
+}
+
+.action-btn::after {
+  border: none;
+}
+
+.action-btn-primary {
+  background-color: #FF6B35;
+  color: #ffffff;
+}
+
+.action-btn-share {
+  background-color: #ffffff;
+  color: #FF6B35;
+  border: 2rpx solid #FF6B35;
+}
+
+.section-header {
+  padding: 24rpx 24rpx 8rpx;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333333;
+}
+
+.transaction-list {
+  padding: 0 24rpx;
+}
+
+.transaction-item {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16rpx;
+  padding: 24rpx;
+}
+
+.transaction-left {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin-right: 24rpx;
+}
+
+.transaction-type {
+  font-size: 30rpx;
+  color: #333333;
+  font-weight: 500;
+  margin-bottom: 8rpx;
+}
+
+.transaction-sub {
+  font-size: 24rpx;
+}
+
+.transaction-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.transaction-amount {
+  font-size: 32rpx;
+  font-weight: bold;
+  margin-bottom: 8rpx;
+}
+
+.transaction-bottom-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.transaction-time {
+  font-size: 22rpx;
+  margin-right: 12rpx;
+}
+
+.loading-tip {
+  text-align: center;
+  padding: 24rpx 0;
+  font-size: 24rpx;
+}

@@ -1,0 +1,103 @@
+<view class="page">
+  <view class="form-card">
+    <view class="section-title">供应商信息</view>
+    <view class="form-item">
+      <text class="form-label">供应商</text>
+      <input class="form-input" placeholder="输入名称搜索或新增" value="{{supplierName}}" bindinput="onSupplierInput" bindfocus="onSupplierFocus" bindblur="onSupplierBlur" />
+    </view>
+    <view wx:if="{{showSupplierDropdown}}" class="supplier-dropdown">
+      <view class="supplier-dropdown-item" wx:for="{{supplierList}}" wx:key="id" bindtap="onSelectSupplier" data-index="{{index}}">
+        <text>{{item.name}}</text>
+        <text class="text-muted" wx:if="{{item.phone}}">{{item.phone}}</text>
+      </view>
+      <view wx:if="{{supplierList.length === 0}}" class="supplier-dropdown-empty">
+        <text class="text-muted">暂无供应商，可直接输入名称新增</text>
+      </view>
+    </view>
+    <view class="form-item">
+      <text class="form-label">电话</text>
+      <input class="form-input" placeholder="输入联系电话" value="{{supplierPhone}}" bindinput="onSupplierPhoneInput" type="number" />
+    </view>
+  </view>
+
+  <view class="form-card">
+    <view class="section-title">采购信息</view>
+    <view class="form-item">
+      <text class="form-label">龙虾规格</text>
+      <picker range="{{lobsterSizes}}" value="{{lobsterSizeIndex}}" bindchange="onLobsterSizeChange">
+        <view class="form-picker">
+          <text>{{lobsterSizes[lobsterSizeIndex]}}</text>
+          <text class="picker-arrow">▼</text>
+        </view>
+      </picker>
+    </view>
+    <view class="form-item">
+      <text class="form-label">毛重(斤)</text>
+      <input class="form-input" placeholder="输入毛重" value="{{grossWeight}}" bindinput="onGrossWeightInput" type="digit" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">皮重(斤)</text>
+      <input class="form-input" placeholder="输入皮重" value="{{tareWeight}}" bindinput="onTareWeightInput" type="digit" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">扣重(斤)</text>
+      <input class="form-input" placeholder="输入扣重" value="{{deductWeight}}" bindinput="onDeductWeightInput" type="digit" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">净重(斤)</text>
+      <input class="form-input" placeholder="输入净重" value="{{netWeight}}" bindinput="onNetWeightInput" type="digit" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">单价(元/斤)</text>
+      <input class="form-input" placeholder="输入单价" value="{{unitCost}}" bindinput="onUnitCostInput" type="digit" />
+    </view>
+    <view class="form-item">
+      <text class="form-label">总成本</text>
+      <text class="total-amount text-price">{{totalCost || '¥0.00'}}</text>
+    </view>
+  </view>
+
+  <view class="form-card">
+    <view class="section-title">结算信息</view>
+    <view class="form-item">
+      <text class="form-label">结算状态</text>
+      <radio-group class="radio-group" bindchange="onSettlementStatusChange">
+        <label class="radio-item" wx:for="{{settlementStatusOptions}}" wx:key="index">
+          <radio value="{{index}}" checked="{{settlementStatusIndex === index}}" color="#FF6B35" />
+          <text>{{item}}</text>
+        </label>
+      </radio-group>
+    </view>
+    <view wx:if="{{settlementStatusIndex === 2}}" class="form-item">
+      <text class="form-label">已付金额</text>
+      <input class="form-input" placeholder="输入已付金额" value="{{paidAmount}}" bindinput="onPaidAmountInput" type="digit" />
+    </view>
+  </view>
+
+  <view class="form-card">
+    <view class="section-title">其他</view>
+    <view class="form-item">
+      <text class="form-label">收货时间</text>
+      <picker mode="date" value="{{receivedDate}}" bindchange="onReceivedDateChange">
+        <view class="form-picker">
+          <text>{{receivedDate}}</text>
+          <text class="picker-arrow">▼</text>
+        </view>
+      </picker>
+      <picker mode="time" value="{{receivedTime}}" bindchange="onReceivedTimeChange">
+        <view class="form-picker ml-sm">
+          <text>{{receivedTime}}</text>
+          <text class="picker-arrow">▼</text>
+        </view>
+      </picker>
+    </view>
+    <view class="form-item">
+      <text class="form-label">备注</text>
+      <textarea class="form-textarea" placeholder="输入备注信息" value="{{remark}}" bindinput="onRemarkInput" maxlength="200" />
+    </view>
+  </view>
+
+  <view class="submit-bar">
+    <button class="submit-btn" bindtap="onSubmit" disabled="{{submitting}}" loading="{{submitting}}">保存</button>
+  </view>
+</view>

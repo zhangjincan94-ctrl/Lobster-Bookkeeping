@@ -1,0 +1,50 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/login/login",
+    "pages/transaction/list/list",
+    "pages/transaction/add/add",
+    "pages/transaction/detail/detail",
+    "pages/purchase/list/list",
+    "pages/purchase/add/add",
+    "pages/purchase/detail/detail",
+    "pages/buyer/list/list",
+    "pages/buyer/detail/detail",
+    "pages/supplier/list/list",
+    "pages/share/records/records"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#FF6B35",
+    "navigationBarTitleText": "龙虾记账",
+    "navigationBarTextStyle": "white"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#FF6B35",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "assets/icons/home.png",
+        "selectedIconPath": "assets/icons/home-active.png"
+      },
+      {
+        "pagePath": "pages/transaction/list/list",
+        "text": "交易",
+        "iconPath": "assets/icons/order.png",
+        "selectedIconPath": "assets/icons/order-active.png"
+      },
+      {
+        "pagePath": "pages/buyer/list/list",
+        "text": "买家",
+        "iconPath": "assets/icons/friends.png",
+        "selectedIconPath": "assets/icons/friends-active.png"
+      }
+    ]
+  },
+  "sitemapLocation": "sitemap.json",
+  "style": "v2"
+}

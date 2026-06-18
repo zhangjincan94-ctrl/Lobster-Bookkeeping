@@ -1,0 +1,5 @@
+{
+  "navigationBarTitleText": "采购记录",
+  "enablePullDownRefresh": true,
+  "onReachBottomDistance": 80
+}
