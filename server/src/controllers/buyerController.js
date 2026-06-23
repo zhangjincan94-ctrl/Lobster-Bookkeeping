@@ -77,4 +77,11 @@ const shareRecords = async (ctx) => {
   ctx.body = success(result);
 };
 
-module.exports = { list, create, update, detail, shareRecords };
+const remove = async (ctx) => {
+  const merchantId = ctx.state.merchant.id;
+  const buyerId = ctx.params.id;
+  await buyerService.removeBuyer(merchantId, buyerId);
+  ctx.body = success({ id: buyerId });
+};
+
+module.exports = { list, create, update, detail, shareRecords, remove };

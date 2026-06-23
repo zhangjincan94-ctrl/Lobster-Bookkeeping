@@ -12,7 +12,7 @@ Page({
     selectedBuyerId: '',
     buyerName: '',
     buyerPhone: '',
-    lobsterSizes: ['小青(2-4钱)', '中青(4-6钱)', '大青(6-8钱)', '炮头青(>9钱)', '小红(2-4钱)', '中红(4-6钱)', '大红(6-8钱)', '炮头红(>9钱)'],
+    lobsterSizes: ['小青(2-4钱)', '中青(4-6钱)', '大青(6-8钱)', '炮头青(>9钱)', '小红(2-4钱)', '中红(4-6钱)', '大红(6-8钱)', '炮头红(>9钱)', '统货'],
     lobsterSizeIndex: 0,
     weight: '',
     unitPrice: '',
@@ -44,6 +44,9 @@ Page({
       transactionDate: dateStr,
       transactionTime: timeStr
     })
+
+    // 预加载买家列表，进页面就能展示下拉
+    this.searchBuyers('', false)
 
     if (options && options.buyer_id) {
       this.loadBuyerInfo(options.buyer_id)
@@ -87,18 +90,12 @@ Page({
     var that = this
     if (debounceTimer) clearTimeout(debounceTimer)
     debounceTimer = setTimeout(function () {
-      if (value.trim()) {
-        that.searchBuyers(value.trim())
-      } else {
-        that.setData({ buyerList: [], showBuyerDropdown: false })
-      }
+      that.searchBuyers(value.trim())
     }, 300)
   },
 
   onBuyerFocus: function () {
-    if (this.data.buyerList.length > 0) {
-      this.setData({ showBuyerDropdown: true })
-    }
+    this.searchBuyers(this.data.buyerName.trim(), true)
   },
 
   onBuyerBlur: function () {
@@ -108,14 +105,17 @@ Page({
     }, 150)
   },
 
-  searchBuyers: function (keyword) {
+  searchBuyers: function (keyword, autoShow) {
     var that = this
-    get(config.api.buyerList, { keyword: keyword, pageSize: 10 }).then(function (data) {
+    var params = { pageSize: 20 }
+    if (keyword) params.keyword = keyword
+    get(config.api.buyerList, params).then(function (data) {
       var list = (data && data.list) || []
-      that.setData({
-        buyerList: list,
-        showBuyerDropdown: list.length > 0
-      })
+      var newData = { buyerList: list }
+      if (autoShow !== false) {
+        newData.showBuyerDropdown = true
+      }
+      that.setData(newData)
     }).catch(function () {
       that.setData({ buyerList: [], showBuyerDropdown: false })
     })
@@ -178,8 +178,9 @@ Page({
   },
 
   updateSourceTotals: function () {
-    var sourceTotal = this.getSelectedSourceWeight()
-    var unallocated = this.getSaleWeight() - sourceTotal
+    var saleWeight = this.getSaleWeight()
+    var sourceTotal = this.data.selectedSources.length > 0 ? saleWeight : 0
+    var unallocated = this.data.selectedSources.length > 0 ? 0 : saleWeight
     this.setData({
       sourceTotalWeight: sourceTotal.toFixed(2),
       sourceUnallocatedWeight: unallocated.toFixed(2)
@@ -187,10 +188,6 @@ Page({
   },
 
   onOpenSourceModal: function () {
-    if (this.getSaleWeight() <= 0) {
-      wx.showToast({ title: '请先输入销售重量', icon: 'none' })
-      return
-    }
     this.setData({ showSourceModal: true })
     this.loadSourceOptions()
   },
@@ -234,29 +231,28 @@ Page({
     var source = this.data.sourceOptions[index]
     if (!source) return
 
-    for (var i = 0; i < this.data.selectedSources.length; i++) {
-      if (String(this.data.selectedSources[i].purchaseRecordId) === String(source.id)) {
-        wx.showToast({ title: '该货源已选择', icon: 'none' })
-        return
-      }
+    var sizeIndex = this.data.lobsterSizes.indexOf(source.lobsterSize)
+    var weight = this.getSaleWeight()
+    if (weight <= 0 || weight > source.remainingWeight) {
+      weight = source.remainingWeight
     }
 
-    var needed = this.getSaleWeight() - this.getSelectedSourceWeight()
-    var weight = Math.min(needed > 0 ? needed : source.remainingWeight, source.remainingWeight)
-    if (weight <= 0) {
-      wx.showToast({ title: '销售重量已分配完', icon: 'none' })
-      return
-    }
-
-    var selected = this.data.selectedSources.concat([{
-      purchaseRecordId: source.id,
-      supplierName: source.supplierName,
-      remainingWeight: source.remainingWeight,
-      remainingWeightDisplay: source.remainingWeightDisplay,
-      unitCost: source.unitCost,
-      weight: weight.toFixed(2)
-    }])
-    this.setData({ selectedSources: selected })
+    this.setData({
+      lobsterSizeIndex: sizeIndex >= 0 ? sizeIndex : this.data.lobsterSizeIndex,
+      weight: weight ? weight.toFixed(2) : '',
+      selectedSources: [{
+        purchaseRecordId: source.id,
+        supplierName: source.supplierName,
+        lobsterSize: source.lobsterSize,
+        remainingWeight: source.remainingWeight,
+        remainingWeightDisplay: source.remainingWeightDisplay,
+        unitCost: source.unitCost,
+        receivedAt: source.receivedAt,
+        weight: weight ? weight.toFixed(2) : ''
+      }],
+      showSourceModal: false
+    })
+    this.calculateTotal()
     this.updateSourceTotals()
   },
 
@@ -340,14 +336,26 @@ Page({
       submitData.buyerId = this.data.selectedBuyerId
       that.doSubmit(submitData)
     } else {
-      post(config.api.buyerAdd, {
-        name: buyerName,
-        phone: this.data.buyerPhone.trim()
-      }).then(function (data) {
-        submitData.buyerId = (data && data.id) || ''
-        that.doSubmit(submitData)
-      }).catch(function () {
-        that.setData({ submitting: false })
+      // 用户输入了一个未在列表选择的姓名，先弹窗确认是否新建买家
+      that.setData({ submitting: false })
+      wx.showModal({
+        title: '新建买家？',
+        content: '"' + buyerName + '" 不在你的买家列表中，是否将其加入买家管理？',
+        confirmText: '加入并保存',
+        cancelText: '取消',
+        success: function (res) {
+          if (!res.confirm) return
+          that.setData({ submitting: true })
+          post(config.api.buyerAdd, {
+            name: buyerName,
+            phone: that.data.buyerPhone.trim()
+          }).then(function (data) {
+            submitData.buyerId = (data && data.id) || ''
+            that.doSubmit(submitData)
+          }).catch(function () {
+            that.setData({ submitting: false })
+          })
+        }
       })
     }
   },
@@ -372,12 +380,10 @@ Page({
       transactionTime: this.data.transactionDate + ' ' + this.data.transactionTime + ':00'
     }
     if (this.data.selectedSources.length > 0) {
-      submitData.sourceAllocations = this.data.selectedSources.map(function (item) {
-        return {
-          purchaseRecordId: item.purchaseRecordId,
-          weight: item.weight
-        }
-      })
+      submitData.sourceAllocations = [{
+        purchaseRecordId: this.data.selectedSources[0].purchaseRecordId,
+        weight: this.data.weight
+      }]
     }
     return submitData
   },
@@ -385,23 +391,13 @@ Page({
   validateSourceAllocations: function (saleWeight) {
     if (this.data.selectedSources.length === 0) return true
 
-    var total = 0
-    for (var i = 0; i < this.data.selectedSources.length; i++) {
-      var item = this.data.selectedSources[i]
-      var weight = parseFloat(item.weight) || 0
-      if (weight <= 0) {
-        wx.showToast({ title: '货源分摊重量必须大于0', icon: 'none' })
-        return false
-      }
-      if (weight - item.remainingWeight > 0.0001) {
-        wx.showToast({ title: '货源分摊不能超过剩余库存', icon: 'none' })
-        return false
-      }
-      total += weight
+    var item = this.data.selectedSources[0]
+    if (saleWeight <= 0) {
+      wx.showToast({ title: '请输入卖出斤数', icon: 'none' })
+      return false
     }
-
-    if (Math.abs(total - saleWeight) > 0.01) {
-      wx.showToast({ title: '货源分摊重量需等于销售重量', icon: 'none' })
+    if (saleWeight - item.remainingWeight > 0.0001) {
+      wx.showToast({ title: '卖出斤数不能超过该货源剩余库存', icon: 'none' })
       return false
     }
     return true

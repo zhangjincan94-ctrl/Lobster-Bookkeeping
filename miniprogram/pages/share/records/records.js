@@ -14,13 +14,20 @@ Page({
   onLoad: function (options) {
     var token = ''
     if (options && options.token) {
-      token = options.token
+      token = decodeURIComponent(options.token)
     } else if (options && options.scene) {
       token = decodeURIComponent(options.scene)
     }
+    console.log('[share] options=', options, 'token=', token)
     if (token) {
       this.setData({ token: token })
       this.loadRecords()
+    } else {
+      wx.showModal({
+        title: '链接无效',
+        content: '未获取到分享 token，请重新从商户分享卡片进入',
+        showCancel: false
+      })
     }
   },
 
@@ -30,7 +37,11 @@ Page({
       url: config.api.shareRecords(that.data.token),
       method: 'GET'
     }).then(function (data) {
-      if (!data) return
+      console.log('[share] response=', data)
+      if (!data) {
+        wx.showToast({ title: '没有返回数据', icon: 'none' })
+        return
+      }
 
       var buyerData = data.buyer || {}
       var list = data.transactions || []
@@ -57,6 +68,13 @@ Page({
         totalSpent: formatPrice(data.totalSpent),
         totalDebt: formatPrice(data.totalDebt)
       })
-    }).catch(function () {})
+    }).catch(function (err) {
+      console.error('[share] error=', err)
+      wx.showModal({
+        title: '加载失败',
+        content: '错误：' + (err && err.message ? err.message : JSON.stringify(err)),
+        showCancel: false
+      })
+    })
   }
 })

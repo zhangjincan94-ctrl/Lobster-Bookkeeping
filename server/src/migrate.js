@@ -34,6 +34,7 @@ const run = async () => {
       order_status TINYINT NOT NULL DEFAULT 0,
       cancelled_at DATETIME NULL,
       remark VARCHAR(500) NULL,
+      share_token VARCHAR(64) NULL,
       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       INDEX idx_purchase_merchant_id (merchant_id),
@@ -62,6 +63,27 @@ const run = async () => {
     UPDATE purchase_records
     SET remaining_weight = net_weight
     WHERE remaining_weight = 0 AND order_status != 1;
+  `);
+
+  const [shareTokenColumns] = await sequelize.query(`
+    SELECT COUNT(*) AS count
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'purchase_records'
+      AND COLUMN_NAME = 'share_token';
+  `);
+
+  if (Number(shareTokenColumns[0].count) === 0) {
+    await sequelize.query(`
+      ALTER TABLE purchase_records
+      ADD COLUMN share_token VARCHAR(64) NULL AFTER remark;
+    `);
+  }
+
+  await sequelize.query(`
+    UPDATE purchase_records
+    SET share_token = UUID()
+    WHERE share_token IS NULL OR share_token = '';
   `);
 
   await sequelize.query(`
@@ -93,6 +115,22 @@ const run = async () => {
       INDEX idx_tpa_purchase_record_id (purchase_record_id),
       CONSTRAINT fk_tpa_transaction FOREIGN KEY (transaction_id) REFERENCES transactions(id),
       CONSTRAINT fk_tpa_purchase_record FOREIGN KEY (purchase_record_id) REFERENCES purchase_records(id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await sequelize.query(`
+    CREATE TABLE IF NOT EXISTS other_costs (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      merchant_id INT NOT NULL,
+      cost_type VARCHAR(20) NOT NULL,
+      amount DECIMAL(10, 2) NOT NULL,
+      cost_date DATETIME NOT NULL,
+      remark VARCHAR(200) NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_other_costs_merchant_id (merchant_id),
+      INDEX idx_other_costs_cost_date (cost_date),
+      CONSTRAINT fk_other_costs_merchant FOREIGN KEY (merchant_id) REFERENCES merchants(id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
 

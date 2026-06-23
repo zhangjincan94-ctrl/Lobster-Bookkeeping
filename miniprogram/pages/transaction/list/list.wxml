@@ -20,8 +20,15 @@
         class="status-tab {{activeStatus === '1' ? 'status-tab-active' : ''}}"
         bindtap="onStatusTap"
         data-status="1"
-      >已付款</view>
+      >已结账</view>
     </scroll-view>
+  </view>
+
+  <view class="range-filter">
+    <view class="range-tab {{activeRange === 'today' ? 'range-tab-active' : ''}}" bindtap="onRangeTap" data-range="today">今天</view>
+    <view class="range-tab {{activeRange === 'week' ? 'range-tab-active' : ''}}" bindtap="onRangeTap" data-range="week">近7天</view>
+    <view class="range-tab {{activeRange === 'month' ? 'range-tab-active' : ''}}" bindtap="onRangeTap" data-range="month">近30天</view>
+    <view class="range-tab {{activeRange === 'all' ? 'range-tab-active' : ''}}" bindtap="onRangeTap" data-range="all">全部</view>
   </view>
 
   <view class="date-filter">
@@ -56,6 +63,10 @@
       </view>
       <view class="transaction-right">
         <text class="transaction-amount text-price">{{item.totalAmountDisplay}}</text>
+        <view wx:if="{{item.showPaidInfo}}" class="transaction-paid-row">
+          <text class="text-success">已付 {{item.paidAmountDisplay}}</text>
+          <text class="text-danger">未付 {{item.unpaidAmountDisplay}}</text>
+        </view>
         <view class="transaction-bottom-row">
           <text class="transaction-time text-muted">{{item.timeDisplay}}</text>
           <text class="tag {{item.paymentStatusClass}}">{{item.paymentStatusText}}</text>

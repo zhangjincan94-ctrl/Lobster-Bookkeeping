@@ -8,6 +8,7 @@ const Supplier = require('./supplier');
 const PurchaseRecord = require('./purchase_record');
 const SupplierPaymentRecord = require('./supplier_payment_record');
 const TransactionPurchaseAllocation = require('./transaction_purchase_allocation');
+const OtherCost = require('./other_cost');
 
 const models = {
   Merchant,
@@ -17,7 +18,8 @@ const models = {
   Supplier,
   PurchaseRecord,
   SupplierPaymentRecord,
-  TransactionPurchaseAllocation
+  TransactionPurchaseAllocation,
+  OtherCost
 };
 
 Object.keys(models).forEach(modelName => {
@@ -36,5 +38,6 @@ module.exports = {
   Supplier,
   PurchaseRecord,
   SupplierPaymentRecord,
-  TransactionPurchaseAllocation
+  TransactionPurchaseAllocation,
+  OtherCost
 };

@@ -1,5 +1,5 @@
 {
-  "navigationBarTitleText": "采购记录",
+  "navigationBarTitleText": "进货记录",
   "enablePullDownRefresh": true,
   "onReachBottomDistance": 80
 }

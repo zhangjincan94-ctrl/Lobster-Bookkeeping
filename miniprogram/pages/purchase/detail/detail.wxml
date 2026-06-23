@@ -12,26 +12,17 @@
   </view>
 
   <view class="detail-card card">
-    <view class="card-title">采购信息</view>
+    <view class="card-title">进货信息</view>
     <view class="info-row">
       <text class="info-label">龙虾规格</text>
       <text class="info-value">{{purchase.lobsterSize || '-'}}</text>
     </view>
     <view class="info-row">
-      <text class="info-label">毛重</text>
-      <text class="info-value">{{purchase.grossWeight ? purchase.grossWeight + '斤' : '-'}}</text>
-    </view>
-    <view class="info-row">
-      <text class="info-label">皮重</text>
-      <text class="info-value">{{purchase.tareWeight ? purchase.tareWeight + '斤' : '-'}}</text>
-    </view>
-    <view class="info-row">
-      <text class="info-label">扣重</text>
-      <text class="info-value">{{purchase.deductWeight ? purchase.deductWeight + '斤' : '-'}}</text>
-    </view>
-    <view class="info-row">
-      <text class="info-label">净重</text>
-      <text class="info-value">{{purchase.netWeight ? purchase.netWeight + '斤' : '-'}}</text>
+      <text class="info-label">斤数</text>
+      <view class="info-value-edit">
+        <text class="info-value">{{purchase.netWeight ? purchase.netWeight + '斤' : '-'}}</text>
+        <text wx:if="{{purchase.canEditWeight}}" class="edit-link" bindtap="onEditWeight">修改</text>
+      </view>
     </view>
     <view class="info-row">
       <text class="info-label">剩余库存</text>
@@ -91,7 +82,25 @@
   </view>
 
   <view class="bottom-bar">
-    <button wx:if="{{purchase.canCancel}}" class="btn-danger bottom-btn" bindtap="onCancelOrder" loading="{{canceling}}" disabled="{{canceling}}">取消采购单</button>
+    <button wx:if="{{purchase.shareToken}}" class="btn-share bottom-btn" open-type="share">分享此进货单</button>
+    <button wx:if="{{purchase.canCancel}}" class="btn-danger bottom-btn" bindtap="onCancelOrder" loading="{{canceling}}" disabled="{{canceling}}">取消进货单</button>
+  </view>
+</view>
+
+<view class="modal-mask" wx:if="{{showWeightModal}}" bindtap="onCloseWeightModal">
+  <view class="modal-content" catchtap="noop">
+    <view class="modal-title">修改斤数</view>
+    <view class="modal-body">
+      <view class="modal-field">
+        <text class="modal-label">斤数</text>
+        <input class="modal-input" placeholder="输入新的斤数" value="{{newWeight}}" bindinput="onNewWeightInput" type="digit" focus="{{showWeightModal}}" cursor-spacing="80" />
+      </view>
+      <view class="modal-tip text-muted">修改后剩余库存与总成本将自动重算</view>
+    </view>
+    <view class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" bindtap="onCloseWeightModal">取消</button>
+      <button class="modal-btn modal-btn-confirm" bindtap="onWeightSubmit" loading="{{weightSubmitting}}" disabled="{{weightSubmitting}}">确认</button>
+    </view>
   </view>
 </view>
 
@@ -108,10 +117,18 @@
         <input class="modal-input" placeholder="如：微信/支付宝/现金" value="{{paymentMethod}}" bindinput="onPaymentMethodInput" />
       </view>
       <view class="modal-field">
-        <text class="modal-label">付款时间</text>
-        <picker mode="date" value="{{paymentTime}}" bindchange="onPaymentTimeChange">
+        <text class="modal-label">付款日期</text>
+        <picker mode="date" value="{{paymentDate}}" bindchange="onPaymentDateChange">
           <view class="modal-picker">
-            <text>{{paymentTime || '选择日期'}}</text>
+            <text>{{paymentDate || '选择日期'}}</text>
+          </view>
+        </picker>
+      </view>
+      <view class="modal-field">
+        <text class="modal-label">付款时间</text>
+        <picker mode="time" value="{{paymentTimeOnly}}" bindchange="onPaymentTimeChange">
+          <view class="modal-picker">
+            <text>{{paymentTimeOnly || '选择时间'}}</text>
           </view>
         </picker>
       </view>

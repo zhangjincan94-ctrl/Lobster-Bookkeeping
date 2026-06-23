@@ -110,10 +110,28 @@ const _computeBuyerStats = async (buyerId) => {
   };
 };
 
+const removeBuyer = async (merchantId, buyerId) => {
+  const buyer = await Buyer.findOne({ where: { id: buyerId, merchant_id: merchantId } });
+  if (!buyer) {
+    const err = new Error('买家不存在');
+    err.status = 404;
+    throw err;
+  }
+  const txCount = await Transaction.count({ where: { buyer_id: buyerId } });
+  if (txCount > 0) {
+    const err = new Error('该买家已有交易记录，无法删除');
+    err.status = 400;
+    throw err;
+  }
+  await buyer.destroy();
+  return true;
+};
+
 module.exports = {
   listBuyers,
   createBuyer,
   updateBuyer,
   getBuyerDetail,
-  getBuyerByShareToken
+  getBuyerByShareToken,
+  removeBuyer
 };

@@ -15,10 +15,25 @@ const roundMoney = (value) => {
   return Math.round(value * 100) / 100;
 };
 
+const dayjs = require('dayjs');
+
+const normalizeStartDate = (value) => dayjs(value).startOf('day').format('YYYY-MM-DD HH:mm:ss');
+const normalizeEndDate = (value) => dayjs(value).endOf('day').format('YYYY-MM-DD HH:mm:ss');
+
 const optionalDate = (value) => {
   if (value === undefined || value === null || value === '') return null;
   if (typeof value === 'string' && value.trim() === '') return null;
-  return value;
+  // 仅传 "HH:mm" 之类纯时间时，按今天日期补齐；非法值直接返回 null
+  const str = String(value).trim();
+  // 纯时间 13:00 / 13:00:00
+  if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(str)) {
+    const today = dayjs().format('YYYY-MM-DD');
+    const t = str.length === 5 ? str + ':00' : str;
+    return today + ' ' + t;
+  }
+  const d = dayjs(str);
+  if (!d.isValid()) return null;
+  return d.format('YYYY-MM-DD HH:mm:ss');
 };
 
 const normalizeSourceAllocations = (data) => {
@@ -36,8 +51,8 @@ const listTransactions = async (merchantId, { buyer_id, payment_status, start_da
   if (payment_status !== undefined && payment_status !== '') where.payment_status = payment_status;
   if (start_date || end_date) {
     where.transaction_time = {};
-    if (start_date) where.transaction_time[Op.gte] = start_date;
-    if (end_date) where.transaction_time[Op.lte] = end_date;
+    if (start_date) where.transaction_time[Op.gte] = normalizeStartDate(start_date);
+    if (end_date) where.transaction_time[Op.lte] = normalizeEndDate(end_date);
   }
 
   const offset = (page - 1) * pageSize;
@@ -86,6 +101,17 @@ const createTransaction = async (merchantId, data) => {
       remark: data.remark || null,
       transaction_time: data.transaction_time
     }, { transaction: dbTx });
+
+    // 录入时如有已付金额，同步生成一条付款记录，避免详情页统计缺失
+    if (parseFloat(paid_amount) > 0) {
+      await PaymentRecord.create({
+        transaction_id: transaction.id,
+        amount: paid_amount,
+        payment_method: data.payment_method || null,
+        paid_at: optionalDate(data.transaction_time) || new Date(),
+        note: '录入时初始付款'
+      }, { transaction: dbTx });
+    }
 
     await _applyPurchaseAllocations(merchantId, transaction.id, data.lobster_size, data.weight, normalizeSourceAllocations(data), dbTx);
 

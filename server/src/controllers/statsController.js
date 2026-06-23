@@ -33,9 +33,16 @@ const productAnalysis = async (ctx) => {
   ctx.body = success(data);
 };
 
+const dashboard = async (ctx) => {
+  const merchantId = ctx.state.merchant.id;
+  const data = await statsService.getDashboard(merchantId);
+  ctx.body = success(data);
+};
+
 module.exports = {
   overview,
   trend,
   debtRanking,
-  productAnalysis
+  productAnalysis,
+  dashboard
 };

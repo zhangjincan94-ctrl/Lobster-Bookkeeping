@@ -1,17 +1,19 @@
 <view class="page">
   <view class="form-card">
     <view class="section-title">供应商信息</view>
-    <view class="form-item">
+    <view class="form-item form-item-supplier">
       <text class="form-label">供应商</text>
-      <input class="form-input" placeholder="输入名称搜索或新增" value="{{supplierName}}" bindinput="onSupplierInput" bindfocus="onSupplierFocus" bindblur="onSupplierBlur" />
-    </view>
-    <view wx:if="{{showSupplierDropdown}}" class="supplier-dropdown">
-      <view class="supplier-dropdown-item" wx:for="{{supplierList}}" wx:key="id" bindtap="onSelectSupplier" data-index="{{index}}">
-        <text>{{item.name}}</text>
-        <text class="text-muted" wx:if="{{item.phone}}">{{item.phone}}</text>
-      </view>
-      <view wx:if="{{supplierList.length === 0}}" class="supplier-dropdown-empty">
-        <text class="text-muted">暂无供应商，可直接输入名称新增</text>
+      <view class="supplier-input-wrap">
+        <input class="form-input" placeholder="输入名称搜索或新增" value="{{supplierName}}" bindinput="onSupplierInput" bindfocus="onSupplierFocus" bindblur="onSupplierBlur" />
+        <scroll-view scroll-y wx:if="{{showSupplierDropdown}}" class="supplier-dropdown">
+          <view class="supplier-dropdown-item" wx:for="{{supplierList}}" wx:key="id" bindtap="onSelectSupplier" data-index="{{index}}">
+            <text>{{item.name}}</text>
+            <text class="text-muted" wx:if="{{item.phone}}">{{item.phone}}</text>
+          </view>
+          <view wx:if="{{supplierList.length === 0}}" class="supplier-dropdown-empty">
+            <text class="text-muted">暂无供应商，可直接输入名称新增</text>
+          </view>
+        </scroll-view>
       </view>
     </view>
     <view class="form-item">
@@ -21,7 +23,7 @@
   </view>
 
   <view class="form-card">
-    <view class="section-title">采购信息</view>
+    <view class="section-title">进货信息</view>
     <view class="form-item">
       <text class="form-label">龙虾规格</text>
       <picker range="{{lobsterSizes}}" value="{{lobsterSizeIndex}}" bindchange="onLobsterSizeChange">
@@ -32,20 +34,8 @@
       </picker>
     </view>
     <view class="form-item">
-      <text class="form-label">毛重(斤)</text>
-      <input class="form-input" placeholder="输入毛重" value="{{grossWeight}}" bindinput="onGrossWeightInput" type="digit" />
-    </view>
-    <view class="form-item">
-      <text class="form-label">皮重(斤)</text>
-      <input class="form-input" placeholder="输入皮重" value="{{tareWeight}}" bindinput="onTareWeightInput" type="digit" />
-    </view>
-    <view class="form-item">
-      <text class="form-label">扣重(斤)</text>
-      <input class="form-input" placeholder="输入扣重" value="{{deductWeight}}" bindinput="onDeductWeightInput" type="digit" />
-    </view>
-    <view class="form-item">
-      <text class="form-label">净重(斤)</text>
-      <input class="form-input" placeholder="输入净重" value="{{netWeight}}" bindinput="onNetWeightInput" type="digit" />
+      <text class="form-label">斤数</text>
+      <input class="form-input" placeholder="输入斤数（有损耗后续可在详情修改）" value="{{netWeight}}" bindinput="onNetWeightInput" type="digit" />
     </view>
     <view class="form-item">
       <text class="form-label">单价(元/斤)</text>

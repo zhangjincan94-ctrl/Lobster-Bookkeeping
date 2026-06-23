@@ -1,5 +1,7 @@
+const { v4: uuidv4 } = require('uuid');
 const { Supplier, PurchaseRecord, sequelize, Sequelize } = require('../models');
 const { serializeSupplier } = require('../serializers');
+const { serializePurchaseListItem } = require('../serializers/purchaseSerializer');
 const { Op } = Sequelize;
 
 const listSuppliers = async (merchantId, { keyword, page = 1, pageSize = 10 }) => {
@@ -33,7 +35,8 @@ const createSupplier = async (merchantId, data) => {
     merchant_id: merchantId,
     name: data.name,
     phone: data.phone || null,
-    remark: data.remark || null
+    remark: data.remark || null,
+    share_token: uuidv4()
   });
 
   return serializeSupplier(supplier);
@@ -86,9 +89,57 @@ const _computeSupplierStats = async (supplierId) => {
   };
 };
 
+const removeSupplier = async (merchantId, supplierId) => {
+  const supplier = await Supplier.findOne({ where: { id: supplierId, merchant_id: merchantId } });
+  if (!supplier) {
+    const err = new Error('供应商不存在');
+    err.status = 404;
+    throw err;
+  }
+  const purchaseCount = await PurchaseRecord.count({ where: { supplier_id: supplierId } });
+  if (purchaseCount > 0) {
+    const err = new Error('该供应商已有进货记录，无法删除');
+    err.status = 400;
+    throw err;
+  }
+  await supplier.destroy();
+  return true;
+};
+
+const getSupplierShareData = async (shareToken) => {
+  const supplier = await Supplier.findOne({ where: { share_token: shareToken } });
+  if (!supplier) {
+    const err = new Error('链接无效或已失效');
+    err.status = 404;
+    throw err;
+  }
+
+  const records = await PurchaseRecord.findAll({
+    where: { supplier_id: supplier.id, order_status: { [Op.ne]: 1 } },
+    order: [['received_at', 'DESC']],
+    limit: 100
+  });
+
+  let totalCost = 0;
+  let totalDebt = 0;
+  for (const r of records) {
+    totalCost += parseFloat(r.total_cost) || 0;
+    totalDebt += (parseFloat(r.total_cost) || 0) - (parseFloat(r.paid_amount) || 0);
+  }
+
+  return {
+    supplier: { name: supplier.name, phone: supplier.phone },
+    purchases: records.map((r) => serializePurchaseListItem(r, supplier)),
+    total_cost: totalCost,
+    total_debt: totalDebt
+  };
+};
+
 module.exports = {
   listSuppliers,
   createSupplier,
   updateSupplier,
-  getSupplierDetail
+  getSupplierDetail,
+  removeSupplier,
+  getSupplierShareData
 };

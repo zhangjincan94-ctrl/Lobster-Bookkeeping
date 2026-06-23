@@ -26,6 +26,7 @@ const serializePurchaseCore = (record) => {
     order_status: record.order_status,
     cancelled_at: record.cancelled_at,
     remark: record.remark,
+    share_token: record.share_token,
     created_at: record.created_at,
     updated_at: record.updated_at
   };
@@ -33,7 +34,7 @@ const serializePurchaseCore = (record) => {
 
 const serializePurchaseListItem = (record, supplier) => {
   const result = serializePurchaseCore(record);
-  const relationSupplier = supplier || record.Supplier;
+  const relationSupplier = supplier || record.Supplier || record.supplier;
 
   return {
     ...result,
@@ -59,7 +60,7 @@ const serializePurchaseDetail = (record) => {
 
   return {
     ...result,
-    supplier: serializeSupplierBrief(record.Supplier),
+    supplier: serializeSupplierBrief(record.Supplier || record.supplier),
     payment_records: (record.SupplierPaymentRecords || []).map(serializeSupplierPaymentRecord)
   };
 };

@@ -11,6 +11,8 @@ Page({
     paymentAmount: '',
     paymentMethod: '',
     paymentTime: '',
+    paymentDate: '',
+    paymentTimeOnly: '',
     paymentSubmitting: false,
     updatingStatus: false,
     canceling: false
@@ -117,12 +119,16 @@ Page({
     var y = now.getFullYear()
     var m = now.getMonth() + 1
     var d = now.getDate()
+    var hh = now.getHours()
+    var mm = now.getMinutes()
     var dateStr = y + '-' + (m < 10 ? '0' + m : m) + '-' + (d < 10 ? '0' + d : d)
+    var timeStr = (hh < 10 ? '0' + hh : hh) + ':' + (mm < 10 ? '0' + mm : mm)
     this.setData({
       showPaymentModal: true,
       paymentAmount: transaction.unpaidAmountRaw === '0.00' ? '' : transaction.unpaidAmountRaw,
       paymentMethod: '',
-      paymentTime: dateStr,
+      paymentDate: dateStr,
+      paymentTimeOnly: timeStr,
       paymentSubmitting: false
     })
   },
@@ -141,8 +147,12 @@ Page({
     this.setData({ paymentMethod: e.detail.value })
   },
 
+  onPaymentDateChange: function (e) {
+    this.setData({ paymentDate: e.detail.value })
+  },
+
   onPaymentTimeChange: function (e) {
-    this.setData({ paymentTime: e.detail.value })
+    this.setData({ paymentTimeOnly: e.detail.value })
   },
 
   onPaymentSubmit: function () {
@@ -158,7 +168,7 @@ Page({
     post(config.api.transactionPayment(this.data.id), {
       amount: amount.toFixed(2),
       paymentMethod: this.data.paymentMethod.trim(),
-      paidAt: this.data.paymentTime
+      paidAt: this.data.paymentDate + ' ' + this.data.paymentTimeOnly + ':00'
     }).then(function () {
       wx.showToast({ title: '付款已录入', icon: 'success' })
       that.setData({ showPaymentModal: false, paymentSubmitting: false })
@@ -221,10 +231,18 @@ Page({
   onShareAppMessage: function () {
     var transaction = this.data.transaction
     if (!transaction) return
+    var token = transaction.shareToken || ''
+    if (!token) {
+      wx.showToast({ title: '分享链接未生成，请刷新后重试', icon: 'none' })
+      return {
+        title: '龙虾记账',
+        path: '/pages/index/index'
+      }
+    }
     var buyerName = transaction.buyerName || '买家'
     return {
       title: buyerName + '的消费记录',
-      path: '/pages/share/records/records?token=' + (transaction.shareToken || '')
+      path: '/pages/share/records/records?token=' + encodeURIComponent(token)
     }
   }
 })

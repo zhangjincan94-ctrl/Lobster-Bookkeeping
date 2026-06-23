@@ -67,6 +67,11 @@ const create = async (ctx) => {
   ctx.body = success(purchase);
 };
 
+const shareDetail = async (ctx) => {
+  const purchase = await purchaseService.getPurchaseShareData(ctx.params.token);
+  ctx.body = success(purchase);
+};
+
 const detail = async (ctx) => {
   const merchantId = ctx.state.merchant.id;
   const purchaseId = ctx.params.id;
@@ -125,4 +130,4 @@ const addPayment = async (ctx) => {
   ctx.body = success(result);
 };
 
-module.exports = { list, available, create, detail, update, addPayment };
+module.exports = { list, available, create, shareDetail, detail, update, addPayment };

@@ -15,8 +15,10 @@ Page({
     startDate: '',
     endDate: '',
     list: [],
+    bestProduct: null,
     totalAmountDisplay: '¥0.00',
-    totalWeightDisplay: '0.00',
+    totalCostDisplay: '¥0.00',
+    totalProfitDisplay: '¥0.00',
     loading: false
   },
 
@@ -40,6 +42,39 @@ Page({
     wx.stopPullDownRefresh()
   },
 
+  buildProductList: function (arr) {
+    var maxProfit = 0
+    arr.forEach(function (item) {
+      var profit = parseFloat(item.profitAmount) || 0
+      if (profit > maxProfit) maxProfit = profit
+    })
+
+    return arr.map(function (item) {
+      var amount = parseFloat(item.totalAmount) || 0
+      var cost = parseFloat(item.totalCost) || 0
+      var profit = parseFloat(item.profitAmount) || 0
+      var weight = parseFloat(item.totalWeight) || 0
+      var orders = parseInt(item.orderCount, 10) || 0
+      var margin = amount > 0 ? profit / amount : 0
+
+      return {
+        lobsterSize: item.lobsterSize || '未指定',
+        orderCount: orders,
+        totalWeightDisplay: weight.toFixed(2),
+        totalAmountDisplay: formatPrice(amount),
+        totalCostDisplay: formatPrice(cost),
+        profitAmount: profit,
+        profitAmountDisplay: formatPrice(profit),
+        profitRatioDisplay: ((parseFloat(item.profitRatio) || 0) * 100).toFixed(1) + '%',
+        marginDisplay: (margin * 100).toFixed(1) + '%',
+        barPercent: maxProfit > 0 ? Math.max(4, Math.round(profit / maxProfit * 100)) : 0,
+        costMissing: item.costStatus === 'missing'
+      }
+    }).sort(function (a, b) {
+      return b.profitAmount - a.profitAmount
+    })
+  },
+
   loadData: function () {
     if (this.data.loading) return
     this.setData({ loading: true })
@@ -51,28 +86,21 @@ Page({
     }).then(function (list) {
       var arr = list || []
       var totalAmount = 0
-      var totalWeight = 0
+      var totalCost = 0
+      var totalProfit = 0
       arr.forEach(function (item) {
         totalAmount += parseFloat(item.totalAmount) || 0
-        totalWeight += parseFloat(item.totalWeight) || 0
+        totalCost += parseFloat(item.totalCost) || 0
+        totalProfit += parseFloat(item.profitAmount) || 0
       })
 
-      var processed = arr.map(function (item) {
-        var ratio = parseFloat(item.ratio) || 0
-        return {
-          lobsterSize: item.lobsterSize || '未指定',
-          orderCount: item.orderCount || 0,
-          totalWeightDisplay: (parseFloat(item.totalWeight) || 0).toFixed(2),
-          totalAmountDisplay: formatPrice(item.totalAmount),
-          ratioDisplay: (ratio * 100).toFixed(1) + '%',
-          ratioPercent: Math.round(ratio * 100)
-        }
-      })
-
+      var processed = that.buildProductList(arr)
       that.setData({
         list: processed,
+        bestProduct: processed.length > 0 ? processed[0] : null,
         totalAmountDisplay: formatPrice(totalAmount),
-        totalWeightDisplay: totalWeight.toFixed(2),
+        totalCostDisplay: formatPrice(totalCost),
+        totalProfitDisplay: formatPrice(totalProfit),
         loading: false
       })
     }).catch(function () {

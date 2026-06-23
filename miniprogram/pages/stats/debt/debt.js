@@ -75,9 +75,10 @@ Page({
       if (item && item.shareToken) {
         return {
           title: item.buyerName + ' 您还有 ' + item.debtAmountDisplay + ' 待付款',
-          path: '/pages/share/records/records?token=' + item.shareToken
+          path: '/pages/share/records/records?token=' + encodeURIComponent(item.shareToken)
         }
       }
+      wx.showToast({ title: '分享链接未生成，请刷新后重试', icon: 'none' })
     }
     return {
       title: '龙虾记账 - 欠款查询',

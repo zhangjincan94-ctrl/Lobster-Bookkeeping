@@ -103,9 +103,16 @@ Page({
   onShareAppMessage: function () {
     var buyer = this.data.buyer
     var token = buyer && buyer.shareToken ? buyer.shareToken : ''
+    if (!token) {
+      wx.showToast({ title: '分享链接未生成，请刷新后重试', icon: 'none' })
+      return {
+        title: '龙虾记账',
+        path: '/pages/index/index'
+      }
+    }
     return {
       title: (buyer ? buyer.name : '买家') + '的消费记录',
-      path: '/pages/share/records/records?token=' + token
+      path: '/pages/share/records/records?token=' + encodeURIComponent(token)
     }
   },
 

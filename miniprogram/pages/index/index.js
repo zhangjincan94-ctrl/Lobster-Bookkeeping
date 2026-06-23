@@ -1,21 +1,52 @@
-const { get } = require('../../utils/request')
-const { getMerchantInfo, checkLogin } = require('../../utils/auth')
-const { formatPrice, formatDate, paymentStatusText, paymentStatusClass, orderStatusText, orderStatusClass } = require('../../utils/format')
-const config = require('../../utils/config')
+var { get, post } = require('../../utils/request')
+var { getMerchantInfo, checkLogin } = require('../../utils/auth')
+var { formatPrice } = require('../../utils/format')
+var config = require('../../utils/config')
+
+function formatDateInput(d) {
+  var y = d.getFullYear()
+  var m = d.getMonth() + 1
+  var day = d.getDate()
+  return y + '-' + (m < 10 ? '0' + m : m) + '-' + (day < 10 ? '0' + day : day)
+}
 
 Page({
   data: {
     merchantName: '',
-    todayCount: 0,
-    todayIncome: '0.00',
-    todayUnpaid: '0.00',
-    recentTransactions: []
+    today: {
+      sales_amount: '0.00',
+      sales_count: 0,
+      sales_unpaid: '0.00',
+      purchase_cost: '0.00',
+      purchase_count: 0,
+      purchase_weight: '0',
+      other_cost: '0.00',
+      net_income: '0.00'
+    },
+    showOtherCostModal: false,
+    otherCostTypes: [
+      { key: 'labor', label: '人工费' },
+      { key: 'packaging', label: '包装耗材' }
+    ],
+    otherCostForm: {
+      costType: 'labor',
+      amount: '',
+      remark: '',
+      costDate: ''
+    },
+    savingOtherCost: false,
+    reminders: {
+      receivable_amount: '¥0.00',
+      payable_amount: '¥0.00',
+      stock_weight: '0',
+      stock_count: 0
+    }
   },
 
   onShow: function () {
     if (!checkLogin()) return
     this.loadMerchantInfo()
-    this.loadRecentTransactions()
+    this.loadDashboard()
   },
 
   loadMerchantInfo: function () {
@@ -27,105 +58,117 @@ Page({
     }
   },
 
-  loadRecentTransactions: function () {
+  loadDashboard: function () {
     var that = this
-    get(config.api.transactionList, { page: 1, pageSize: 5 }).then(function (data) {
-      var list = (data && data.list) || []
-      var today = that.getTodayStr()
-      var todayCount = 0
-      var todayIncome = 0
-      var todayUnpaid = 0
-
-      var processed = list.map(function (item) {
-        var orderStatus = Number(item.orderStatus) || 0
-        var isCancelled = orderStatus === 1
-        var statusText = isCancelled ? orderStatusText(orderStatus) : paymentStatusText(item.paymentStatus)
-        var statusClass = isCancelled ? orderStatusClass(orderStatus) : paymentStatusClass(item.paymentStatus)
-        var amount = formatPrice(item.totalAmount)
-        var time = formatDate(item.transactionTime || item.createdAt)
-
-        if (!isCancelled && that.isSameDay(item.transactionTime || item.createdAt, today)) {
-          todayCount++
-          todayIncome += parseFloat(item.totalAmount) || 0
-          if (item.paymentStatus === 0 || item.paymentStatus === 2) {
-            todayUnpaid += (parseFloat(item.totalAmount) - parseFloat(item.paidAmount || 0)) || 0
-          }
-        }
-
-        return {
-          id: item.id,
-          buyerName: item.buyerName || '未知买家',
-          lobsterSize: item.lobsterSize || '',
-          totalAmount: amount,
-          paymentStatusText: statusText,
-          paymentStatusClass: statusClass,
-          time: time,
-          paymentStatus: item.paymentStatus
-        }
-      })
+    get(config.api.statsDashboard, {}).then(function (data) {
+      if (!data) return
+      var t = data.today || {}
+      var reminders = data.reminders || {}
 
       that.setData({
-        recentTransactions: processed,
-        todayCount: todayCount,
-        todayIncome: formatPrice(todayIncome),
-        todayUnpaid: formatPrice(todayUnpaid)
+        today: {
+          sales_amount: formatPrice(t.salesAmount),
+          sales_count: t.salesCount || 0,
+          sales_unpaid: formatPrice(t.salesUnpaid),
+          purchase_cost: formatPrice(t.purchaseCost),
+          purchase_count: t.purchaseCount || 0,
+          purchase_weight: t.purchaseWeight || '0',
+          other_cost: formatPrice(t.otherCost),
+          net_income: formatPrice(t.netIncome)
+        },
+        reminders: {
+          receivable_amount: formatPrice(reminders.receivableAmount),
+          payable_amount: formatPrice(reminders.payableAmount),
+          stock_weight: reminders.stockWeight || '0',
+          stock_count: reminders.stockCount || 0
+        }
       })
     }).catch(function () {})
   },
 
-  getTodayStr: function () {
-    var d = new Date()
-    var y = d.getFullYear()
-    var m = d.getMonth() + 1
-    var day = d.getDate()
-    return y + '-' + (m < 10 ? '0' + m : m) + '-' + (day < 10 ? '0' + day : day)
-  },
-
-  isSameDay: function (dateStr, todayStr) {
-    if (!dateStr) return false
-    return dateStr.indexOf(todayStr) === 0
-  },
-
   goAddTransaction: function () {
-    wx.navigateTo({
-      url: '/pages/transaction/add/add'
-    })
+    wx.navigateTo({ url: '/pages/transaction/add/add' })
+  },
+
+  goAddPurchase: function () {
+    wx.navigateTo({ url: '/pages/purchase/add/add' })
   },
 
   goTransactionList: function () {
-    wx.switchTab({
-      url: '/pages/transaction/list/list'
-    })
-  },
-
-  goBuyerList: function () {
-    wx.switchTab({
-      url: '/pages/buyer/list/list'
-    })
+    wx.switchTab({ url: '/pages/transaction/list/list' })
   },
 
   goPurchaseList: function () {
-    wx.navigateTo({
-      url: '/pages/purchase/list/list'
+    wx.switchTab({ url: '/pages/purchase/list/list' })
+  },
+
+  showOtherCostModal: function () {
+    this.setData({
+      showOtherCostModal: true,
+      otherCostForm: {
+        costType: 'labor',
+        amount: '',
+        remark: '',
+        costDate: formatDateInput(new Date())
+      }
     })
   },
 
-  goSupplierList: function () {
-    wx.navigateTo({
-      url: '/pages/supplier/list/list'
-    })
+  hideOtherCostModal: function () {
+    if (this.data.savingOtherCost) return
+    this.setData({ showOtherCostModal: false })
   },
 
-  goStats: function () {
-    wx.navigateTo({
-      url: '/pages/stats/overview/overview'
+  stopBubble: function () {},
+
+  onOtherCostTypeTap: function (e) {
+    this.setData({ 'otherCostForm.costType': e.currentTarget.dataset.type })
+  },
+
+  onOtherCostAmountInput: function (e) {
+    this.setData({ 'otherCostForm.amount': e.detail.value })
+  },
+
+  onOtherCostRemarkInput: function (e) {
+    this.setData({ 'otherCostForm.remark': e.detail.value })
+  },
+
+  onOtherCostDateChange: function (e) {
+    this.setData({ 'otherCostForm.costDate': e.detail.value })
+  },
+
+  saveOtherCost: function () {
+    var form = this.data.otherCostForm
+    var amount = parseFloat(form.amount)
+    if (!amount || amount <= 0) {
+      wx.showToast({ title: '请输入正确金额', icon: 'none' })
+      return
+    }
+    if (this.data.savingOtherCost) return
+
+    var that = this
+    this.setData({ savingOtherCost: true })
+    post(config.api.otherCostAdd, {
+      costType: form.costType,
+      amount: amount,
+      costDate: form.costDate,
+      remark: form.remark
+    }).then(function () {
+      wx.showToast({ title: '已记录', icon: 'success' })
+      that.setData({ savingOtherCost: false, showOtherCostModal: false })
+      that.loadDashboard()
+    }).catch(function () {
+      that.setData({ savingOtherCost: false })
     })
   },
 
   goTransactionDetail: function (e) {
     var id = e.currentTarget.dataset.id
-    wx.navigateTo({
-      url: '/pages/transaction/detail/detail?id=' + id
-    })
+    wx.navigateTo({ url: '/pages/transaction/detail/detail?id=' + id })
+  },
+
+  goPurchaseDetail: function (e) {
+    var id = e.currentTarget.dataset.id
+    wx.navigateTo({ url: '/pages/purchase/detail/detail?id=' + id })
   }
 })

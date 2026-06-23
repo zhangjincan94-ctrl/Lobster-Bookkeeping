@@ -19,20 +19,32 @@
 
   <view wx:else class="supplier-list">
     <view
-      class="supplier-item card"
+      class="swipe-row"
       wx:for="{{suppliers}}"
       wx:key="id"
-      bindtap="goDetail"
-      data-id="{{item.id}}"
+      data-index="{{index}}"
     >
-      <view class="supplier-left">
-        <text class="supplier-name">{{item.name}}</text>
-        <text class="supplier-phone text-muted">{{item.phone || '未填写电话'}}</text>
-        <text class="supplier-count text-muted">{{item.purchaseCount}} 笔采购</text>
+      <view
+        class="supplier-item card swipe-content"
+        style="transform: translateX({{item.swipeOffset || 0}}px);"
+        bindtap="onItemTap"
+        bindtouchstart="onTouchStart"
+        bindtouchmove="onTouchMove"
+        bindtouchend="onTouchEnd"
+        data-index="{{index}}"
+      >
+        <view class="supplier-left">
+          <text class="supplier-name">{{item.name}}</text>
+          <text class="supplier-phone text-muted">{{item.phone || '未填写电话'}}</text>
+          <text class="supplier-count text-muted">{{item.purchaseCount}} 笔进货</text>
+        </view>
+        <view class="supplier-right">
+          <text class="supplier-cost text-price">{{item.totalCostDisplay}}</text>
+          <text wx:if="{{item.totalDebt > 0}}" class="supplier-debt text-debt">{{item.totalDebtDisplay}}</text>
+        </view>
       </view>
-      <view class="supplier-right">
-        <text class="supplier-cost text-price">{{item.totalCostDisplay}}</text>
-        <text wx:if="{{item.totalDebt > 0}}" class="supplier-debt text-debt">{{item.totalDebtDisplay}}</text>
+      <view class="swipe-action" bindtap="onDelete" data-index="{{index}}">
+        <text>删除</text>
       </view>
     </view>
     <view wx:if="{{loading}}" class="loading-tip">

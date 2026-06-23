@@ -64,4 +64,17 @@ const detail = async (ctx) => {
   ctx.body = success(supplier);
 };
 
-module.exports = { list, create, update, detail };
+module.exports = { list, create, update, detail, remove, shareRecords };
+
+async function remove(ctx) {
+  const merchantId = ctx.state.merchant.id;
+  const supplierId = ctx.params.id;
+  await supplierService.removeSupplier(merchantId, supplierId);
+  ctx.body = success({ id: supplierId });
+}
+
+async function shareRecords(ctx) {
+  const token = ctx.params.token;
+  const data = await supplierService.getSupplierShareData(token);
+  ctx.body = success(data);
+}

@@ -12,7 +12,7 @@ Page({
     selectedSupplierId: '',
     supplierName: '',
     supplierPhone: '',
-    lobsterSizes: ['小青(2-4钱)', '中青(4-6钱)', '大青(6-8钱)', '炮头青>9钱', '小红(2-4钱)', '中红(4-6钱)', '大红(6-8钱)', '炮头红>9钱'],
+    lobsterSizes: ['小青(2-4钱)', '中青(4-6钱)', '大青(6-8钱)', '炮头青>9钱', '小红(2-4钱)', '中红(4-6钱)', '大红(6-8钱)', '炮头红>9钱', '统货'],
     lobsterSizeIndex: 0,
     grossWeight: '',
     tareWeight: '',
@@ -199,7 +199,7 @@ Page({
     var net = parseFloat(this.data.netWeight) || 0
     var unitCost = parseFloat(this.data.unitCost) || 0
     if (net <= 0) {
-      wx.showToast({ title: '请输入有效净重', icon: 'none' })
+      wx.showToast({ title: '请输入有效斤数', icon: 'none' })
       return
     }
     if (unitCost <= 0) {
@@ -215,14 +215,25 @@ Page({
       submitData.supplierId = this.data.selectedSupplierId
       that.doSubmit(submitData)
     } else {
-      post(config.api.supplierAdd, {
-        name: supplierName,
-        phone: this.data.supplierPhone.trim()
-      }).then(function (data) {
-        submitData.supplierId = (data && data.id) || ''
-        that.doSubmit(submitData)
-      }).catch(function () {
-        that.setData({ submitting: false })
+      that.setData({ submitting: false })
+      wx.showModal({
+        title: '新建供应商？',
+        content: '"' + supplierName + '" 不在你的供应商列表中，是否将其加入供应商管理？',
+        confirmText: '加入并保存',
+        cancelText: '取消',
+        success: function (res) {
+          if (!res.confirm) return
+          that.setData({ submitting: true })
+          post(config.api.supplierAdd, {
+            name: supplierName,
+            phone: that.data.supplierPhone.trim()
+          }).then(function (data) {
+            submitData.supplierId = (data && data.id) || ''
+            that.doSubmit(submitData)
+          }).catch(function () {
+            that.setData({ submitting: false })
+          })
+        }
       })
     }
   },
@@ -240,9 +251,9 @@ Page({
 
     return {
       lobsterSize: this.data.lobsterSizes[this.data.lobsterSizeIndex],
-      grossWeight: this.data.grossWeight || this.data.netWeight,
-      tareWeight: this.data.tareWeight || '0',
-      deductWeight: this.data.deductWeight || '0',
+      grossWeight: net.toFixed(2),
+      tareWeight: '0',
+      deductWeight: '0',
       netWeight: net.toFixed(2),
       unitCost: unitCost.toFixed(2),
       totalCost: total.toFixed(2),

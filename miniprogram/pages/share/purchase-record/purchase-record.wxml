@@ -1,0 +1,62 @@
+<view class="page" wx:if="{{purchase}}">
+  <view class="supplier-card card">
+    <text class="supplier-name">{{purchase.supplierName}}</text>
+    <text class="supplier-phone text-muted">{{purchase.supplierPhone || '未填写电话'}}</text>
+  </view>
+
+  <view class="detail-card card">
+    <view class="card-title">进货单信息</view>
+    <view class="info-row">
+      <text class="info-label">龙虾规格</text>
+      <text class="info-value">{{purchase.lobsterSize || '-'}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">斤数</text>
+      <text class="info-value">{{purchase.netWeightDisplay}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">单价</text>
+      <text class="info-value">{{purchase.unitCostDisplay}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">总金额</text>
+      <text class="info-value text-price">{{purchase.totalCostDisplay}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">收货时间</text>
+      <text class="info-value">{{purchase.receivedAtDisplay || '-'}}</text>
+    </view>
+  </view>
+
+  <view class="detail-card card">
+    <view class="card-title">结算信息</view>
+    <view class="info-row">
+      <text class="info-label">结算状态</text>
+      <text class="tag {{purchase.settlementStatusClass}}">{{purchase.settlementStatusText}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">已付金额</text>
+      <text class="info-value text-success">{{purchase.paidAmountDisplay}}</text>
+    </view>
+    <view class="info-row">
+      <text class="info-label">未付金额</text>
+      <text class="info-value text-danger">{{purchase.unpaidAmountDisplay}}</text>
+    </view>
+  </view>
+
+  <view wx:if="{{purchase.remark}}" class="detail-card card">
+    <view class="card-title">备注</view>
+    <text class="remark-text">{{purchase.remark}}</text>
+  </view>
+
+  <view wx:if="{{purchase.payments && purchase.payments.length > 0}}" class="detail-card card">
+    <view class="card-title">付款记录</view>
+    <view class="payment-record" wx:for="{{purchase.payments}}" wx:key="id">
+      <view class="payment-record-left">
+        <text class="payment-record-amount">{{item.amountDisplay}}</text>
+        <text class="payment-record-method text-muted">付款方式：{{item.method}}</text>
+      </view>
+      <text class="payment-record-time text-muted">{{item.timeDisplay}}</text>
+    </view>
+  </view>
+</view>

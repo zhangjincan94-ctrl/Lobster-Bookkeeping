@@ -3,92 +3,108 @@
     <text class="greeting-text">你好，{{merchantName}}</text>
   </view>
 
-  <view class="card stats-card">
-    <view class="stats-row">
-      <view class="stats-item">
-        <text class="stats-value text-primary">{{todayCount}}</text>
-        <text class="stats-label">今日交易数</text>
+  <view class="today-card card">
+    <view class="today-net">
+      <text class="today-net-label">今日净收入</text>
+      <text class="today-net-value">{{today.net_income}}</text>
+    </view>
+    <view class="today-grid">
+      <view class="today-cell">
+        <text class="cell-label">营收</text>
+        <text class="cell-value text-income">{{today.sales_amount}}</text>
+        <text class="cell-sub text-muted">{{today.sales_count}} 笔</text>
       </view>
-      <view class="stats-item">
-        <text class="stats-value text-income">{{todayIncome}}</text>
-        <text class="stats-label">今日收入</text>
+      <view class="today-cell">
+        <text class="cell-label">未收</text>
+        <text class="cell-value text-debt">{{today.sales_unpaid}}</text>
+        <text class="cell-sub text-muted">待回款</text>
       </view>
-      <view class="stats-item">
-        <text class="stats-value text-debt">{{todayUnpaid}}</text>
-        <text class="stats-label">今日未收款</text>
+      <view class="today-cell">
+        <text class="cell-label">进货</text>
+        <text class="cell-value text-cost">{{today.purchase_cost}}</text>
+        <text class="cell-sub text-muted">{{today.purchase_count}} 笔 · {{today.purchase_weight}}斤</text>
+      </view>
+      <view class="today-cell">
+        <text class="cell-label">其他成本</text>
+        <text class="cell-value">{{today.other_cost}}</text>
+        <text class="cell-sub text-muted">人工/耗材</text>
       </view>
     </view>
   </view>
 
   <view class="card quick-actions">
-    <view class="actions-row">
-      <view class="action-item" bindtap="goAddTransaction">
-        <view class="action-icon action-icon-add">
-          <text class="action-icon-text">+</text>
-        </view>
-        <text class="action-label">记一笔</text>
+    <view class="actions-row actions-row-2">
+      <view class="action-big action-sale" bindtap="goAddTransaction">
+        <text class="action-big-icon">📝</text>
+        <text class="action-big-label">记一笔销售</text>
       </view>
-      <view class="action-item" bindtap="goTransactionList">
-        <view class="action-icon action-icon-list">
-          <text class="action-icon-text">☰</text>
-        </view>
-        <text class="action-label">查看交易</text>
-      </view>
-      <view class="action-item" bindtap="goBuyerList">
-        <view class="action-icon action-icon-buyer">
-          <text class="action-icon-text">👤</text>
-        </view>
-        <text class="action-label">买家管理</text>
-      </view>
-      <view class="action-item" bindtap="goPurchaseList">
-        <view class="action-icon action-icon-purchase">
-          <text class="action-icon-text">采</text>
-        </view>
-        <text class="action-label">采购记录</text>
-      </view>
-      <view class="action-item" bindtap="goSupplierList">
-        <view class="action-icon action-icon-supplier">
-          <text class="action-icon-text">供</text>
-        </view>
-        <text class="action-label">供应商</text>
-      </view>
-      <view class="action-item" bindtap="goStats">
-        <view class="action-icon action-icon-stats">
-          <text class="action-icon-text">📊</text>
-        </view>
-        <text class="action-label">统计</text>
+      <view class="action-big action-purchase" bindtap="goAddPurchase">
+        <text class="action-big-icon">📦</text>
+        <text class="action-big-label">记一笔进货</text>
       </view>
     </view>
   </view>
 
-  <view class="card recent-section">
+  <view class="card other-cost-entry" bindtap="showOtherCostModal">
+    <view>
+      <text class="other-cost-title">其他成本</text>
+      <text class="other-cost-sub">人工费、包装耗材</text>
+    </view>
+    <text class="other-cost-action">+ 记录</text>
+  </view>
+
+  <view class="card reminder-section">
     <view class="section-header">
-      <text class="section-title">最近交易</text>
-      <text class="section-more" bindtap="goTransactionList">查看全部</text>
+      <text class="section-title">经营提醒</text>
     </view>
-    <view wx:if="{{recentTransactions.length === 0}}" class="empty-state">
-      <text class="empty-text">暂无交易记录</text>
-    </view>
-    <view wx:else class="transaction-list">
-      <view
-        class="transaction-item"
-        wx:for="{{recentTransactions}}"
-        wx:key="id"
-        bindtap="goTransactionDetail"
-        data-id="{{item.id}}"
-      >
-        <view class="transaction-left">
-          <text class="transaction-buyer">{{item.buyerName}}</text>
-          <text class="transaction-type">{{item.lobsterSize}}</text>
-        </view>
-        <view class="transaction-right">
-          <text class="transaction-amount text-price">{{item.totalAmount}}</text>
-          <view class="transaction-bottom">
-            <text class="tag {{item.paymentStatusClass}}">{{item.paymentStatusText}}</text>
-            <text class="transaction-time text-muted">{{item.time}}</text>
-          </view>
-        </view>
+    <view class="reminder-grid">
+      <view class="reminder-item" bindtap="goTransactionList">
+        <text class="reminder-label">买家欠款</text>
+        <text class="reminder-value text-debt">{{reminders.receivable_amount}}</text>
       </view>
+      <view class="reminder-item" bindtap="goPurchaseList">
+        <text class="reminder-label">应付供应商款</text>
+        <text class="reminder-value text-cost">{{reminders.payable_amount}}</text>
+      </view>
+      <view class="reminder-item" bindtap="goPurchaseList">
+        <text class="reminder-label">当前库存</text>
+        <text class="reminder-value">{{reminders.stock_weight}}斤</text>
+        <text class="reminder-sub text-muted">{{reminders.stock_count}} 个货源</text>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{showOtherCostModal}}" class="modal-mask" bindtap="hideOtherCostModal">
+    <view class="cost-modal" catchtap="stopBubble">
+      <view class="modal-header">
+        <text class="modal-title">记录其他成本</text>
+        <text class="modal-close" bindtap="hideOtherCostModal">×</text>
+      </view>
+      <view class="type-tabs">
+        <view
+          wx:for="{{otherCostTypes}}"
+          wx:key="key"
+          class="type-tab {{otherCostForm.costType === item.key ? 'type-tab-active' : ''}}"
+          data-type="{{item.key}}"
+          bindtap="onOtherCostTypeTap"
+        >{{item.label}}</view>
+      </view>
+      <view class="form-row">
+        <text class="form-label">金额</text>
+        <input class="form-input" type="digit" placeholder="请输入费用金额" value="{{otherCostForm.amount}}" bindinput="onOtherCostAmountInput" />
+      </view>
+      <view class="form-row">
+        <text class="form-label">日期</text>
+        <picker mode="date" value="{{otherCostForm.costDate}}" bindchange="onOtherCostDateChange">
+          <view class="form-picker">{{otherCostForm.costDate}}</view>
+        </picker>
+      </view>
+      <view class="form-row form-row-column">
+        <text class="form-label">备注</text>
+        <input class="form-input" placeholder="例如 临时工、打包盒、袋子" value="{{otherCostForm.remark}}" bindinput="onOtherCostRemarkInput" />
+      </view>
+      <view class="cost-hint">包装耗材包含打包盒、袋子、皮筋、冰袋等随销售消耗的材料。</view>
+      <button class="save-cost-btn" loading="{{savingOtherCost}}" bindtap="saveOtherCost">保存成本</button>
     </view>
   </view>
 </view>

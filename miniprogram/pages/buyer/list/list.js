@@ -1,7 +1,14 @@
-var { get, post } = require('../../../utils/request')
+var { get, post, del } = require('../../../utils/request')
 var { formatPrice } = require('../../../utils/format')
 var { checkLogin } = require('../../../utils/auth')
 var config = require('../../../utils/config')
+
+var SWIPE_THRESHOLD = -30
+var DELETE_OFFSET = -120
+var touchStartX = 0
+var touchStartY = 0
+var touchStartOffset = 0
+var swipeLocked = false
 
 Page({
   data: {
@@ -53,7 +60,8 @@ Page({
           phone: item.phone || '',
           totalSpentDisplay: formatPrice(item.totalSpent),
           totalDebtDisplay: formatPrice(totalDebt),
-          totalDebt: totalDebt
+          totalDebt: totalDebt,
+          swipeOffset: 0
         }
       })
 
@@ -92,6 +100,96 @@ Page({
     var id = e.currentTarget.dataset.id
     wx.navigateTo({
       url: '/pages/buyer/detail/detail?id=' + id
+    })
+  },
+
+  resetAllSwipe: function (exceptIndex) {
+    var buyers = this.data.buyers
+    var changed = false
+    var update = {}
+    for (var i = 0; i < buyers.length; i++) {
+      if (i === exceptIndex) continue
+      if (buyers[i].swipeOffset !== 0) {
+        update['buyers[' + i + '].swipeOffset'] = 0
+        changed = true
+      }
+    }
+    if (changed) this.setData(update)
+  },
+
+  onTouchStart: function (e) {
+    var index = e.currentTarget.dataset.index
+    touchStartX = e.touches[0].clientX
+    touchStartY = e.touches[0].clientY
+    touchStartOffset = this.data.buyers[index].swipeOffset || 0
+    swipeLocked = false
+  },
+
+  onTouchMove: function (e) {
+    var index = e.currentTarget.dataset.index
+    var dx = e.touches[0].clientX - touchStartX
+    var dy = e.touches[0].clientY - touchStartY
+    if (!swipeLocked && Math.abs(dx) < 8 && Math.abs(dy) < 8) return
+    if (!swipeLocked) {
+      // 锁定方向：横向才进入滑动
+      if (Math.abs(dy) > Math.abs(dx)) {
+        swipeLocked = 'vertical'
+        return
+      }
+      swipeLocked = 'horizontal'
+      this.resetAllSwipe(index)
+    }
+    if (swipeLocked !== 'horizontal') return
+    var offset = touchStartOffset + dx
+    if (offset > 0) offset = 0
+    if (offset < DELETE_OFFSET) offset = DELETE_OFFSET
+    var update = {}
+    update['buyers[' + index + '].swipeOffset'] = offset
+    this.setData(update)
+  },
+
+  onTouchEnd: function (e) {
+    var index = e.currentTarget.dataset.index
+    var offset = this.data.buyers[index].swipeOffset || 0
+    var update = {}
+    update['buyers[' + index + '].swipeOffset'] = offset < SWIPE_THRESHOLD ? DELETE_OFFSET : 0
+    this.setData(update)
+  },
+
+  onItemTap: function (e) {
+    var index = e.currentTarget.dataset.index
+    var item = this.data.buyers[index]
+    if (item.swipeOffset && item.swipeOffset !== 0) {
+      // 当前是滑出状态，点击只关闭
+      var update = {}
+      update['buyers[' + index + '].swipeOffset'] = 0
+      this.setData(update)
+      return
+    }
+    wx.navigateTo({
+      url: '/pages/buyer/detail/detail?id=' + item.id
+    })
+  },
+
+  onDelete: function (e) {
+    var index = e.currentTarget.dataset.index
+    var item = this.data.buyers[index]
+    if (!item) return
+    var that = this
+    wx.showModal({
+      title: '删除买家',
+      content: '确定删除"' + item.name + '"吗？该操作不可撤销',
+      confirmText: '删除',
+      confirmColor: '#E74C3C',
+      success: function (res) {
+        if (!res.confirm) return
+        del(config.api.buyerDelete(item.id), {}).then(function () {
+          wx.showToast({ title: '已删除', icon: 'success' })
+          var newList = that.data.buyers.slice()
+          newList.splice(index, 1)
+          that.setData({ buyers: newList })
+        }).catch(function () {})
+      }
     })
   },
 

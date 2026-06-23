@@ -13,6 +13,12 @@ module.exports = () => {
 
       if (status === 500) {
         console.error(`[服务器错误] ${new Date().toISOString()} - ${err.stack || err.message}`);
+        if (err.original) {
+          console.error('[SQL 错误]', err.original.code, err.original.sqlMessage);
+        }
+        if (err.parent && err.parent !== err.original) {
+          console.error('[Parent 错误]', err.parent.message);
+        }
       }
     }
   };

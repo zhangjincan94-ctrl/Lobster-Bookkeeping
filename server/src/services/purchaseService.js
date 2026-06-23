@@ -1,3 +1,4 @@
+const { v4: uuidv4 } = require('uuid');
 const { PurchaseRecord, Supplier, SupplierPaymentRecord, TransactionPurchaseAllocation, Sequelize } = require('../models');
 const {
   serializePurchaseListItem,
@@ -5,6 +6,10 @@ const {
   serializeSupplierPaymentResult
 } = require('../serializers');
 const { Op } = Sequelize;
+const dayjs = require('dayjs');
+
+const normalizeStartDate = (value) => dayjs(value).startOf('day').format('YYYY-MM-DD HH:mm:ss');
+const normalizeEndDate = (value) => dayjs(value).endOf('day').format('YYYY-MM-DD HH:mm:ss');
 
 const toNumber = (value) => {
   const num = parseFloat(value);
@@ -56,8 +61,8 @@ const listPurchases = async (merchantId, { supplier_id, settlement_status, start
   if (settlement_status !== undefined && settlement_status !== '') where.settlement_status = settlement_status;
   if (start_date || end_date) {
     where.received_at = {};
-    if (start_date) where.received_at[Op.gte] = start_date;
-    if (end_date) where.received_at[Op.lte] = end_date;
+    if (start_date) where.received_at[Op.gte] = normalizeStartDate(start_date);
+    if (end_date) where.received_at[Op.lte] = normalizeEndDate(end_date);
   }
 
   const offset = (page - 1) * pageSize;
@@ -117,11 +122,36 @@ const createPurchase = async (merchantId, data) => {
     settlement_status: amounts.settlementStatus,
     paid_amount: amounts.paidAmount,
     received_at: data.received_at,
-    remark: data.remark || null
+    remark: data.remark || null,
+    share_token: uuidv4()
   });
 
   const supplier = await Supplier.findByPk(data.supplier_id);
   return serializePurchaseListItem(record, supplier);
+};
+
+const getPurchaseShareData = async (shareToken) => {
+  const record = await PurchaseRecord.findOne({
+    where: { share_token: shareToken },
+    include: [
+      {
+        model: Supplier,
+        attributes: ['id', 'name', 'phone']
+      },
+      {
+        model: SupplierPaymentRecord,
+        as: 'SupplierPaymentRecords'
+      }
+    ],
+    order: [[{ model: SupplierPaymentRecord, as: 'SupplierPaymentRecords' }, 'paid_at', 'DESC']]
+  });
+  if (!record || Number(record.order_status) === 1) {
+    const err = new Error('链接无效或已失效');
+    err.status = 404;
+    throw err;
+  }
+
+  return serializePurchaseDetail(record);
 };
 
 const getPurchase = async (merchantId, purchaseId) => {
@@ -140,6 +170,9 @@ const getPurchase = async (merchantId, purchaseId) => {
     order: [[{ model: SupplierPaymentRecord, as: 'SupplierPaymentRecords' }, 'paid_at', 'DESC']]
   });
   if (!record) return null;
+  if (!record.share_token) {
+    await record.update({ share_token: uuidv4() });
+  }
 
   return serializePurchaseDetail(record);
 };
@@ -172,6 +205,24 @@ const updatePurchase = async (merchantId, purchaseId, data) => {
     }
     updateFields.cancelled_at = new Date();
     updateFields.remaining_weight = 0;
+  }
+
+  // 修改净重时联动调整 remaining_weight、total_cost
+  if (updateFields.net_weight !== undefined && Number(updateFields.order_status) !== 1) {
+    const newNet = toNumber(updateFields.net_weight);
+    const oldNet = toNumber(record.net_weight);
+    const oldRemaining = toNumber(record.remaining_weight);
+    const allocated = oldNet - oldRemaining; // 已被销售消耗的斤数
+    if (newNet < allocated) {
+      const err = new Error('新斤数不能小于已被销售关联的 ' + allocated.toFixed(2) + ' 斤');
+      err.status = 400;
+      throw err;
+    }
+    updateFields.remaining_weight = Math.round((newNet - allocated) * 100) / 100;
+    const unitCost = toNumber(updateFields.unit_cost !== undefined ? updateFields.unit_cost : record.unit_cost);
+    if (updateFields.total_cost === undefined) {
+      updateFields.total_cost = (newNet * unitCost).toFixed(2);
+    }
   }
 
   if (updateFields.paid_amount !== undefined) {
@@ -220,6 +271,7 @@ module.exports = {
   listPurchases,
   listAvailablePurchases,
   createPurchase,
+  getPurchaseShareData,
   getPurchase,
   updatePurchase,
   addSupplierPaymentRecord

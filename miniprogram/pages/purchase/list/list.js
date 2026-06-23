@@ -25,6 +25,7 @@ Page({
   data: {
     supplierId: '',
     activeStatus: '',
+    activeRange: 'all',
     startDate: '',
     endDate: '',
     purchases: [],
@@ -51,6 +52,33 @@ Page({
       hasMore: true
     })
     this.loadPurchases(1)
+  },
+
+  formatDatePart: function (d) {
+    var y = d.getFullYear()
+    var m = d.getMonth() + 1
+    var day = d.getDate()
+    return y + '-' + (m < 10 ? '0' + m : m) + '-' + (day < 10 ? '0' + day : day)
+  },
+
+  setQuickRange: function (range) {
+    if (range === 'all') {
+      this.setData({ activeRange: range, startDate: '', endDate: '' })
+      this.resetAndReload()
+      return
+    }
+
+    var end = new Date()
+    var start = new Date()
+    if (range === 'week') start.setDate(end.getDate() - 6)
+    if (range === 'month') start.setDate(end.getDate() - 29)
+
+    this.setData({
+      activeRange: range,
+      startDate: this.formatDatePart(start),
+      endDate: this.formatDatePart(end)
+    })
+    this.resetAndReload()
   },
 
   loadPurchases: function (page) {
@@ -104,13 +132,17 @@ Page({
     this.resetAndReload()
   },
 
+  onRangeTap: function (e) {
+    this.setQuickRange(e.currentTarget.dataset.range)
+  },
+
   onStartDateChange: function (e) {
-    this.setData({ startDate: e.detail.value })
+    this.setData({ startDate: e.detail.value, activeRange: 'custom' })
     this.resetAndReload()
   },
 
   onEndDateChange: function (e) {
-    this.setData({ endDate: e.detail.value })
+    this.setData({ endDate: e.detail.value, activeRange: 'custom' })
     this.resetAndReload()
   },
 

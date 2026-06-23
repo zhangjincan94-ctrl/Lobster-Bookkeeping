@@ -9,6 +9,7 @@ const router = new Router({
 router.get('/', auth(), buyerController.list);
 router.post('/', auth(), buyerController.create);
 router.put('/:id', auth(), buyerController.update);
+router.delete('/:id', auth(), buyerController.remove);
 router.get('/:id', auth(), buyerController.detail);
 router.get('/:token/records', buyerController.shareRecords);
 

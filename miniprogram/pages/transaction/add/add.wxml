@@ -1,27 +1,32 @@
 <view class="page">
   <view class="form-card">
     <view class="section-title">买家信息</view>
-    <view class="form-item">
+    <view class="form-item form-item-buyer">
       <text class="form-label">买家姓名</text>
-      <input
-        class="form-input"
-        placeholder="输入姓名搜索或新增"
-        value="{{buyerName}}"
-        bindinput="onBuyerInput"
-        bindfocus="onBuyerFocus"
-        bindblur="onBuyerBlur"
-      />
-    </view>
-    <view wx:if="{{showBuyerDropdown && buyerList.length > 0}}" class="buyer-dropdown">
-      <view
-        class="buyer-dropdown-item"
-        wx:for="{{buyerList}}"
-        wx:key="id"
-        bindtap="onSelectBuyer"
-        data-index="{{index}}"
-      >
-        <text>{{item.name}}</text>
-        <text class="text-muted" wx:if="{{item.phone}}">{{item.phone}}</text>
+      <view class="buyer-input-wrap">
+        <input
+          class="form-input"
+          placeholder="输入姓名搜索或新增"
+          value="{{buyerName}}"
+          bindinput="onBuyerInput"
+          bindfocus="onBuyerFocus"
+          bindblur="onBuyerBlur"
+        />
+        <scroll-view scroll-y wx:if="{{showBuyerDropdown}}" class="buyer-dropdown">
+          <view
+            class="buyer-dropdown-item"
+            wx:for="{{buyerList}}"
+            wx:key="id"
+            bindtap="onSelectBuyer"
+            data-index="{{index}}"
+          >
+            <text>{{item.name}}</text>
+            <text class="text-muted" wx:if="{{item.phone}}">{{item.phone}}</text>
+          </view>
+          <view wx:if="{{buyerList.length === 0}}" class="buyer-dropdown-empty">
+            <text class="text-muted">暂无买家，可直接输入名称新增</text>
+          </view>
+        </scroll-view>
       </view>
     </view>
     <view class="form-item">
@@ -38,6 +43,23 @@
 
   <view class="form-card">
     <view class="section-title">交易信息</view>
+    <view class="source-select-row">
+      <view>
+        <text class="source-select-title">货源库存</text>
+        <text class="source-select-tip text-muted">先选货源，再填写本次卖出斤数</text>
+      </view>
+      <button class="source-select-btn" bindtap="onOpenSourceModal">选择货源</button>
+    </view>
+    <view wx:if="{{selectedSources.length === 0}}" class="source-empty text-muted">
+      暂未选择货源库存
+    </view>
+    <view wx:else class="source-selected-card">
+      <view class="source-selected-info">
+        <text class="source-name">{{selectedSources[0].supplierName}}</text>
+        <text class="source-meta text-muted">{{selectedSources[0].lobsterSize}}｜剩余 {{selectedSources[0].remainingWeightDisplay}} 斤｜进价 {{selectedSources[0].unitCost}} 元/斤</text>
+      </view>
+      <text class="source-remove" data-index="0" bindtap="onRemoveSource">移除</text>
+    </view>
     <view class="form-item">
       <text class="form-label">龙虾规格</text>
       <picker
@@ -52,10 +74,10 @@
       </picker>
     </view>
     <view class="form-item">
-      <text class="form-label">重量(斤)</text>
+      <text class="form-label">卖出斤数</text>
       <input
         class="form-input"
-        placeholder="输入重量"
+        placeholder="输入本次卖出斤数"
         value="{{weight}}"
         bindinput="onWeightInput"
         type="digit"
@@ -172,43 +194,22 @@
     </view>
   </view>
 
-  <view class="form-card">
-    <view class="section-title">货源库存</view>
-    <view class="source-summary">
-      <view class="source-summary-text">
-        <text>已分摊 {{sourceTotalWeight}} 斤</text>
-        <text class="{{sourceUnallocatedWeight === '0.00' ? 'text-success' : 'text-debt'}}">未分摊 {{sourceUnallocatedWeight}} 斤</text>
-      </view>
-      <button class="source-select-btn" bindtap="onOpenSourceModal">选择货源</button>
-    </view>
-    <view wx:if="{{selectedSources.length === 0}}" class="source-empty text-muted">
-      不选择货源也可以保存，库存不会自动扣减
-    </view>
-    <view wx:for="{{selectedSources}}" wx:key="purchaseRecordId" class="source-selected-item">
-      <view class="source-selected-info">
-        <text class="source-name">{{item.supplierName}}</text>
-        <text class="source-meta text-muted">剩余 {{item.remainingWeightDisplay}} 斤 | 进价 {{item.unitCost}} 元/斤</text>
-      </view>
-      <input class="source-weight-input" value="{{item.weight}}" type="digit" data-index="{{index}}" bindinput="onSourceWeightInput" />
-      <text class="source-remove" data-index="{{index}}" bindtap="onRemoveSource">移除</text>
-    </view>
-  </view>
-
   <view class="source-modal-mask" wx:if="{{showSourceModal}}" bindtap="onCloseSourceModal">
     <view class="source-modal-content" catchtap="noop">
-      <view class="source-modal-title">选择货源</view>
+      <view class="source-modal-title">选择货源库存</view>
       <view wx:if="{{sourceLoading}}" class="source-modal-empty text-muted">加载中...</view>
       <view wx:elif="{{sourceOptions.length === 0}}" class="source-modal-empty text-muted">暂无可用库存</view>
       <scroll-view wx:else class="source-option-list" scroll-y="true">
-        <view class="source-option-item" wx:for="{{sourceOptions}}" wx:key="id">
+        <view class="source-option-item" wx:for="{{sourceOptions}}" wx:key="id" data-index="{{index}}" bindtap="onSelectSource">
           <view class="source-option-info">
             <text class="source-name">{{item.supplierName}}</text>
-            <text class="source-meta text-muted">{{item.lobsterSize}} | 剩余 {{item.remainingWeightDisplay}} 斤 | 进价 {{item.unitCost}} 元/斤</text>
+            <text class="source-meta text-muted">{{item.lobsterSize}}｜剩余 {{item.remainingWeightDisplay}} 斤｜进价 {{item.unitCost}} 元/斤</text>
+            <text class="source-meta text-muted">进货时间：{{item.receivedAt}}</text>
           </view>
-          <button class="source-option-btn" data-index="{{index}}" bindtap="onSelectSource">选择</button>
+          <text class="source-option-select">选择</text>
         </view>
       </scroll-view>
-      <button class="source-modal-close" bindtap="onCloseSourceModal">完成</button>
+      <button class="source-modal-close" bindtap="onCloseSourceModal">关闭</button>
     </view>
   </view>
 

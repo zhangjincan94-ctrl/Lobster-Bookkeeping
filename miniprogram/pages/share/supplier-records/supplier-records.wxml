@@ -1,0 +1,49 @@
+<view class="page" wx:if="{{supplier}}">
+  <view class="buyer-card card">
+    <text class="buyer-name">{{supplier.name}}</text>
+    <text class="buyer-phone text-muted">{{supplier.phone || '未填写电话'}}</text>
+  </view>
+
+  <view class="stats-card card">
+    <view class="stats-row">
+      <view class="stats-item">
+        <text class="stats-value text-price">{{totalCost}}</text>
+        <text class="stats-label">累计进货</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-value text-debt">{{totalDebt}}</text>
+        <text class="stats-label">当前欠款</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="section-header">
+    <text class="section-title">进货明细</text>
+  </view>
+
+  <view wx:if="{{purchases.length === 0}}" class="empty-state">
+    <text class="empty-text">暂无进货记录</text>
+  </view>
+
+  <view wx:else class="transaction-list">
+    <view
+      class="transaction-item card"
+      wx:for="{{purchases}}"
+      wx:key="id"
+    >
+      <view class="transaction-top">
+        <view class="transaction-left">
+          <text class="transaction-type">{{item.lobsterSize}}</text>
+          <text class="transaction-sub text-muted">{{item.netWeightDisplay}}</text>
+        </view>
+        <view class="transaction-right">
+          <text class="transaction-amount text-price">{{item.totalCostDisplay}}</text>
+        </view>
+      </view>
+      <view class="transaction-bottom">
+        <text class="transaction-time text-muted">{{item.timeDisplay}}</text>
+        <text class="tag {{item.settlementStatusClass}}">{{item.settlementStatusText}}</text>
+      </view>
+    </view>
+  </view>
+</view>

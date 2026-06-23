@@ -28,7 +28,7 @@ function padZero(n) {
 function paymentStatusText(status) {
   var map = {
     0: '未付款',
-    1: '已付款',
+    1: '已结账',
     2: '部分付款'
   }
   return map[status] !== undefined ? map[status] : '未知'

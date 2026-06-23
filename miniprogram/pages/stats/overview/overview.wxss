@@ -72,6 +72,29 @@
   color: #999999;
 }
 
+.overview-profit {
+  margin-top: 10rpx;
+  padding: 22rpx;
+  border-radius: 16rpx;
+  background-color: #f0fff4;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.overview-profit-label {
+  font-size: 28rpx;
+  color: #333333;
+  font-weight: bold;
+}
+
+.overview-profit-value {
+  font-size: 36rpx;
+  color: #22a06b;
+  font-weight: bold;
+}
+
 .chart-card {
   margin: 0 24rpx 16rpx;
   padding: 24rpx;
