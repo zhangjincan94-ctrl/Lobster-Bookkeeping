@@ -1,8 +1,11 @@
 require('dotenv').config();
-const sequelize = require('./config/database');
+const { sequelize } = require('./models');
 
 const run = async () => {
   let remainingWeightAdded = false;
+
+  // Create only missing model tables; never alter or reset existing data.
+  await sequelize.sync();
 
   await sequelize.query(`
     CREATE TABLE IF NOT EXISTS suppliers (

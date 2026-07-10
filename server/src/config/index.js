@@ -10,7 +10,8 @@ module.exports = {
     port: parseInt(process.env.DB_PORT, 10) || 3306,
     name: process.env.DB_NAME || 'lobster_accounting',
     user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || ''
+    password: process.env.DB_PASSWORD || '',
+    sslCaBase64: process.env.DB_SSL_CA_BASE64 || ''
   },
   jwt: {
     secret: process.env.JWT_SECRET || ''
