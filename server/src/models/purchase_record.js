@@ -75,6 +75,10 @@ const PurchaseRecord = sequelize.define('purchase_records', {
   },
   remark: {
     type: DataTypes.STRING(500)
+  },
+  share_token: {
+    type: DataTypes.STRING(64),
+    unique: true
   }
 });
 

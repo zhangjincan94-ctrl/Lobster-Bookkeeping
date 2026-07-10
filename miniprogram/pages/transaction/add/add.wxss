@@ -74,16 +74,27 @@
   font-size: 24rpx;
 }
 
+.form-item-buyer {
+  position: relative;
+}
+
+.buyer-input-wrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
 .buyer-dropdown {
   position: absolute;
   left: 0;
   right: 0;
   top: 100%;
+  margin-top: 4rpx;
   background-color: #ffffff;
   border: 1rpx solid #eeeeee;
   border-radius: 8rpx;
   max-height: 320rpx;
-  overflow-y: auto;
   z-index: 50;
   box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
 }
@@ -102,11 +113,57 @@
   border-bottom: none;
 }
 
+.buyer-dropdown-empty {
+  padding: 20rpx 0;
+  font-size: 26rpx;
+  text-align: center;
+}
+
+.form-value {
+  flex: 1;
+  text-align: right;
+  font-size: 28rpx;
+  color: #333333;
+}
+
 .total-amount {
   flex: 1;
   text-align: right;
   font-size: 34rpx;
   font-weight: bold;
+}
+
+.source-select-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8rpx 0 20rpx;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+
+.source-select-title {
+  display: block;
+  font-size: 30rpx;
+  color: #333333;
+  font-weight: 600;
+  margin-bottom: 6rpx;
+}
+
+.source-select-tip {
+  display: block;
+  font-size: 24rpx;
+}
+
+.source-selected-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-top: 18rpx;
+  padding: 18rpx;
+  background-color: #fff7f2;
+  border-radius: 12rpx;
+  border: 1rpx solid #ffe1d2;
 }
 
 .radio-group {
@@ -139,7 +196,6 @@
 }
 
 .source-select-btn,
-.source-option-btn,
 .source-modal-close {
   background-color: #FF6B35;
   color: #ffffff;
@@ -151,7 +207,6 @@
 }
 
 .source-select-btn::after,
-.source-option-btn::after,
 .source-modal-close::after {
   border: none;
 }
@@ -247,8 +302,14 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding: 20rpx 0;
+  padding: 22rpx 0;
   border-bottom: 1rpx solid #f5f5f5;
+}
+
+.source-option-select {
+  font-size: 26rpx;
+  color: #FF6B35;
+  font-weight: 600;
 }
 
 .source-modal-close {

@@ -20,15 +20,15 @@
   <view class="card summary-card">
     <view class="summary-item">
       <text class="summary-value text-price">{{totalAmountDisplay}}</text>
-      <text class="summary-label">总收入</text>
+      <text class="summary-label">销售额</text>
     </view>
     <view class="summary-item">
-      <text class="summary-value text-primary">{{totalWeightDisplay}}</text>
-      <text class="summary-label">总斤数</text>
+      <text class="summary-value text-cost">{{totalCostDisplay}}</text>
+      <text class="summary-label">已核算成本</text>
     </view>
     <view class="summary-item">
-      <text class="summary-value text-success">{{list.length}}</text>
-      <text class="summary-label">品种数</text>
+      <text class="summary-value text-success">{{totalProfitDisplay}}</text>
+      <text class="summary-label">纯收入</text>
     </view>
   </view>
 
@@ -36,18 +36,49 @@
     <text class="empty-text">暂无数据</text>
   </view>
 
-  <view wx:else class="product-list">
-    <view class="product-item card" wx:for="{{list}}" wx:key="lobsterSize">
-      <view class="product-row">
-        <text class="product-name">{{item.lobsterSize}}</text>
-        <text class="product-amount text-price">{{item.totalAmountDisplay}}</text>
+  <view wx:else>
+    <view wx:if="{{bestProduct}}" class="card winner-card">
+      <text class="winner-label">纯收入最高品种</text>
+      <view class="winner-main">
+        <view>
+          <text class="winner-name">{{bestProduct.lobsterSize}}</text>
+          <text class="winner-desc">纯收入 {{bestProduct.profitAmountDisplay}}，利润占比 {{bestProduct.profitRatioDisplay}}</text>
+        </view>
       </view>
-      <view class="product-bar-bg">
-        <view class="product-bar-fill" style="width: {{item.ratioPercent}}%"></view>
+      <view class="winner-reason">
+        <text>销售 {{bestProduct.totalAmountDisplay}}</text>
+        <text>成本 {{bestProduct.totalCostDisplay}}</text>
+        <text>利润率 {{bestProduct.marginDisplay}}</text>
       </view>
-      <view class="product-row product-row-sub">
-        <text class="product-sub text-muted">{{item.totalWeightDisplay}} 斤 · {{item.orderCount}} 笔</text>
-        <text class="product-sub product-ratio">{{item.ratioDisplay}}</text>
+      <view wx:if="{{bestProduct.costMissing}}" class="cost-warning">部分销售未选择货源，成本可能未完整核算</view>
+    </view>
+
+    <view class="card chart-card">
+      <view class="section-head">
+        <text class="section-title">品种纯收入排行</text>
+        <text class="section-tip">按所选时间范围内的销售额 - 已关联货源成本排序</text>
+      </view>
+      <view class="product-item" wx:for="{{list}}" wx:key="lobsterSize">
+        <view class="rank-row">
+          <view class="rank-badge">{{index + 1}}</view>
+          <view class="rank-info">
+            <view class="rank-title-row">
+              <text class="product-name">{{item.lobsterSize}}</text>
+              <text class="product-profit">{{item.profitAmountDisplay}}</text>
+            </view>
+            <view class="score-bar-bg">
+              <view class="score-bar-fill" style="width: {{item.barPercent}}%"></view>
+            </view>
+            <view class="rank-meta-row">
+              <text>销售 {{item.totalAmountDisplay}}｜成本 {{item.totalCostDisplay}}</text>
+            </view>
+            <view class="rank-meta-row">
+              <text>{{item.totalWeightDisplay}}斤｜{{item.orderCount}}笔｜利润率 {{item.marginDisplay}}</text>
+              <text>{{item.profitRatioDisplay}}</text>
+            </view>
+            <view wx:if="{{item.costMissing}}" class="cost-warning cost-warning-row">未关联货源，成本可能不完整</view>
+          </view>
+        </view>
       </view>
     </view>
   </view>

@@ -1,3 +1,4 @@
+const { randomUUID } = require('crypto');
 const {
   sequelize,
   PurchaseRecord,
@@ -163,7 +164,8 @@ const createPurchase = async (merchantId, data) => {
       settlement_status: amounts.settlementStatus,
       paid_amount: amounts.paidAmount,
       received_at: data.received_at,
-      remark: data.remark || null
+      remark: data.remark || null,
+      share_token: randomUUID()
     }, { transaction: dbTx });
 
     if (amounts.paidAmount > 0) {
@@ -177,6 +179,32 @@ const createPurchase = async (merchantId, data) => {
   });
 
   return serializePurchaseListItem(record, supplier);
+};
+
+const getPurchaseShareData = async (shareToken) => {
+  const record = await PurchaseRecord.findOne({
+    where: { share_token: shareToken },
+    include: [
+      {
+        model: Supplier,
+        as: 'supplier',
+        attributes: ['id', 'name', 'phone']
+      },
+      {
+        model: SupplierPaymentRecord,
+        as: 'SupplierPaymentRecords'
+      }
+    ],
+    order: [[{ model: SupplierPaymentRecord, as: 'SupplierPaymentRecords' }, 'paid_at', 'DESC']]
+  });
+  if (!record || Number(record.order_status) === 1) {
+    throw serviceError('链接无效或已失效', 404, {
+      feature: '查看采购分享记录',
+      shareTokenPrefix: String(shareToken || '').slice(0, 8)
+    });
+  }
+
+  return serializePurchaseDetail(record);
 };
 
 const getPurchase = async (merchantId, purchaseId) => {
@@ -210,6 +238,9 @@ const getPurchase = async (merchantId, purchaseId) => {
     order: [[{ model: SupplierPaymentRecord, as: 'SupplierPaymentRecords' }, 'paid_at', 'DESC']]
   });
   if (!record) return null;
+  if (!record.share_token) {
+    await record.update({ share_token: randomUUID() });
+  }
 
   return serializePurchaseDetail(record);
 };
@@ -258,11 +289,10 @@ const updatePurchase = async (merchantId, purchaseId, data) => {
     }));
     const changesAllocatedPurchase = allocated > 0 && (
       (updateFields.lobster_size !== undefined && updateFields.lobster_size !== record.lobster_size) ||
-      (updateFields.net_weight !== undefined && toNumber(updateFields.net_weight) !== toNumber(record.net_weight)) ||
       (updateFields.unit_cost !== undefined && toNumber(updateFields.unit_cost) !== toNumber(record.unit_cost))
     );
     if (changesAllocatedPurchase) {
-      throw serviceError('已有销售分摊的采购单不能修改规格、净重或单价', 400, {
+      throw serviceError('已有销售分摊的采购单不能修改规格或单价', 400, {
         feature: '更新采购单', merchantId, purchaseId, allocatedWeight: allocated
       });
     }
@@ -280,6 +310,11 @@ const updatePurchase = async (merchantId, purchaseId, data) => {
       if (netWeight <= 0) {
         throw serviceError('采购净重必须大于0', 400, {
           feature: '更新采购单', merchantId, purchaseId
+        });
+      }
+      if (netWeight < allocated) {
+        throw serviceError('新斤数不能小于已被销售关联的斤数', 400, {
+          feature: '更新采购单', merchantId, purchaseId, netWeight, allocatedWeight: allocated
         });
       }
       updateFields.remaining_weight = roundMoney(netWeight - allocated);
@@ -367,6 +402,7 @@ module.exports = {
   listPurchases,
   listAvailablePurchases,
   createPurchase,
+  getPurchaseShareData,
   getPurchase,
   updatePurchase,
   addSupplierPaymentRecord

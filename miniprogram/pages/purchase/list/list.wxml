@@ -8,6 +8,13 @@
     </scroll-view>
   </view>
 
+  <view class="range-filter">
+    <view class="range-tab {{activeRange === 'today' ? 'range-tab-active' : ''}}" bindtap="onRangeTap" data-range="today">今天</view>
+    <view class="range-tab {{activeRange === 'week' ? 'range-tab-active' : ''}}" bindtap="onRangeTap" data-range="week">近7天</view>
+    <view class="range-tab {{activeRange === 'month' ? 'range-tab-active' : ''}}" bindtap="onRangeTap" data-range="month">近30天</view>
+    <view class="range-tab {{activeRange === 'all' ? 'range-tab-active' : ''}}" bindtap="onRangeTap" data-range="all">全部</view>
+  </view>
+
   <view class="date-filter">
     <picker mode="date" value="{{startDate}}" bindchange="onStartDateChange">
       <view class="date-picker">
@@ -23,7 +30,7 @@
   </view>
 
   <view wx:if="{{purchases.length === 0 && !loading}}" class="empty-state">
-    <text class="empty-text">暂无采购记录</text>
+    <text class="empty-text">暂无进货记录</text>
   </view>
 
   <view wx:else class="purchase-list">

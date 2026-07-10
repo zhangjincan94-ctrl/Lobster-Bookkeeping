@@ -6,6 +6,7 @@ var config = require('../../../utils/config')
 Page({
   data: {
     activeStatus: '',
+    activeRange: 'all',
     startDate: '',
     endDate: '',
     transactions: [],
@@ -26,6 +27,33 @@ Page({
       hasMore: true
     })
     this.loadTransactions(1)
+  },
+
+  formatDatePart: function (d) {
+    var y = d.getFullYear()
+    var m = d.getMonth() + 1
+    var day = d.getDate()
+    return y + '-' + (m < 10 ? '0' + m : m) + '-' + (day < 10 ? '0' + day : day)
+  },
+
+  setQuickRange: function (range) {
+    if (range === 'all') {
+      this.setData({ activeRange: range, startDate: '', endDate: '' })
+      this.resetAndReload()
+      return
+    }
+
+    var end = new Date()
+    var start = new Date()
+    if (range === 'week') start.setDate(end.getDate() - 6)
+    if (range === 'month') start.setDate(end.getDate() - 29)
+
+    this.setData({
+      activeRange: range,
+      startDate: this.formatDatePart(start),
+      endDate: this.formatDatePart(end)
+    })
+    this.resetAndReload()
   },
 
   loadTransactions: function (page) {
@@ -53,12 +81,20 @@ Page({
       var processed = list.map(function (item) {
         var orderStatus = Number(item.orderStatus) || 0
         var isCancelled = orderStatus === 1
+        var paymentStatus = Number(item.paymentStatus) || 0
+        var totalAmount = parseFloat(item.totalAmount) || 0
+        var paidAmount = parseFloat(item.paidAmount) || 0
+        var unpaidAmount = totalAmount - paidAmount
+        if (unpaidAmount < 0) unpaidAmount = 0
         return {
           id: item.id,
           buyerName: item.buyerName || '未知买家',
           lobsterSize: item.lobsterSize || '',
           weight: item.weight || '',
           totalAmountDisplay: formatPrice(item.totalAmount),
+          paidAmountDisplay: formatPrice(paidAmount),
+          unpaidAmountDisplay: formatPrice(unpaidAmount),
+          showPaidInfo: !isCancelled && paymentStatus !== 1,
           paymentStatusText: isCancelled ? orderStatusText(orderStatus) : paymentStatusText(item.paymentStatus),
           paymentStatusClass: isCancelled ? orderStatusClass(orderStatus) : paymentStatusClass(item.paymentStatus),
           timeDisplay: formatDate(item.transactionTime || item.createdAt)
@@ -83,13 +119,17 @@ Page({
     this.resetAndReload()
   },
 
+  onRangeTap: function (e) {
+    this.setQuickRange(e.currentTarget.dataset.range)
+  },
+
   onStartDateChange: function (e) {
-    this.setData({ startDate: e.detail.value })
+    this.setData({ startDate: e.detail.value, activeRange: 'custom' })
     this.resetAndReload()
   },
 
   onEndDateChange: function (e) {
-    this.setData({ endDate: e.detail.value })
+    this.setData({ endDate: e.detail.value, activeRange: 'custom' })
     this.resetAndReload()
   },
 

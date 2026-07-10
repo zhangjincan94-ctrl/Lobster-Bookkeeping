@@ -26,6 +26,7 @@ const serializePurchaseCore = (record) => {
     order_status: record.order_status,
     cancelled_at: record.cancelled_at,
     remark: record.remark,
+    share_token: record.share_token,
     created_at: record.created_at,
     updated_at: record.updated_at
   };

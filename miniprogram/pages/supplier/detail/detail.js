@@ -55,6 +55,7 @@ Page({
           name: data.name || '未知供应商',
           phone: data.phone || '',
           remark: data.remark || '',
+          shareToken: data.shareToken || '',
           totalWeightDisplay: (parseFloat(data.totalWeight) || 0).toFixed(2),
           totalCostDisplay: formatPrice(totalCost),
           paidAmountDisplay: formatPrice(paidAmount),
@@ -195,5 +196,14 @@ Page({
       that.setData({ showEditModal: false })
       that.loadSupplierDetail()
     }).catch(function () {})
+  },
+
+  onShareAppMessage: function () {
+    var supplier = this.data.supplier
+    var token = supplier && supplier.shareToken ? supplier.shareToken : ''
+    return {
+      title: (supplier ? supplier.name : '供应商') + ' 的进货订单',
+      path: '/pages/share/supplier-records/supplier-records?token=' + token
+    }
   }
 })

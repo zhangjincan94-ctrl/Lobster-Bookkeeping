@@ -1,7 +1,14 @@
-var { get, post } = require('../../../utils/request')
+var { get, post, del } = require('../../../utils/request')
 var { formatPrice } = require('../../../utils/format')
 var { checkLogin } = require('../../../utils/auth')
 var config = require('../../../utils/config')
+
+var SWIPE_THRESHOLD = -30
+var DELETE_OFFSET = -120
+var touchStartX = 0
+var touchStartY = 0
+var touchStartOffset = 0
+var swipeLocked = false
 
 Page({
   data: {
@@ -49,7 +56,8 @@ Page({
           totalCostDisplay: formatPrice(item.totalCost),
           totalDebtDisplay: formatPrice(item.totalDebt),
           totalDebt: parseFloat(item.totalDebt) || 0,
-          purchaseCount: item.purchaseCount || 0
+          purchaseCount: item.purchaseCount || 0,
+          swipeOffset: 0
         }
       })
 
@@ -91,10 +99,94 @@ Page({
     })
   },
 
-  goPurchases: function (e) {
-    var id = e.currentTarget.dataset.id
+  resetAllSwipe: function (exceptIndex) {
+    var suppliers = this.data.suppliers
+    var changed = false
+    var update = {}
+    for (var i = 0; i < suppliers.length; i++) {
+      if (i === exceptIndex) continue
+      if (suppliers[i].swipeOffset !== 0) {
+        update['suppliers[' + i + '].swipeOffset'] = 0
+        changed = true
+      }
+    }
+    if (changed) this.setData(update)
+  },
+
+  onTouchStart: function (e) {
+    var index = e.currentTarget.dataset.index
+    touchStartX = e.touches[0].clientX
+    touchStartY = e.touches[0].clientY
+    touchStartOffset = this.data.suppliers[index].swipeOffset || 0
+    swipeLocked = false
+  },
+
+  onTouchMove: function (e) {
+    var index = e.currentTarget.dataset.index
+    var dx = e.touches[0].clientX - touchStartX
+    var dy = e.touches[0].clientY - touchStartY
+    if (!swipeLocked && Math.abs(dx) < 8 && Math.abs(dy) < 8) return
+    if (!swipeLocked) {
+      if (Math.abs(dy) > Math.abs(dx)) { swipeLocked = 'vertical'; return }
+      swipeLocked = 'horizontal'
+      this.resetAllSwipe(index)
+    }
+    if (swipeLocked !== 'horizontal') return
+    var offset = touchStartOffset + dx
+    if (offset > 0) offset = 0
+    if (offset < DELETE_OFFSET) offset = DELETE_OFFSET
+    var update = {}
+    update['suppliers[' + index + '].swipeOffset'] = offset
+    this.setData(update)
+  },
+
+  onTouchEnd: function (e) {
+    var index = e.currentTarget.dataset.index
+    var offset = this.data.suppliers[index].swipeOffset || 0
+    var update = {}
+    update['suppliers[' + index + '].swipeOffset'] = offset < SWIPE_THRESHOLD ? DELETE_OFFSET : 0
+    this.setData(update)
+  },
+
+  onItemTap: function (e) {
+    var index = e.currentTarget.dataset.index
+    var item = this.data.suppliers[index]
+    if (item.swipeOffset && item.swipeOffset !== 0) {
+      var update = {}
+      update['suppliers[' + index + '].swipeOffset'] = 0
+      this.setData(update)
+      return
+    }
     wx.navigateTo({
-      url: '/pages/purchase/list/list?supplier_id=' + id
+      url: '/pages/supplier/detail/detail?id=' + item.id
+    })
+  },
+
+  onDelete: function (e) {
+    var index = e.currentTarget.dataset.index
+    var item = this.data.suppliers[index]
+    if (!item) return
+    var that = this
+    wx.showModal({
+      title: '删除供应商',
+      content: '确定删除"' + item.name + '"吗？该操作不可撤销',
+      confirmText: '删除',
+      confirmColor: '#E74C3C',
+      success: function (res) {
+        if (!res.confirm) return
+        del(config.api.supplierDelete(item.id), {}).then(function () {
+          wx.showToast({ title: '已删除', icon: 'success' })
+          var newList = that.data.suppliers.slice()
+          newList.splice(index, 1)
+          that.setData({ suppliers: newList })
+        }).catch(function () {})
+      }
+    })
+  },
+
+  goPurchases: function (e) {
+    wx.switchTab({
+      url: '/pages/purchase/list/list'
     })
   },
 

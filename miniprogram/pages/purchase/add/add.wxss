@@ -59,13 +59,29 @@
   margin-left: 8rpx;
 }
 
+.form-item-supplier {
+  position: relative;
+}
+
+.supplier-input-wrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
 .supplier-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  margin-top: 4rpx;
   background-color: #ffffff;
-  border: 1rpx solid #f0f0f0;
+  border: 1rpx solid #eeeeee;
   border-radius: 8rpx;
-  margin-bottom: 12rpx;
-  max-height: 360rpx;
-  overflow: hidden;
+  max-height: 320rpx;
+  z-index: 50;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
 }
 
 .supplier-dropdown-item {

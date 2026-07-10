@@ -130,6 +130,62 @@ test('已分摊货源的销售单不能修改重量', async (t) => {
   );
 });
 
+test('已分摊采购单可增加净重并按分摊量更新剩余库存', async (t) => {
+  const dbTx = createDbTx();
+  let updateValues;
+  const purchase = {
+    id: 8,
+    supplier_id: 3,
+    lobster_size: miniProgramConfig.lobsterSizes[0],
+    net_weight: '10.00',
+    remaining_weight: '6.00',
+    unit_cost: '20.00',
+    total_cost: '200.00',
+    paid_amount: '0.00',
+    order_status: 0,
+    update: async (values, options) => {
+      updateValues = values;
+      Object.assign(purchase, values);
+      assert.equal(options.transaction, dbTx);
+    }
+  };
+
+  t.mock.method(models.sequelize, 'transaction', async (callback) => callback(dbTx));
+  t.mock.method(models.PurchaseRecord, 'findOne', async () => purchase);
+  t.mock.method(models.TransactionPurchaseAllocation, 'sum', async () => '4.00');
+  t.mock.method(models.Supplier, 'findOne', async () => ({ id: 3, name: '测试供应商' }));
+
+  await purchaseService.updatePurchase(10, 8, { net_weight: '12.00' });
+
+  assert.equal(updateValues.net_weight, '12.00');
+  assert.equal(updateValues.remaining_weight, 8);
+  assert.equal(updateValues.total_cost, 240);
+});
+
+test('采购分享查询使用正确关联别名并记录失效链接上下文', async (t) => {
+  let queryOptions;
+  t.mock.method(models.PurchaseRecord, 'findOne', async (options) => {
+    queryOptions = options;
+    return null;
+  });
+
+  await assert.rejects(
+    purchaseService.getPurchaseShareData('12345678-secret'),
+    (err) => {
+      assert.equal(err.status, 404);
+      assert.deepEqual(err.context, {
+        feature: '查看采购分享记录',
+        shareTokenPrefix: '12345678'
+      });
+      return true;
+    }
+  );
+  assert.deepEqual(queryOptions.include.map(item => item.as), [
+    'supplier',
+    'SupplierPaymentRecords'
+  ]);
+});
+
 test('销售列表结束日期包含当天结束时间', async (t) => {
   let queryOptions;
   t.mock.method(models.Transaction, 'findAndCountAll', async (options) => {
@@ -152,7 +208,7 @@ test('销售列表结束日期包含当天结束时间', async (t) => {
 test('采购和销售页面共用同一份龙虾规格', () => {
   assert.deepEqual(miniProgramConfig.lobsterSizes, [
     '小青(2-4钱)', '中青(4-6钱)', '大青(6-8钱)', '炮头青(>9钱)',
-    '小红(2-4钱)', '中红(4-6钱)', '大红(6-8钱)', '炮头红(>9钱)'
+    '小红(2-4钱)', '中红(4-6钱)', '大红(6-8钱)', '炮头红(>9钱)', '统货'
   ]);
 });
 
@@ -168,6 +224,9 @@ test('分页参数限制为有效正整数且最多100条', () => {
 });
 
 test('序列化器读取Sequelize实际关联别名', () => {
+  assert.ok(models.PurchaseRecord.associations.supplier);
+  assert.ok(models.TransactionPurchaseAllocation.associations.transaction);
+
   const transaction = serializeTransactionListItem({
     id: 1,
     buyer_id: 2,

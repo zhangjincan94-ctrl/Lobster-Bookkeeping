@@ -26,7 +26,10 @@ Page({
       orderCount: 0,
       totalAmountDisplay: '¥0.00',
       paidAmountDisplay: '¥0.00',
-      unpaidAmountDisplay: '¥0.00'
+      unpaidAmountDisplay: '¥0.00',
+      purchaseCostDisplay: '¥0.00',
+      otherCostDisplay: '¥0.00',
+      netProfitDisplay: '¥0.00'
     },
     trendList: [],
     maxAmount: 0,
@@ -70,7 +73,10 @@ Page({
           orderCount: d.orderCount || 0,
           totalAmountDisplay: formatPrice(d.totalAmount),
           paidAmountDisplay: formatPrice(d.paidAmount),
-          unpaidAmountDisplay: formatPrice(d.unpaidAmount)
+          unpaidAmountDisplay: formatPrice(d.unpaidAmount),
+          purchaseCostDisplay: formatPrice(d.purchaseCost),
+          otherCostDisplay: formatPrice(d.otherCost),
+          netProfitDisplay: formatPrice(d.netProfit)
         }
       })
     }).catch(function () {})

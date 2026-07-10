@@ -106,11 +106,12 @@ const serializePurchaseAllocation = (allocation) => {
 
 const serializeTransactionDetail = (transaction) => {
   const result = serializeTransactionCore(transaction);
+  const relationBuyer = transaction.buyer || transaction.Buyer;
 
   return {
     id: result.id,
     buyer_id: result.buyer_id,
-    buyer: serializeBuyerBrief(transaction.buyer || transaction.Buyer),
+    buyer: serializeBuyerBrief(relationBuyer),
     lobster_size: result.lobster_size,
     weight: result.weight,
     unit_price: result.unit_price,

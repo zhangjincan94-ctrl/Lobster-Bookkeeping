@@ -29,8 +29,13 @@ Page({
     paymentAmount: '',
     paymentMethod: '',
     paymentTime: '',
+    paymentDate: '',
+    paymentTimeOnly: '',
     paymentSubmitting: false,
-    canceling: false
+    canceling: false,
+    showWeightModal: false,
+    newWeight: '',
+    weightSubmitting: false
   },
 
   onLoad: function (options) {
@@ -99,10 +104,12 @@ Page({
           receivedAt: data.receivedAt ? formatDate(data.receivedAt) : '',
           cancelledAt: data.cancelledAt ? formatDate(data.cancelledAt) : '',
           remark: data.remark || '',
+          shareToken: data.shareToken || '',
           payments: paymentRecords,
           transactionAllocations: transactionAllocations,
           canAddPayment: !isCancelled && settlementStatus !== 1,
-          canCancel: !isCancelled
+          canCancel: !isCancelled,
+          canEditWeight: !isCancelled
         }
       })
     }).catch(function () {})
@@ -111,19 +118,23 @@ Page({
   onAddPayment: function () {
     var purchase = this.data.purchase
     if (!purchase || purchase.orderStatus === 1) {
-      wx.showToast({ title: '已取消采购单不能补录付款', icon: 'none' })
+      wx.showToast({ title: '已取消进货单不能补录付款', icon: 'none' })
       return
     }
     var now = new Date()
     var y = now.getFullYear()
     var m = now.getMonth() + 1
     var d = now.getDate()
+    var hh = now.getHours()
+    var mm = now.getMinutes()
     var dateStr = y + '-' + (m < 10 ? '0' + m : m) + '-' + (d < 10 ? '0' + d : d)
+    var timeStr = (hh < 10 ? '0' + hh : hh) + ':' + (mm < 10 ? '0' + mm : mm)
     this.setData({
       showPaymentModal: true,
       paymentAmount: purchase.unpaidAmountRaw === '0.00' ? '' : purchase.unpaidAmountRaw,
       paymentMethod: '',
-      paymentTime: dateStr,
+      paymentDate: dateStr,
+      paymentTimeOnly: timeStr,
       paymentSubmitting: false
     })
   },
@@ -143,7 +154,11 @@ Page({
   },
 
   onPaymentTimeChange: function (e) {
-    this.setData({ paymentTime: e.detail.value })
+    this.setData({ paymentTimeOnly: e.detail.value })
+  },
+
+  onPaymentDateChange: function (e) {
+    this.setData({ paymentDate: e.detail.value })
   },
 
   onPaymentSubmit: function () {
@@ -163,7 +178,7 @@ Page({
     post(config.api.purchasePayment(this.data.id), {
       amount: amount.toFixed(2),
       paymentMethod: this.data.paymentMethod.trim(),
-      paidAt: this.data.paymentTime
+      paidAt: this.data.paymentDate + ' ' + this.data.paymentTimeOnly + ':00'
     }).then(function () {
       wx.showToast({ title: '付款已录入', icon: 'success' })
       that.setData({ showPaymentModal: false, paymentSubmitting: false })
@@ -178,9 +193,9 @@ Page({
     var that = this
 
     wx.showModal({
-      title: '取消采购单',
-      content: '取消后该采购单不会计入供应商统计，确定取消吗？',
-      confirmText: '取消采购单',
+      title: '取消进货单',
+      content: '取消后该进货单不会计入供应商统计，确定取消吗？',
+      confirmText: '取消进货单',
       confirmColor: '#E74C3C',
       success: function (res) {
         if (!res.confirm) return
@@ -188,7 +203,7 @@ Page({
         put(config.api.purchaseUpdate(that.data.id), {
           orderStatus: 1
         }).then(function () {
-          wx.showToast({ title: '采购单已取消', icon: 'success' })
+          wx.showToast({ title: '进货单已取消', icon: 'success' })
           that.setData({ canceling: false })
           that.loadPurchase()
         }).catch(function () {
@@ -202,6 +217,54 @@ Page({
     var id = e.currentTarget.dataset.id
     wx.navigateTo({
       url: '/pages/transaction/detail/detail?id=' + id
+    })
+  },
+
+  onEditWeight: function () {
+    var purchase = this.data.purchase
+    if (!purchase) return
+    this.setData({
+      showWeightModal: true,
+      newWeight: purchase.netWeight || '',
+      weightSubmitting: false
+    })
+  },
+
+  onCloseWeightModal: function () {
+    this.setData({ showWeightModal: false })
+  },
+
+  onNewWeightInput: function (e) {
+    this.setData({ newWeight: e.detail.value })
+  },
+
+  onShareAppMessage: function () {
+    var purchase = this.data.purchase || {}
+    var token = purchase.shareToken || ''
+    return {
+      title: '进货单：' + (purchase.supplierName || '供应商') + ' ' + (purchase.totalCostDisplay || ''),
+      path: '/pages/share/purchase-record/purchase-record?token=' + token
+    }
+  },
+
+  onWeightSubmit: function () {
+    if (this.data.weightSubmitting) return
+    var weight = parseFloat(this.data.newWeight)
+    if (!weight || weight <= 0) {
+      wx.showToast({ title: '请输入有效斤数', icon: 'none' })
+      return
+    }
+
+    var that = this
+    this.setData({ weightSubmitting: true })
+    put(config.api.purchaseUpdate(this.data.id), {
+      netWeight: weight.toFixed(2)
+    }).then(function () {
+      wx.showToast({ title: '已更新', icon: 'success' })
+      that.setData({ showWeightModal: false, weightSubmitting: false })
+      that.loadPurchase()
+    }).catch(function () {
+      that.setData({ weightSubmitting: false })
     })
   }
 })

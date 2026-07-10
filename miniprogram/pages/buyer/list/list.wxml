@@ -20,20 +20,30 @@
 
   <view wx:else class="buyer-list">
     <view
-      class="buyer-item card"
+      class="swipe-row"
       wx:for="{{buyers}}"
       wx:key="id"
-      bindtap="goDetail"
-      data-id="{{item.id}}"
+      data-index="{{index}}"
     >
-      <view class="buyer-left">
-        <text class="buyer-name">{{item.name}}</text>
-        <text class="buyer-phone text-muted">{{item.phone || '未填写电话'}}</text>
+      <view
+        class="buyer-item card swipe-content"
+        style="transform: translateX({{item.swipeOffset || 0}}px);"
+        bindtap="onItemTap"
+        bindtouchstart="onTouchStart"
+        bindtouchmove="onTouchMove"
+        bindtouchend="onTouchEnd"
+        data-index="{{index}}"
+      >
+        <view class="buyer-left">
+          <text class="buyer-name">{{item.name}}</text>
+          <text class="buyer-phone text-muted">{{item.phone || '未填写电话'}}</text>
+        </view>
+        <view class="buyer-right">
+          <text class="buyer-arrow">›</text>
+        </view>
       </view>
-      <view class="buyer-right">
-        <text class="buyer-spent text-price">{{item.totalSpentDisplay}}</text>
-        <text wx:if="{{item.totalDebt > 0}}" class="buyer-debt text-debt">{{item.totalDebtDisplay}}</text>
-        <text class="buyer-arrow">›</text>
+      <view class="swipe-action" bindtap="onDelete" data-index="{{index}}">
+        <text>删除</text>
       </view>
     </view>
     <view wx:if="{{loading}}" class="loading-tip">

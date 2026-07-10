@@ -8,6 +8,7 @@ const router = new Router({
 
 router.get('/', auth(), purchaseController.list);
 router.get('/available', auth(), purchaseController.available);
+router.get('/share/:token', purchaseController.shareDetail);
 router.post('/', auth(), purchaseController.create);
 router.get('/:id', auth(), purchaseController.detail);
 router.put('/:id', auth(), purchaseController.update);

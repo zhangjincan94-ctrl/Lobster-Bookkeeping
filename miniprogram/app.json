@@ -2,6 +2,7 @@
   "pages": [
     "pages/index/index",
     "pages/login/login",
+    "pages/me/me",
     "pages/transaction/list/list",
     "pages/transaction/add/add",
     "pages/transaction/detail/detail",
@@ -13,6 +14,8 @@
     "pages/supplier/list/list",
     "pages/supplier/detail/detail",
     "pages/share/records/records",
+    "pages/share/supplier-records/supplier-records",
+    "pages/share/purchase-record/purchase-record",
     "pages/stats/overview/overview",
     "pages/stats/debt/debt",
     "pages/stats/product/product"
@@ -42,10 +45,16 @@
         "selectedIconPath": "assets/icons/order-active.png"
       },
       {
-        "pagePath": "pages/buyer/list/list",
-        "text": "买家",
-        "iconPath": "assets/icons/friends.png",
-        "selectedIconPath": "assets/icons/friends-active.png"
+        "pagePath": "pages/purchase/list/list",
+        "text": "进货",
+        "iconPath": "assets/icons/purchase.png",
+        "selectedIconPath": "assets/icons/purchase-active.png"
+      },
+      {
+        "pagePath": "pages/me/me",
+        "text": "我的",
+        "iconPath": "assets/icons/me.png",
+        "selectedIconPath": "assets/icons/me-active.png"
       }
     ]
   },

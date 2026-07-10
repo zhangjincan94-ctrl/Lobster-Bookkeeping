@@ -11,11 +11,33 @@ const run = async () => {
       name VARCHAR(50) NOT NULL,
       phone VARCHAR(20) NULL,
       remark VARCHAR(500) NULL,
+      share_token VARCHAR(64) NULL,
       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       INDEX idx_suppliers_merchant_id (merchant_id),
       CONSTRAINT fk_suppliers_merchant FOREIGN KEY (merchant_id) REFERENCES merchants(id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  const [supplierShareTokenColumns] = await sequelize.query(`
+    SELECT COUNT(*) AS count
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'suppliers'
+      AND COLUMN_NAME = 'share_token';
+  `);
+
+  if (Number(supplierShareTokenColumns[0].count) === 0) {
+    await sequelize.query(`
+      ALTER TABLE suppliers
+      ADD COLUMN share_token VARCHAR(64) NULL AFTER remark;
+    `);
+  }
+
+  await sequelize.query(`
+    UPDATE suppliers
+    SET share_token = UUID()
+    WHERE share_token IS NULL OR share_token = '';
   `);
 
   await sequelize.query(`
@@ -36,6 +58,7 @@ const run = async () => {
       order_status TINYINT NOT NULL DEFAULT 0,
       cancelled_at DATETIME NULL,
       remark VARCHAR(500) NULL,
+      share_token VARCHAR(64) NULL,
       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       INDEX idx_purchase_merchant_id (merchant_id),
@@ -60,6 +83,27 @@ const run = async () => {
     `);
     remainingWeightAdded = true;
   }
+
+  const [shareTokenColumns] = await sequelize.query(`
+    SELECT COUNT(*) AS count
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'purchase_records'
+      AND COLUMN_NAME = 'share_token';
+  `);
+
+  if (Number(shareTokenColumns[0].count) === 0) {
+    await sequelize.query(`
+      ALTER TABLE purchase_records
+      ADD COLUMN share_token VARCHAR(64) NULL AFTER remark;
+    `);
+  }
+
+  await sequelize.query(`
+    UPDATE purchase_records
+    SET share_token = UUID()
+    WHERE share_token IS NULL OR share_token = '';
+  `);
 
   await sequelize.query(`
     CREATE TABLE IF NOT EXISTS supplier_payment_records (
@@ -107,6 +151,22 @@ const run = async () => {
       END;
     `);
   }
+
+  await sequelize.query(`
+    CREATE TABLE IF NOT EXISTS other_costs (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      merchant_id INT NOT NULL,
+      cost_type VARCHAR(20) NOT NULL,
+      amount DECIMAL(10, 2) NOT NULL,
+      cost_date DATETIME NOT NULL,
+      remark VARCHAR(200) NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_other_costs_merchant_id (merchant_id),
+      INDEX idx_other_costs_cost_date (cost_date),
+      CONSTRAINT fk_other_costs_merchant FOREIGN KEY (merchant_id) REFERENCES merchants(id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
 
   console.log('数据库迁移已完成');
 };

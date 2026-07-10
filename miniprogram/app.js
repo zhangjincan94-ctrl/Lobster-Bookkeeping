@@ -2,7 +2,12 @@ App({
   onLaunch: function (options) {
     var token = wx.getStorageSync('token')
     var launchPath = options && options.path ? options.path : ''
-    var isPublicPage = launchPath === 'pages/share/records/records'
+    var publicPages = [
+      'pages/share/records/records',
+      'pages/share/purchase-record/purchase-record',
+      'pages/share/supplier-records/supplier-records'
+    ]
+    var isPublicPage = publicPages.indexOf(launchPath) >= 0
     if (!token && !isPublicPage) {
       wx.redirectTo({
         url: '/pages/login/login'

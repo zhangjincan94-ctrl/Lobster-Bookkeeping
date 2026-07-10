@@ -6,6 +6,7 @@ const serializeSupplier = (supplier, stats = {}) => {
     name: supplier.name,
     phone: supplier.phone,
     remark: supplier.remark,
+    share_token: supplier.share_token,
     total_weight: stats.total_weight || 0,
     total_cost: stats.total_cost || 0,
     total_debt: stats.total_debt || 0,

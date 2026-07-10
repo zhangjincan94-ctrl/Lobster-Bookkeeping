@@ -33,14 +33,15 @@
 
   <view class="action-bar card">
     <button class="action-btn action-btn-primary" bindtap="goAddPurchase">新增进货</button>
+    <button class="action-btn action-btn-share" open-type="share">分享给供应商</button>
   </view>
 
   <view class="section-header">
-    <text class="section-title">采购记录</text>
+    <text class="section-title">进货记录</text>
   </view>
 
   <view wx:if="{{purchases.length === 0 && !loading}}" class="empty-state">
-    <text class="empty-text">暂无采购记录</text>
+    <text class="empty-text">暂无进货记录</text>
   </view>
 
   <view wx:else class="purchase-list">

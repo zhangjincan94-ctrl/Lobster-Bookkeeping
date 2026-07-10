@@ -122,7 +122,7 @@
     >
       <view class="payment-record-left">
         <text class="payment-record-amount">{{item.amountDisplay}}</text>
-        <text class="payment-record-method text-muted">{{item.method || '未记录'}}</text>
+        <text class="payment-record-method text-muted">付款方式：{{item.method || '未记录'}}</text>
       </view>
       <text class="payment-record-time text-muted">{{item.timeDisplay}}</text>
     </view>
@@ -166,10 +166,18 @@
         />
       </view>
       <view class="modal-field">
-        <text class="modal-label">付款时间</text>
-        <picker mode="date" value="{{paymentTime}}" bindchange="onPaymentTimeChange">
+        <text class="modal-label">付款日期</text>
+        <picker mode="date" value="{{paymentDate}}" bindchange="onPaymentDateChange">
           <view class="modal-picker">
-            <text>{{paymentTime || '选择日期'}}</text>
+            <text>{{paymentDate || '选择日期'}}</text>
+          </view>
+        </picker>
+      </view>
+      <view class="modal-field">
+        <text class="modal-label">付款时间</text>
+        <picker mode="time" value="{{paymentTimeOnly}}" bindchange="onPaymentTimeChange">
+          <view class="modal-picker">
+            <text>{{paymentTimeOnly || '选择时间'}}</text>
           </view>
         </picker>
       </view>

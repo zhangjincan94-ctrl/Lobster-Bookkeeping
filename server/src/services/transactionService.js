@@ -18,7 +18,18 @@ const roundMoney = (value) => {
 const optionalDate = (value) => {
   if (value === undefined || value === null || value === '') return null;
   if (typeof value === 'string' && value.trim() === '') return null;
-  return value;
+  // 仅传 "HH:mm" 之类纯时间时，按今天日期补齐；非法值直接返回 null
+  const str = String(value).trim();
+  if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(str)) {
+    const now = new Date();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const today = `${now.getFullYear()}-${month}-${day}`;
+    const t = str.length === 5 ? str + ':00' : str;
+    return today + ' ' + t;
+  }
+  const date = new Date(str);
+  return Number.isNaN(date.getTime()) ? null : value;
 };
 
 const serviceError = (message, status, context) => {
@@ -124,8 +135,9 @@ const createTransaction = async (merchantId, data) => {
       await PaymentRecord.create({
         transaction_id: transaction.id,
         amount: paid_amount,
-        paid_at: data.transaction_time,
-        note: '创建销售单时录入'
+        payment_method: data.payment_method || null,
+        paid_at: optionalDate(data.transaction_time) || new Date(),
+        note: '录入时初始付款'
       }, { transaction: dbTx });
     }
 

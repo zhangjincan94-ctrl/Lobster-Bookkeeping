@@ -15,7 +15,7 @@ Page({
   onLoad: function (options) {
     var token = ''
     if (options && options.token) {
-      token = options.token
+      token = decodeURIComponent(options.token)
     } else if (options && options.scene) {
       token = decodeURIComponent(options.scene)
     }
