@@ -1,7 +1,7 @@
 // 后端服务地址：
 // - 开发者工具本机调试：保持 http://localhost:3000，并在工具里勾选「不校验合法域名」
 // - 真机/体验版：改成内网 IP 或 HTTPS 公网域名，并在小程序后台配置 request 合法域名
-var baseUrl = 'http://localhost:3000'
+var baseUrl = 'https://lobster-bookkeeping-test.onrender.com'
 
 var lobsterSizes = [
   '小青(2-4钱)', '中青(4-6钱)', '大青(6-8钱)', '炮头青(>9钱)',
