@@ -36,7 +36,7 @@ Available scripts:
 
 - `npm start`: run `src/app.js`
 - `npm run dev`: run with nodemon
-- `npm run sync`: recreate database tables with `sequelize.sync({ force: true })`
+- `npm run sync`: recreate database tables after setting `ALLOW_DB_RESET=true`; production execution is always rejected
 
 ## Notes
 

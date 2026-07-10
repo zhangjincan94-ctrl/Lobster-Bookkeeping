@@ -2,6 +2,8 @@ require('dotenv').config();
 const sequelize = require('./config/database');
 
 const run = async () => {
+  let remainingWeightAdded = false;
+
   await sequelize.query(`
     CREATE TABLE IF NOT EXISTS suppliers (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -56,13 +58,8 @@ const run = async () => {
       ALTER TABLE purchase_records
       ADD COLUMN remaining_weight DECIMAL(10, 2) NOT NULL DEFAULT 0 AFTER net_weight;
     `);
+    remainingWeightAdded = true;
   }
-
-  await sequelize.query(`
-    UPDATE purchase_records
-    SET remaining_weight = net_weight
-    WHERE remaining_weight = 0 AND order_status != 1;
-  `);
 
   await sequelize.query(`
     CREATE TABLE IF NOT EXISTS supplier_payment_records (
@@ -95,6 +92,21 @@ const run = async () => {
       CONSTRAINT fk_tpa_purchase_record FOREIGN KEY (purchase_record_id) REFERENCES purchase_records(id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
+
+  if (remainingWeightAdded) {
+    await sequelize.query(`
+      UPDATE purchase_records p
+      LEFT JOIN (
+        SELECT purchase_record_id, SUM(weight) AS allocated_weight
+        FROM transaction_purchase_allocations
+        GROUP BY purchase_record_id
+      ) a ON a.purchase_record_id = p.id
+      SET p.remaining_weight = CASE
+        WHEN p.order_status = 1 THEN 0
+        ELSE GREATEST(p.net_weight - COALESCE(a.allocated_weight, 0), 0)
+      END;
+    `);
+  }
 
   console.log('数据库迁移已完成');
 };

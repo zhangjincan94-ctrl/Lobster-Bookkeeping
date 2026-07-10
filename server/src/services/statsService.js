@@ -93,7 +93,7 @@ const getTrend = async (merchantId, { dimension = 'day', start_date, end_date } 
 
 // 欠款排行：按买家欠款倒序
 const getDebtRanking = async (merchantId, { limit = 20 } = {}) => {
-  const limitNum = Math.min(parseInt(limit, 10) || 20, 100);
+  const limitNum = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
 
   const rows = await Transaction.findAll({
     where: {
@@ -111,9 +111,10 @@ const getDebtRanking = async (merchantId, { limit = 20 } = {}) => {
     ],
     include: [{
       model: Buyer,
+      as: 'buyer',
       attributes: ['id', 'name', 'phone', 'share_token']
     }],
-    group: ['buyer_id', 'Buyer.id'],
+    group: ['buyer_id', 'buyer.id'],
     having: sequelize.literal('debt_amount > 0'),
     order: [[sequelize.literal('debt_amount'), 'DESC']],
     limit: limitNum,
@@ -123,9 +124,9 @@ const getDebtRanking = async (merchantId, { limit = 20 } = {}) => {
 
   return rows.map(r => ({
     buyer_id: r.buyer_id,
-    buyer_name: r.Buyer ? r.Buyer.name : '未知买家',
-    buyer_phone: r.Buyer ? r.Buyer.phone : '',
-    share_token: r.Buyer ? r.Buyer.share_token : '',
+    buyer_name: r.buyer ? r.buyer.name : '未知买家',
+    buyer_phone: r.buyer ? r.buyer.phone : '',
+    share_token: r.buyer ? r.buyer.share_token : '',
     order_count: parseInt(r.order_count, 10) || 0,
     total_amount: parseFloat(r.total_amount) || 0,
     paid_amount: parseFloat(r.paid_amount) || 0,

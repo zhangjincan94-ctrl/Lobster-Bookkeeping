@@ -47,3 +47,7 @@
     </view>
   </view>
 </view>
+
+<view class="empty-state" wx:elif="{{errorMessage}}">
+  <text class="empty-text">{{errorMessage}}</text>
+</view>

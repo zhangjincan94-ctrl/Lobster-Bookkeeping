@@ -7,16 +7,7 @@ Page({
     loading: false
   },
 
-  onGetUserInfo: function (e) {
-    if (e.detail.errMsg !== 'getUserInfo:ok') {
-      wx.showToast({
-        title: '需要授权才能登录',
-        icon: 'none',
-        duration: 2000
-      })
-      return
-    }
-
+  onLogin: function () {
     var that = this
     that.setData({ loading: true })
 

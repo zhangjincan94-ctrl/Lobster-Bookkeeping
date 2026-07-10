@@ -12,7 +12,7 @@ Page({
     selectedBuyerId: '',
     buyerName: '',
     buyerPhone: '',
-    lobsterSizes: ['小青(2-4钱)', '中青(4-6钱)', '大青(6-8钱)', '炮头青(>9钱)', '小红(2-4钱)', '中红(4-6钱)', '大红(6-8钱)', '炮头红(>9钱)'],
+    lobsterSizes: config.lobsterSizes,
     lobsterSizeIndex: 0,
     weight: '',
     unitPrice: '',
@@ -327,6 +327,15 @@ Page({
     if (p <= 0) {
       wx.showToast({ title: '请输入单价', icon: 'none' })
       return
+    }
+
+    if (this.data.paymentStatusIndex === 2) {
+      var paid = parseFloat(this.data.paidAmount)
+      var total = w * p
+      if (!paid || paid <= 0 || paid >= total) {
+        wx.showToast({ title: '部分付款需大于0且小于总金额', icon: 'none' })
+        return
+      }
     }
 
     if (!this.validateSourceAllocations(w)) return

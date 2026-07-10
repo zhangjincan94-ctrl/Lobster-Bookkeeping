@@ -33,7 +33,7 @@ const serializeTransactionCore = (transaction) => {
 
 const serializeTransactionListItem = (transaction, buyer) => {
   const result = serializeTransactionCore(transaction);
-  const relationBuyer = buyer || transaction.Buyer;
+  const relationBuyer = buyer || transaction.buyer || transaction.Buyer;
 
   return {
     id: result.id,
@@ -83,8 +83,8 @@ const serializePaymentRecordResult = (record) => {
 };
 
 const serializePurchaseAllocation = (allocation) => {
-  const purchase = allocation.PurchaseRecord;
-  const supplier = purchase && purchase.Supplier;
+  const purchase = allocation.purchase_record || allocation.PurchaseRecord;
+  const supplier = purchase && (purchase.supplier || purchase.Supplier);
 
   return {
     id: allocation.id,
@@ -110,7 +110,7 @@ const serializeTransactionDetail = (transaction) => {
   return {
     id: result.id,
     buyer_id: result.buyer_id,
-    buyer: serializeBuyerBrief(transaction.Buyer),
+    buyer: serializeBuyerBrief(transaction.buyer || transaction.Buyer),
     lobster_size: result.lobster_size,
     weight: result.weight,
     unit_price: result.unit_price,

@@ -1,4 +1,5 @@
 var config = require('./config')
+var authRedirecting = false
 
 function toCamelCase(str) {
   return str.replace(/_([a-z])/g, function (_, c) { return c.toUpperCase() })
@@ -52,15 +53,26 @@ function request(options) {
       header: header,
       success: function (res) {
         if (res.statusCode === 401) {
+          console.warn('[小程序请求失败]', {
+            feature: options.url,
+            reason: '登录已过期',
+            status: res.statusCode
+          })
           clearAuthAndRedirect()
           reject({ code: 401, message: '登录已过期' })
           return
         }
         if (res.statusCode >= 200 && res.statusCode < 300) {
-          var data = res.data && res.data.data ? res.data.data : res.data
+          var hasDataField = res.data && Object.prototype.hasOwnProperty.call(res.data, 'data')
+          var data = hasDataField ? res.data.data : res.data
           resolve(keysToCamelCase(data))
         } else {
           var msg = (res.data && res.data.message) || '请求失败'
+          console.warn('[小程序请求失败]', {
+            feature: options.url,
+            reason: msg,
+            status: res.statusCode
+          })
           wx.showToast({
             title: msg,
             icon: 'none',
@@ -70,6 +82,11 @@ function request(options) {
         }
       },
       fail: function (err) {
+        console.error('[小程序请求失败]', {
+          feature: options.url,
+          reason: err && err.errMsg ? err.errMsg : '网络异常',
+          status: -1
+        })
         wx.showToast({
           title: '网络异常',
           icon: 'none',
@@ -87,8 +104,15 @@ function clearAuthAndRedirect() {
   app.globalData.merchantInfo = null
   wx.removeStorageSync('token')
   wx.removeStorageSync('merchantInfo')
-  wx.redirectTo({
-    url: '/pages/login/login'
+  if (authRedirecting) return
+  authRedirecting = true
+  wx.reLaunch({
+    url: '/pages/login/login',
+    complete: function () {
+      setTimeout(function () {
+        authRedirecting = false
+      }, 300)
+    }
   })
 }
 

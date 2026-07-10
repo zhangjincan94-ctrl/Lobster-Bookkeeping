@@ -4,6 +4,7 @@ dotenv.config();
 
 module.exports = {
   port: process.env.PORT || 3000,
+  corsOrigin: process.env.CORS_ORIGIN || '',
   db: {
     host: process.env.DB_HOST || '127.0.0.1',
     port: parseInt(process.env.DB_PORT, 10) || 3306,
@@ -12,7 +13,7 @@ module.exports = {
     password: process.env.DB_PASSWORD || ''
   },
   jwt: {
-    secret: process.env.JWT_SECRET || 'default_secret'
+    secret: process.env.JWT_SECRET || ''
   },
   wx: {
     appid: process.env.WX_APPID || '',

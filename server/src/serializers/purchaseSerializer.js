@@ -33,7 +33,7 @@ const serializePurchaseCore = (record) => {
 
 const serializePurchaseListItem = (record, supplier) => {
   const result = serializePurchaseCore(record);
-  const relationSupplier = supplier || record.Supplier;
+  const relationSupplier = supplier || record.supplier || record.Supplier;
 
   return {
     ...result,
@@ -54,13 +54,29 @@ const serializeSupplierPaymentRecord = (record) => {
   };
 };
 
+const serializeTransactionAllocation = (allocation) => {
+  const transaction = allocation.transaction || allocation.Transaction;
+  const buyer = transaction && (transaction.buyer || transaction.Buyer);
+
+  return {
+    id: allocation.id,
+    transaction_id: allocation.transaction_id,
+    weight: allocation.weight,
+    unit_cost: allocation.unit_cost,
+    total_cost: allocation.total_cost,
+    buyer_name: buyer ? buyer.name : null,
+    transaction_time: transaction ? transaction.transaction_time : null
+  };
+};
+
 const serializePurchaseDetail = (record) => {
   const result = serializePurchaseCore(record);
 
   return {
     ...result,
-    supplier: serializeSupplierBrief(record.Supplier),
-    payment_records: (record.SupplierPaymentRecords || []).map(serializeSupplierPaymentRecord)
+    supplier: serializeSupplierBrief(record.supplier || record.Supplier),
+    payment_records: (record.SupplierPaymentRecords || []).map(serializeSupplierPaymentRecord),
+    transaction_allocations: (record.TransactionAllocations || []).map(serializeTransactionAllocation)
   };
 };
 

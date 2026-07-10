@@ -8,7 +8,8 @@ Page({
     buyer: null,
     transactions: [],
     totalSpent: '¥0.00',
-    totalDebt: '¥0.00'
+    totalDebt: '¥0.00',
+    errorMessage: ''
   },
 
   onLoad: function (options) {
@@ -21,6 +22,12 @@ Page({
     if (token) {
       this.setData({ token: token })
       this.loadRecords()
+    } else {
+      console.warn('[分享账单加载失败]', {
+        feature: '买家分享账单',
+        reason: '缺少分享token'
+      })
+      this.setData({ errorMessage: '分享链接缺少必要参数' })
     }
   },
 
@@ -30,7 +37,14 @@ Page({
       url: config.api.shareRecords(that.data.token),
       method: 'GET'
     }).then(function (data) {
-      if (!data) return
+      if (!data) {
+        console.warn('[分享账单加载失败]', {
+          feature: '买家分享账单',
+          reason: '接口返回空数据'
+        })
+        that.setData({ errorMessage: '账单数据暂时无法加载' })
+        return
+      }
 
       var buyerData = data.buyer || {}
       var list = data.transactions || []
@@ -55,8 +69,11 @@ Page({
         },
         transactions: processed,
         totalSpent: formatPrice(data.totalSpent),
-        totalDebt: formatPrice(data.totalDebt)
+        totalDebt: formatPrice(data.totalDebt),
+        errorMessage: ''
       })
-    }).catch(function () {})
+    }).catch(function (err) {
+      that.setData({ errorMessage: (err && err.message) || '账单加载失败，请稍后重试' })
+    })
   }
 })

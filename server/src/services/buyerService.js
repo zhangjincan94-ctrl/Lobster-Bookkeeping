@@ -1,4 +1,4 @@
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('crypto');
 const { Buyer, Transaction, sequelize, Sequelize } = require('../models');
 const { serializeBuyer, serializePublicBuyer } = require('../serializers');
 const { Op } = Sequelize;
@@ -20,11 +20,32 @@ const listBuyers = async (merchantId, { keyword, page = 1, pageSize = 10 }) => {
     order: [['id', 'DESC']]
   });
 
-  const buyers = [];
-  for (const buyer of rows) {
-    const stats = await _computeBuyerStats(buyer.id);
-    buyers.push(serializeBuyer(buyer, { stats }));
+  const statsByBuyerId = new Map();
+  if (rows.length > 0) {
+    const statsRows = await Transaction.findAll({
+      where: {
+        buyer_id: { [Op.in]: rows.map(buyer => buyer.id) },
+        order_status: { [Op.ne]: 1 }
+      },
+      attributes: [
+        'buyer_id',
+        [sequelize.fn('COALESCE', sequelize.fn('SUM', sequelize.col('total_amount')), 0), 'total_spent'],
+        [sequelize.fn('COALESCE', sequelize.fn('SUM', sequelize.literal('CASE WHEN payment_status != 1 THEN total_amount - paid_amount ELSE 0 END')), 0), 'total_debt']
+      ],
+      group: ['buyer_id'],
+      raw: true
+    });
+    for (const stats of statsRows) {
+      statsByBuyerId.set(String(stats.buyer_id), {
+        total_spent: parseFloat(stats.total_spent) || 0,
+        total_debt: parseFloat(stats.total_debt) || 0
+      });
+    }
   }
+
+  const buyers = rows.map(buyer => serializeBuyer(buyer, {
+    stats: statsByBuyerId.get(String(buyer.id)) || { total_spent: 0, total_debt: 0 }
+  }));
 
   return { list: buyers, total: count };
 };
@@ -34,7 +55,7 @@ const createBuyer = async (merchantId, data) => {
     merchant_id: merchantId,
     name: data.name,
     phone: data.phone || null,
-    share_token: uuidv4()
+    share_token: randomUUID()
   });
 
   return serializeBuyer(buyer);

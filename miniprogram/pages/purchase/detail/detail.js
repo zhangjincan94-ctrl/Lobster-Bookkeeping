@@ -37,7 +37,6 @@ Page({
     if (!checkLogin()) return
     if (options && options.id) {
       this.setData({ id: options.id })
-      this.loadPurchase()
     }
   },
 
@@ -63,6 +62,16 @@ Page({
           amountDisplay: formatPrice(p.amount),
           method: p.paymentMethod || '',
           timeDisplay: formatDate(p.paidAt)
+        }
+      })
+      var transactionAllocations = (data.transactionAllocations || []).map(function (item) {
+        return {
+          id: item.id,
+          transactionId: item.transactionId,
+          buyerName: item.buyerName || '未知买家',
+          weightDisplay: item.weight ? item.weight + '斤' : '-',
+          totalCostDisplay: formatPrice(item.totalCost),
+          timeDisplay: formatDate(item.transactionTime)
         }
       })
       var supplier = data.supplier || {}
@@ -91,6 +100,7 @@ Page({
           cancelledAt: data.cancelledAt ? formatDate(data.cancelledAt) : '',
           remark: data.remark || '',
           payments: paymentRecords,
+          transactionAllocations: transactionAllocations,
           canAddPayment: !isCancelled && settlementStatus !== 1,
           canCancel: !isCancelled
         }
@@ -143,6 +153,10 @@ Page({
       wx.showToast({ title: '请输入有效金额', icon: 'none' })
       return
     }
+    if (amount > parseFloat(this.data.purchase.unpaidAmountRaw)) {
+      wx.showToast({ title: '付款金额不能超过未付金额', icon: 'none' })
+      return
+    }
 
     var that = this
     this.setData({ paymentSubmitting: true })
@@ -181,6 +195,13 @@ Page({
           that.setData({ canceling: false })
         })
       }
+    })
+  },
+
+  goTransactionDetail: function (e) {
+    var id = e.currentTarget.dataset.id
+    wx.navigateTo({
+      url: '/pages/transaction/detail/detail?id=' + id
     })
   }
 })

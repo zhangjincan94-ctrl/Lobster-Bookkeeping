@@ -15,6 +15,7 @@ Page({
   onShow: function () {
     if (!checkLogin()) return
     this.loadMerchantInfo()
+    this.loadTodayOverview()
     this.loadRecentTransactions()
   },
 
@@ -31,10 +32,6 @@ Page({
     var that = this
     get(config.api.transactionList, { page: 1, pageSize: 5 }).then(function (data) {
       var list = (data && data.list) || []
-      var today = that.getTodayStr()
-      var todayCount = 0
-      var todayIncome = 0
-      var todayUnpaid = 0
 
       var processed = list.map(function (item) {
         var orderStatus = Number(item.orderStatus) || 0
@@ -43,14 +40,6 @@ Page({
         var statusClass = isCancelled ? orderStatusClass(orderStatus) : paymentStatusClass(item.paymentStatus)
         var amount = formatPrice(item.totalAmount)
         var time = formatDate(item.transactionTime || item.createdAt)
-
-        if (!isCancelled && that.isSameDay(item.transactionTime || item.createdAt, today)) {
-          todayCount++
-          todayIncome += parseFloat(item.totalAmount) || 0
-          if (item.paymentStatus === 0 || item.paymentStatus === 2) {
-            todayUnpaid += (parseFloat(item.totalAmount) - parseFloat(item.paidAmount || 0)) || 0
-          }
-        }
 
         return {
           id: item.id,
@@ -65,12 +54,35 @@ Page({
       })
 
       that.setData({
-        recentTransactions: processed,
-        todayCount: todayCount,
-        todayIncome: formatPrice(todayIncome),
-        todayUnpaid: formatPrice(todayUnpaid)
+        recentTransactions: processed
       })
-    }).catch(function () {})
+    }).catch(function (err) {
+      console.warn('[首页加载失败]', {
+        feature: '最近交易',
+        reason: err && err.message ? err.message : '请求失败'
+      })
+    })
+  },
+
+  loadTodayOverview: function () {
+    var that = this
+    var today = this.getTodayStr()
+    get(config.api.statsOverview, {
+      startDate: today,
+      endDate: today
+    }).then(function (data) {
+      var overview = data || {}
+      that.setData({
+        todayCount: overview.orderCount || 0,
+        todayIncome: formatPrice(overview.totalAmount),
+        todayUnpaid: formatPrice(overview.unpaidAmount)
+      })
+    }).catch(function (err) {
+      console.warn('[首页加载失败]', {
+        feature: '今日统计',
+        reason: err && err.message ? err.message : '请求失败'
+      })
+    })
   },
 
   getTodayStr: function () {
@@ -79,11 +91,6 @@ Page({
     var m = d.getMonth() + 1
     var day = d.getDate()
     return y + '-' + (m < 10 ? '0' + m : m) + '-' + (day < 10 ? '0' + day : day)
-  },
-
-  isSameDay: function (dateStr, todayStr) {
-    if (!dateStr) return false
-    return dateStr.indexOf(todayStr) === 0
   },
 
   goAddTransaction: function () {

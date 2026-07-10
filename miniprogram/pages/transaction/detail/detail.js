@@ -20,7 +20,6 @@ Page({
     if (!checkLogin()) return
     if (options && options.id) {
       this.setData({ id: options.id })
-      this.loadTransaction()
     }
   },
 
@@ -150,6 +149,10 @@ Page({
     var amount = parseFloat(this.data.paymentAmount)
     if (!amount || amount <= 0) {
       wx.showToast({ title: '请输入有效金额', icon: 'none' })
+      return
+    }
+    if (amount > parseFloat(this.data.transaction.unpaidAmountRaw)) {
+      wx.showToast({ title: '付款金额不能超过未付金额', icon: 'none' })
       return
     }
 

@@ -1,35 +1,36 @@
 const purchaseService = require('../services/purchaseService');
 const { success, error, paginate } = require('../utils/response');
+const { normalizePagination } = require('../utils/pagination');
 
 const list = async (ctx) => {
   const merchantId = ctx.state.merchant.id;
-  const { supplier_id, settlement_status, start_date, end_date, page = 1, pageSize, page_size } = ctx.query;
-  const size = Number(pageSize || page_size || 10);
+  const { supplier_id, settlement_status, start_date, end_date } = ctx.query;
+  const { page, pageSize } = normalizePagination(ctx.query);
 
   const result = await purchaseService.listPurchases(merchantId, {
     supplier_id,
     settlement_status,
     start_date,
     end_date,
-    page: Number(page),
-    pageSize: size
+    page,
+    pageSize
   });
 
-  ctx.body = paginate(result.list, result.total, page, size);
+  ctx.body = paginate(result.list, result.total, page, pageSize);
 };
 
 const available = async (ctx) => {
   const merchantId = ctx.state.merchant.id;
-  const { lobster_size, page = 1, pageSize, page_size } = ctx.query;
-  const size = Number(pageSize || page_size || 20);
+  const { lobster_size } = ctx.query;
+  const { page, pageSize } = normalizePagination(ctx.query, 20);
 
   const result = await purchaseService.listAvailablePurchases(merchantId, {
     lobster_size,
-    page: Number(page),
-    pageSize: size
+    page,
+    pageSize
   });
 
-  ctx.body = paginate(result.list, result.total, page, size);
+  ctx.body = paginate(result.list, result.total, page, pageSize);
 };
 
 const create = async (ctx) => {

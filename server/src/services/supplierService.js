@@ -19,11 +19,37 @@ const listSuppliers = async (merchantId, { keyword, page = 1, pageSize = 10 }) =
     order: [['id', 'DESC']]
   });
 
-  const suppliers = [];
-  for (const supplier of rows) {
-    const stats = await _computeSupplierStats(supplier.id);
-    suppliers.push(serializeSupplier(supplier, stats));
+  const statsBySupplierId = new Map();
+  if (rows.length > 0) {
+    const statsRows = await PurchaseRecord.findAll({
+      where: {
+        supplier_id: { [Op.in]: rows.map(supplier => supplier.id) },
+        order_status: { [Op.ne]: 1 }
+      },
+      attributes: [
+        'supplier_id',
+        [sequelize.fn('COALESCE', sequelize.fn('SUM', sequelize.col('net_weight')), 0), 'total_weight'],
+        [sequelize.fn('COALESCE', sequelize.fn('SUM', sequelize.col('total_cost')), 0), 'total_cost'],
+        [sequelize.fn('COALESCE', sequelize.fn('SUM', sequelize.literal('CASE WHEN settlement_status != 1 THEN total_cost - paid_amount ELSE 0 END')), 0), 'total_debt'],
+        [sequelize.fn('COUNT', sequelize.col('id')), 'purchase_count']
+      ],
+      group: ['supplier_id'],
+      raw: true
+    });
+    for (const stats of statsRows) {
+      statsBySupplierId.set(String(stats.supplier_id), {
+        total_weight: parseFloat(stats.total_weight) || 0,
+        total_cost: parseFloat(stats.total_cost) || 0,
+        total_debt: parseFloat(stats.total_debt) || 0,
+        purchase_count: parseInt(stats.purchase_count, 10) || 0
+      });
+    }
   }
+
+  const suppliers = rows.map(supplier => serializeSupplier(
+    supplier,
+    statsBySupplierId.get(String(supplier.id)) || {}
+  ));
 
   return { list: suppliers, total: count };
 };

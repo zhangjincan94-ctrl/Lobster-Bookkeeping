@@ -1,18 +1,19 @@
 const supplierService = require('../services/supplierService');
 const { success, error, paginate } = require('../utils/response');
+const { normalizePagination } = require('../utils/pagination');
 
 const list = async (ctx) => {
   const merchantId = ctx.state.merchant.id;
-  const { keyword, page = 1, pageSize, page_size } = ctx.query;
-  const size = Number(pageSize || page_size || 10);
+  const { keyword } = ctx.query;
+  const { page, pageSize } = normalizePagination(ctx.query);
 
   const result = await supplierService.listSuppliers(merchantId, {
     keyword,
-    page: Number(page),
-    pageSize: size
+    page,
+    pageSize
   });
 
-  ctx.body = paginate(result.list, result.total, page, size);
+  ctx.body = paginate(result.list, result.total, page, pageSize);
 };
 
 const create = async (ctx) => {

@@ -90,6 +90,23 @@
     </view>
   </view>
 
+  <view wx:if="{{purchase.transactionAllocations && purchase.transactionAllocations.length > 0}}" class="detail-card card">
+    <view class="card-title">销售分摊</view>
+    <view
+      class="payment-record"
+      wx:for="{{purchase.transactionAllocations}}"
+      wx:key="id"
+      bindtap="goTransactionDetail"
+      data-id="{{item.transactionId}}"
+    >
+      <view class="payment-record-left">
+        <text class="payment-record-amount">{{item.buyerName}} · {{item.weightDisplay}}</text>
+        <text class="payment-record-method text-muted">成本 {{item.totalCostDisplay}}</text>
+      </view>
+      <text class="payment-record-time text-muted">{{item.timeDisplay}}</text>
+    </view>
+  </view>
+
   <view class="bottom-bar">
     <button wx:if="{{purchase.canCancel}}" class="btn-danger bottom-btn" bindtap="onCancelOrder" loading="{{canceling}}" disabled="{{canceling}}">取消采购单</button>
   </view>

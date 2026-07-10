@@ -1,5 +1,10 @@
 var baseUrl = 'http://localhost:3000'
 
+var lobsterSizes = [
+  '小青(2-4钱)', '中青(4-6钱)', '大青(6-8钱)', '炮头青(>9钱)',
+  '小红(2-4钱)', '中红(4-6钱)', '大红(6-8钱)', '炮头红(>9钱)'
+]
+
 var api = {
   login: '/api/auth/login',
   merchantProfile: '/api/merchants/profile',
@@ -31,5 +36,6 @@ var api = {
 
 module.exports = {
   baseUrl: baseUrl,
+  lobsterSizes: lobsterSizes,
   api: api
 }

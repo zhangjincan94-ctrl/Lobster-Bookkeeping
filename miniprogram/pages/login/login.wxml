@@ -7,8 +7,7 @@
     <text class="subtitle">轻松记账，高效管理</text>
     <button
       class="login-btn"
-      open-type="getUserInfo"
-      bindgetuserinfo="onGetUserInfo"
+      bindtap="onLogin"
       loading="{{loading}}"
       disabled="{{loading}}"
     >
