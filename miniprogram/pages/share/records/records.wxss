@@ -1,123 +1,152 @@
 .page {
-  padding-bottom: 40rpx;
   min-height: 100vh;
-  background-color: #f5f5f5;
+  padding: 24rpx;
+}
+
+.buyer-card,
+.stats-card,
+.transaction-item {
+  border: 1rpx solid #294142;
+  border-radius: 6rpx;
+  background-color: #122526;
 }
 
 .buyer-card {
-  margin: 16rpx 24rpx;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 32rpx 24rpx;
+  position: relative;
+  overflow: hidden;
+  padding: 24rpx;
+  border-color: #3c6867;
+}
+
+.buyer-card::before {
+  display: block;
+  margin-bottom: 12rpx;
+  color: #5de6dc;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 19rpx;
+  letter-spacing: 2rpx;
+  content: "BUYER STATEMENT";
 }
 
 .buyer-name {
-  font-size: 40rpx;
-  font-weight: bold;
-  color: #333333;
-  margin-bottom: 8rpx;
+  display: block;
+  color: #f2f7f5;
+  font-size: 34rpx;
+  font-weight: 700;
 }
 
 .buyer-phone {
-  font-size: 28rpx;
+  display: block;
+  margin-top: 8rpx;
+  color: #a1b2b0;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 22rpx;
 }
 
 .stats-card {
-  margin: 0 24rpx 16rpx;
+  display: flex;
+  margin-top: 16rpx;
+  overflow: hidden;
 }
 
 .stats-row {
   display: flex;
-  flex-direction: row;
-  justify-content: space-around;
+  width: 100%;
 }
 
 .stats-item {
   display: flex;
-  flex-direction: column;
-  align-items: center;
   flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  padding: 22rpx 18rpx;
+}
+
+.stats-item + .stats-item {
+  border-left: 1rpx solid #294142;
 }
 
 .stats-value {
-  font-size: 32rpx;
-  font-weight: bold;
-  margin-bottom: 8rpx;
+  overflow: hidden;
+  color: #f2f7f5;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 30rpx;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .stats-label {
-  font-size: 24rpx;
-  color: #999999;
+  margin-top: 8rpx;
+  color: #a1b2b0;
+  font-size: 20rpx;
 }
 
 .section-header {
-  padding: 24rpx 24rpx 8rpx;
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  margin-top: 28rpx;
+  margin-bottom: 14rpx;
+  padding-bottom: 10rpx;
+  border-bottom: 1rpx solid #294142;
 }
 
 .section-title {
-  font-size: 30rpx;
-  font-weight: bold;
-  color: #333333;
+  color: #5de6dc;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 21rpx;
+  letter-spacing: 2rpx;
 }
 
 .transaction-list {
-  padding: 0 24rpx;
+  display: flex;
+  flex-direction: column;
 }
 
 .transaction-item {
-  margin-bottom: 16rpx;
-  padding: 24rpx;
+  margin-bottom: 12rpx;
+  padding: 20rpx;
+  border-left: 3rpx solid #5de6dc;
 }
 
-.transaction-top {
+.transaction-top,
+.transaction-bottom {
   display: flex;
-  flex-direction: row;
+  align-items: center;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 12rpx;
 }
 
 .transaction-left {
   display: flex;
-  flex-direction: column;
   flex: 1;
-  margin-right: 24rpx;
+  flex-direction: column;
+  min-width: 0;
+  margin-right: 16rpx;
 }
 
 .transaction-type {
-  font-size: 30rpx;
-  color: #333333;
-  font-weight: 500;
-  margin-bottom: 8rpx;
+  color: #f2f7f5;
+  font-size: 26rpx;
+  font-weight: 700;
 }
 
-.transaction-sub {
-  font-size: 24rpx;
-}
-
-.transaction-right {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+.transaction-sub,
+.transaction-time {
+  margin-top: 6rpx;
+  color: #a1b2b0;
+  font-size: 20rpx;
 }
 
 .transaction-amount {
-  font-size: 32rpx;
-  font-weight: bold;
+  color: #f2f7f5;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 28rpx;
+  font-weight: 700;
 }
 
 .transaction-bottom {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.transaction-time {
-  font-size: 22rpx;
+  margin-top: 12rpx;
+  padding-top: 10rpx;
+  border-top: 1rpx dashed #294142;
 }

@@ -1,225 +1,35 @@
-.page {
-  padding-bottom: 40rpx;
-  min-height: 100vh;
-}
-
-.filter-card {
-  margin: 16rpx 24rpx;
-  padding: 16rpx 24rpx;
-}
-
-.filter-row {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.picker-item {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-.picker-label {
-  font-size: 22rpx;
-  color: #999999;
-}
-
-.picker-value {
-  font-size: 28rpx;
-  color: #333333;
-  margin-top: 4rpx;
-}
-
-.picker-sep {
-  font-size: 26rpx;
-  color: #999999;
-  padding: 0 16rpx;
-}
-
-.summary-card {
-  margin: 0 24rpx 16rpx;
-  padding: 24rpx 12rpx;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-}
-
-.summary-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1;
-}
-
-.summary-value {
-  font-size: 30rpx;
-  font-weight: bold;
-  margin-bottom: 8rpx;
-}
-
-.summary-label {
-  font-size: 22rpx;
-  color: #999999;
-}
-
-.winner-card,
-.chart-card {
-  margin: 0 24rpx 16rpx;
-  padding: 24rpx;
-}
-
-.winner-card {
-  background: linear-gradient(135deg, #FF6B35 0%, #FF9F43 100%);
-  color: #ffffff;
-}
-
-.winner-label {
-  font-size: 24rpx;
-  opacity: 0.88;
-}
-
-.winner-main {
-  margin-top: 14rpx;
-}
-
-.winner-name {
-  display: block;
-  font-size: 42rpx;
-  font-weight: bold;
-}
-
-.winner-desc {
-  display: block;
-  margin-top: 8rpx;
-  font-size: 24rpx;
-  opacity: 0.92;
-}
-
-.winner-reason {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  margin-top: 22rpx;
-  padding-top: 18rpx;
-  border-top: 1rpx solid rgba(255, 255, 255, 0.25);
-  font-size: 23rpx;
-}
-
-.section-head {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 18rpx;
-}
-
-.section-title {
-  font-size: 32rpx;
-  font-weight: bold;
-  color: #333333;
-}
-
-.section-tip {
-  margin-top: 6rpx;
-  font-size: 22rpx;
-  color: #999999;
-}
-
-.product-item {
-  padding: 22rpx 0;
-  border-bottom: 1rpx solid #f0f0f0;
-}
-
-.product-item:last-child {
-  border-bottom: none;
-}
-
-.rank-row {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-}
-
-.rank-badge {
-  width: 42rpx;
-  height: 42rpx;
-  line-height: 42rpx;
-  border-radius: 50%;
-  background-color: #FF6B35;
-  color: #ffffff;
-  text-align: center;
-  font-size: 24rpx;
-  font-weight: bold;
-  margin-right: 18rpx;
-  flex-shrink: 0;
-}
-
-.rank-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.rank-title-row,
-.rank-meta-row {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.product-name {
-  font-size: 30rpx;
-  font-weight: bold;
-  color: #333333;
-}
-
-.product-profit {
-  font-size: 30rpx;
-  font-weight: bold;
-  color: #22a06b;
-}
-
-.score-bar-bg {
-  width: 100%;
-  height: 16rpx;
-  background-color: #f0f0f0;
-  border-radius: 8rpx;
-  overflow: hidden;
-  margin-top: 14rpx;
-}
-
-.score-bar-fill {
-  height: 100%;
-  border-radius: 8rpx;
-  background: linear-gradient(90deg, #22a06b 0%, #7bd88f 100%);
-}
-
-.rank-meta-row {
-  margin-top: 12rpx;
-  color: #777777;
-  font-size: 22rpx;
-  line-height: 1.4;
-}
-
-.cost-warning {
-  margin-top: 16rpx;
-  padding: 12rpx 16rpx;
-  border-radius: 10rpx;
-  background-color: rgba(255, 255, 255, 0.18);
-  font-size: 22rpx;
-}
-
-.cost-warning-row {
-  background-color: #fff7e6;
-  color: #b26a00;
-}
-
-.empty-state {
-  padding: 96rpx 0;
-  text-align: center;
-}
-
-.empty-text {
-  font-size: 26rpx;
-  color: #999999;
-}
+.page { min-height: 100vh; padding: 16rpx 24rpx 32rpx; }
+.filter-card, .summary-card, .winner-card, .chart-card { margin-bottom: 16rpx; border: 1rpx solid #294142; border-radius: 6rpx; background-color: #122526; }
+.filter-card { padding: 16rpx; }
+.filter-row { display: flex; align-items: center; justify-content: space-between; }
+.picker-item { min-width: 224rpx; padding: 12rpx 14rpx; border: 1rpx solid #294142; border-radius: 4rpx; background-color: #0b1e1f; }
+.picker-label { display: block; color: #718381; font-family: "SFMono-Regular", Consolas, monospace; font-size: 18rpx; letter-spacing: 1rpx; }
+.picker-value { display: block; margin-top: 4rpx; color: #f2f7f5; font-size: 23rpx; }
+.picker-sep { color: #718381; font-size: 22rpx; }
+.summary-card { display: flex; overflow: hidden; padding: 0; }
+.summary-item { display: flex; flex: 1; flex-direction: column; min-width: 0; padding: 20rpx 13rpx; border-right: 1rpx solid #294142; }
+.summary-item:last-child { border-right: none; }
+.summary-value { overflow: hidden; color: #f2f7f5; font-family: "SFMono-Regular", Consolas, monospace; font-size: 28rpx; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.summary-label { margin-top: 7rpx; color: #a1b2b0; font-size: 18rpx; }
+.winner-card { padding: 22rpx; border-color: rgba(93, 230, 220, 0.5); background-color: rgba(93, 230, 220, 0.06); }
+.winner-label, .section-title { color: #5de6dc; font-family: "SFMono-Regular", Consolas, monospace; font-size: 20rpx; letter-spacing: 2rpx; }
+.winner-main { margin-top: 14rpx; }
+.winner-name { display: block; color: #f2f7f5; font-size: 34rpx; font-weight: 700; }
+.winner-desc { display: block; margin-top: 6rpx; color: #a1b2b0; font-size: 22rpx; }
+.winner-reason { display: flex; justify-content: space-between; margin-top: 18rpx; padding-top: 12rpx; border-top: 1rpx solid #294142; color: #d3dfdd; font-family: "SFMono-Regular", Consolas, monospace; font-size: 19rpx; }
+.cost-warning { margin-top: 14rpx; padding: 10rpx 12rpx; border: 1rpx solid rgba(231, 180, 71, 0.42); border-radius: 3rpx; background-color: rgba(231, 180, 71, 0.08); color: #e7b447; font-size: 20rpx; line-height: 1.45; }
+.chart-card { padding: 20rpx; }
+.section-head { display: flex; flex-direction: column; margin-bottom: 16rpx; }
+.section-tip { margin-top: 7rpx; color: #a1b2b0; font-size: 20rpx; line-height: 1.45; }
+.product-item { padding: 17rpx 0; border-bottom: 1rpx solid #294142; }
+.product-item:last-child { border-bottom: none; }
+.rank-row { display: flex; }
+.rank-badge { display: flex; align-items: center; justify-content: center; width: 38rpx; height: 38rpx; margin-right: 14rpx; border: 1rpx solid #3c6867; color: #5de6dc; font-family: "SFMono-Regular", Consolas, monospace; font-size: 19rpx; }
+.rank-info { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+.rank-title-row, .rank-meta-row { display: flex; align-items: center; justify-content: space-between; }
+.product-name { color: #f2f7f5; font-size: 27rpx; font-weight: 700; }
+.product-profit { color: #4bce91; font-family: "SFMono-Regular", Consolas, monospace; font-size: 26rpx; font-weight: 700; }
+.score-bar-bg { height: 9rpx; margin: 10rpx 0; overflow: hidden; border: 1rpx solid #294142; background-color: #0b1e1f; }
+.score-bar-fill { height: 100%; background-color: #00a9a5; box-shadow: 0 0 8rpx rgba(93, 230, 220, 0.4); }
+.rank-meta-row { margin-top: 5rpx; color: #a1b2b0; font-size: 19rpx; }
+.cost-warning-row { margin-top: 10rpx; }

@@ -4,6 +4,7 @@ const assert = require('node:assert/strict');
 const models = require('../src/models');
 const transactionService = require('../src/services/transactionService');
 const purchaseService = require('../src/services/purchaseService');
+const ledgerService = require('../src/services/ledgerService');
 const { normalizePagination } = require('../src/utils/pagination');
 const {
   serializeTransactionListItem,
@@ -252,4 +253,78 @@ test('序列化器读取Sequelize实际关联别名', () => {
   });
   assert.equal(purchase.supplier.name, '测试供应商');
   assert.equal(purchase.transaction_allocations[0].buyer_name, '分摊买家');
+});
+
+test('多商品账单按商品数量和单价计算总额', async (t) => {
+  const dbTx = createDbTx();
+  let createdItems;
+  t.mock.method(models.sequelize, 'transaction', async (callback) => callback(dbTx));
+  t.mock.method(models.Customer, 'findOne', async () => ({ id: 2, name: '测试客户' }));
+  t.mock.method(models.Product, 'findAll', async () => ([
+    { id: 5, name: '大闸蟹', unit: '箱' },
+    { id: 6, name: '冰鲜虾', unit: '斤' }
+  ]));
+  t.mock.method(models.LedgerBill, 'create', async () => ({ id: 9 }));
+  t.mock.method(models.LedgerBillItem, 'bulkCreate', async (items, options) => {
+    createdItems = { items, options };
+  });
+  t.mock.method(models.LedgerBill, 'findOne', async () => ({
+    id: 9,
+    customer_id: 2,
+    direction: 'sale',
+    bill_date: '2026-07-11',
+    total_amount: '34.50',
+    remark: '',
+    customer: { name: '测试客户' },
+    items: [
+      { id: 1, product_id: 5, product_name: '大闸蟹', unit: '箱', quantity: '2', unit_price: '10', subtotal: '20' },
+      { id: 2, product_id: 6, product_name: '冰鲜虾', unit: '斤', quantity: '1.5', unit_price: '9.666', subtotal: '14.50' }
+    ]
+  }));
+
+  const bill = await ledgerService.createBill(10, {
+    customer_id: 2,
+    direction: 'sale',
+    bill_date: '2026-07-11',
+    items: [
+      { product_id: 5, quantity: 2, unit_price: 10 },
+      { product_id: 6, quantity: 1.5, unit_price: '9.666' }
+    ]
+  });
+
+  assert.equal(createdItems.options.transaction, dbTx);
+  assert.deepEqual(createdItems.items.map((item) => item.subtotal), [20, 14.5]);
+  assert.equal(bill.total_amount, 34.5);
+});
+
+test('通用账本拒绝未知账单方向和无效回款金额', async () => {
+  await assert.rejects(
+    ledgerService.createBill(10, {
+      customer_id: 2,
+      direction: 'transfer',
+      bill_date: '2026-07-11',
+      items: []
+    }),
+    /账单方向必须是出货或进货/
+  );
+  await assert.rejects(
+    ledgerService.createCustomerPayment(10, {
+      customer_id: 2,
+      amount: 0,
+      payment_date: '2026-07-11'
+    }),
+    /客户、回款金额和日期必须正确填写/
+  );
+});
+
+test('结账信息拒绝错误的日期范围，且不修改账单或回款', async () => {
+  await assert.rejects(
+    ledgerService.createCustomerStatement(10, {
+      customer_id: 2,
+      start_date: '2026-07-12',
+      end_date: '2026-07-11'
+    }),
+    /客户和结账日期范围必须正确填写/
+  );
+  assert.ok(models.CustomerStatement.associations.customer);
 });

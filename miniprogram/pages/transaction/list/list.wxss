@@ -1,55 +1,63 @@
 .page {
-  padding-bottom: 120rpx;
   min-height: 100vh;
+  padding-bottom: 136rpx;
+}
+
+.filter-bar,
+.range-filter,
+.date-filter {
+  box-sizing: border-box;
+  border-bottom: 1rpx solid #294142;
+  background-color: #122526;
 }
 
 .filter-bar {
-  background-color: #ffffff;
-  padding: 16rpx 24rpx;
   position: sticky;
-  top: 0;
   z-index: 10;
+  top: 0;
+  padding: 16rpx 24rpx;
 }
 
 .status-tabs {
   display: flex;
-  flex-direction: row;
   white-space: nowrap;
 }
 
 .status-tab {
-  display: inline-block;
-  padding: 12rpx 32rpx;
-  font-size: 26rpx;
-  color: #666666;
-  border-radius: 32rpx;
-  margin-right: 16rpx;
-  background-color: #f5f5f5;
+  display: inline-flex;
+  align-items: center;
+  height: 56rpx;
+  box-sizing: border-box;
+  margin-right: 12rpx;
+  padding: 0 22rpx;
+  border: 1rpx solid #294142;
+  border-radius: 4rpx;
+  color: #a1b2b0;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 21rpx;
 }
 
 .status-tab-active {
-  background-color: #FF6B35;
-  color: #ffffff;
+  border-color: #5de6dc;
+  background-color: rgba(93, 230, 220, 0.1);
+  color: #5de6dc;
 }
 
 .range-filter {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 12rpx 24rpx;
-  background-color: #ffffff;
-  border-top: 1rpx solid #f5f5f5;
+  padding: 14rpx 24rpx;
 }
 
 .range-tab {
   flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  margin-right: 10rpx;
+  padding: 10rpx 0;
+  border-bottom: 2rpx solid transparent;
+  color: #a1b2b0;
+  font-size: 23rpx;
   text-align: center;
-  padding: 12rpx 0;
-  margin-right: 12rpx;
-  border-radius: 28rpx;
-  background-color: #f5f5f5;
-  color: #666666;
-  font-size: 24rpx;
 }
 
 .range-tab:last-child {
@@ -57,30 +65,32 @@
 }
 
 .range-tab-active {
-  background-color: #FF6B35;
-  color: #ffffff;
+  border-color: #5de6dc;
+  color: #f2f7f5;
 }
 
 .date-filter {
   display: flex;
-  flex-direction: row;
   align-items: center;
-  padding: 16rpx 24rpx;
-  background-color: #ffffff;
-  border-bottom: 1rpx solid #f0f0f0;
+  padding: 14rpx 24rpx;
 }
 
 .date-picker {
-  padding: 12rpx 20rpx;
-  background-color: #f5f5f5;
-  border-radius: 8rpx;
-  font-size: 24rpx;
+  min-width: 184rpx;
+  padding: 10rpx 12rpx;
+  border: 1rpx solid #294142;
+  border-radius: 4rpx;
+  background-color: #0b1e1f;
+  color: #f2f7f5;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 21rpx;
+  text-align: center;
 }
 
 .date-separator {
-  margin: 0 16rpx;
-  font-size: 24rpx;
-  color: #999999;
+  margin: 0 12rpx;
+  color: #718381;
+  font-size: 22rpx;
 }
 
 .transaction-list {
@@ -88,30 +98,39 @@
 }
 
 .transaction-item {
+  position: relative;
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 16rpx;
-  padding: 24rpx;
+  justify-content: space-between;
+  margin-bottom: 12rpx;
+  padding: 22rpx 20rpx;
+  border: 1rpx solid #294142;
+  border-left: 3rpx solid #5de6dc;
+  border-radius: 4rpx;
+  background-color: #122526;
 }
 
 .transaction-left {
   display: flex;
-  flex-direction: column;
   flex: 1;
-  margin-right: 24rpx;
+  flex-direction: column;
+  min-width: 0;
+  margin-right: 20rpx;
 }
 
 .transaction-buyer {
-  font-size: 30rpx;
-  color: #333333;
-  font-weight: 500;
-  margin-bottom: 8rpx;
+  overflow: hidden;
+  color: #f2f7f5;
+  font-size: 29rpx;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .transaction-sub {
-  font-size: 24rpx;
+  margin-top: 8rpx;
+  color: #a1b2b0;
+  font-size: 22rpx;
 }
 
 .transaction-right {
@@ -121,57 +140,49 @@
 }
 
 .transaction-amount {
-  font-size: 32rpx;
-  font-weight: bold;
-  margin-bottom: 8rpx;
-}
-
-.transaction-bottom-row {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
+  color: #f2f7f5;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 31rpx;
+  font-weight: 700;
 }
 
 .transaction-paid-row {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  font-size: 22rpx;
-  margin-bottom: 6rpx;
+  margin-top: 8rpx;
+  font-size: 19rpx;
 }
 
 .transaction-paid-row .text-success {
-  margin-right: 12rpx;
+  margin-right: 10rpx;
+}
+
+.transaction-bottom-row {
+  display: flex;
+  align-items: center;
+  margin-top: 10rpx;
 }
 
 .transaction-time {
-  font-size: 22rpx;
-  margin-right: 12rpx;
-}
-
-.loading-tip {
-  text-align: center;
-  padding: 24rpx 0;
-  font-size: 24rpx;
+  margin-right: 10rpx;
+  color: #718381;
+  font-size: 19rpx;
 }
 
 .fab {
   position: fixed;
-  right: 40rpx;
-  bottom: 120rpx;
-  width: 108rpx;
-  height: 108rpx;
-  border-radius: 54rpx;
-  background-color: #FF6B35;
+  z-index: 100;
+  right: 32rpx;
+  bottom: 114rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8rpx 24rpx rgba(255, 107, 53, 0.4);
-  z-index: 100;
+  width: 104rpx;
+  height: 104rpx;
+  border-radius: 8rpx;
 }
 
 .fab-icon {
-  font-size: 52rpx;
-  color: #ffffff;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 48rpx;
   line-height: 1;
 }

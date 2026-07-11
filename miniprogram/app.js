@@ -5,7 +5,8 @@ App({
     var publicPages = [
       'pages/share/records/records',
       'pages/share/purchase-record/purchase-record',
-      'pages/share/supplier-records/supplier-records'
+      'pages/share/supplier-records/supplier-records',
+      'pages/share/statement/statement'
     ]
     var isPublicPage = publicPages.indexOf(launchPath) >= 0
     if (!token && !isPublicPage) {

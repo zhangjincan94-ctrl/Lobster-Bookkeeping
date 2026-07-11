@@ -1,8 +1,16 @@
 {
   "pages": [
-    "pages/index/index",
+    "pages/book/add/add",
+    "pages/book/list/list",
+    "pages/customer/list/list",
+    "pages/query/list/list",
     "pages/login/login",
     "pages/me/me",
+    "pages/book/detail/detail",
+    "pages/customer/detail/detail",
+    "pages/share/statement/statement",
+    "pages/product/list/list",
+    "pages/index/index",
     "pages/transaction/list/list",
     "pages/transaction/add/add",
     "pages/transaction/detail/detail",
@@ -21,34 +29,40 @@
     "pages/stats/product/product"
   ],
   "window": {
-    "backgroundTextStyle": "light",
-    "navigationBarBackgroundColor": "#FF6B35",
+    "backgroundTextStyle": "dark",
+    "navigationBarBackgroundColor": "#0B1617",
     "navigationBarTitleText": "龙虾记账",
     "navigationBarTextStyle": "white"
   },
   "tabBar": {
-    "color": "#999999",
-    "selectedColor": "#FF6B35",
-    "backgroundColor": "#ffffff",
-    "borderStyle": "black",
+    "color": "#A1B2B0",
+    "selectedColor": "#5DE6DC",
+    "backgroundColor": "#122526",
+    "borderStyle": "white",
     "list": [
       {
-        "pagePath": "pages/index/index",
-        "text": "首页",
+        "pagePath": "pages/book/add/add",
+        "text": "开单",
         "iconPath": "assets/icons/home.png",
         "selectedIconPath": "assets/icons/home-active.png"
       },
       {
-        "pagePath": "pages/transaction/list/list",
-        "text": "交易",
+        "pagePath": "pages/book/list/list",
+        "text": "总账本",
         "iconPath": "assets/icons/order.png",
         "selectedIconPath": "assets/icons/order-active.png"
       },
       {
-        "pagePath": "pages/purchase/list/list",
-        "text": "进货",
+        "pagePath": "pages/customer/list/list",
+        "text": "客户",
         "iconPath": "assets/icons/purchase.png",
         "selectedIconPath": "assets/icons/purchase-active.png"
+      },
+      {
+        "pagePath": "pages/query/list/list",
+        "text": "查询",
+        "iconPath": "assets/icons/order.png",
+        "selectedIconPath": "assets/icons/order-active.png"
       },
       {
         "pagePath": "pages/me/me",

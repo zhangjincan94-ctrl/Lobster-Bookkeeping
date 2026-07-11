@@ -95,24 +95,12 @@ Page({
     })
   },
 
-  goBuyer: function () {
-    wx.navigateTo({ url: '/pages/buyer/list/list' })
+  goProductLibrary: function () {
+    wx.navigateTo({ url: '/pages/product/list/list' })
   },
 
-  goSupplier: function () {
-    wx.navigateTo({ url: '/pages/supplier/list/list' })
-  },
-
-  goStatsOverview: function () {
-    wx.navigateTo({ url: '/pages/stats/overview/overview' })
-  },
-
-  goStatsDebt: function () {
-    wx.navigateTo({ url: '/pages/stats/debt/debt' })
-  },
-
-  goStatsProduct: function () {
-    wx.navigateTo({ url: '/pages/stats/product/product' })
+  goCategoryManager: function () {
+    wx.navigateTo({ url: '/pages/product/list/list?category=1' })
   },
 
   onLogout: function () {

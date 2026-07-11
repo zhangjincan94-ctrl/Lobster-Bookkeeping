@@ -1,0 +1,23 @@
+.ledger-page { padding: 24rpx; }
+.page-head { display: flex; align-items: flex-end; justify-content: space-between; margin: 4rpx 0 24rpx; }
+.page-title { display: block; color: #f2f7f5; font-size: 40rpx; font-weight: 700; }
+.page-subtitle { display: block; margin-top: 8rpx; color: #a1b2b0; font-size: 23rpx; }
+.create-link { color: #5de6dc; font-size: 27rpx; }
+.filter-bar { display: flex; gap: 12rpx; margin-bottom: 20rpx; }
+.filter { flex: 1; padding: 16rpx 0; border: 1rpx solid #294142; border-radius: 5rpx; color: #a1b2b0; font-size: 24rpx; text-align: center; }
+.filter-active { border-color: #5de6dc; color: #5de6dc; }
+.filter-sale-active { border-color: #ff967f; color: #ff967f; background: rgba(255, 98, 70, .1); }
+.filter-purchase-active { border-color: #f2ca72; color: #f2ca72; background: rgba(231, 180, 71, .1); }
+.bill-card { margin-bottom: 16rpx; padding: 22rpx 24rpx; border: 1rpx solid #294142; border-radius: 6rpx; background: #122526; }
+.bill-top, .bill-meta { display: flex; align-items: center; justify-content: space-between; }
+.customer-name { margin-left: 12rpx; color: #f2f7f5; font-size: 29rpx; font-weight: 600; }
+.direction-tag { display: inline-block; padding: 3rpx 10rpx; border-radius: 4rpx; font-size: 20rpx; }
+.direction-tag.sale { color: #ff967f; background: rgba(255, 98, 70, .12); }
+.direction-tag.purchase { color: #f2ca72; background: rgba(231, 180, 71, .12); }
+.bill-total { font-size: 31rpx; font-weight: 700; }
+.bill-total.sale { color: #ff967f; }
+.bill-total.purchase { color: #f2ca72; }
+.bill-meta { margin-top: 18rpx; color: #a1b2b0; font-size: 22rpx; }
+.detail-link { color: #5de6dc; }
+.item-preview { overflow: hidden; margin-top: 14rpx; color: #718381; font-size: 22rpx; text-overflow: ellipsis; white-space: nowrap; }
+.empty-action { width: 260rpx; margin-top: 30rpx; }

@@ -7,6 +7,7 @@ const supplierRoutes = require('./supplier');
 const purchaseRoutes = require('./purchase');
 const statsRoutes = require('./stats');
 const otherCostRoutes = require('./otherCost');
+const ledgerRoutes = require('./ledger');
 const router = new Router();
 
 router.use(authRoutes.routes());
@@ -17,6 +18,7 @@ router.use(supplierRoutes.routes());
 router.use(purchaseRoutes.routes());
 router.use(statsRoutes.routes());
 router.use(otherCostRoutes.routes());
+router.use(ledgerRoutes.routes());
 
 router.get('/', (ctx) => {
   ctx.body = {

@@ -171,6 +171,131 @@ const run = async () => {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
 
+  // 新通用账本与旧龙虾业务表独立，迁移只创建缺失表，不改写旧记录。
+  await sequelize.query(`
+    CREATE TABLE IF NOT EXISTS customers (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      merchant_id INT NOT NULL,
+      name VARCHAR(50) NOT NULL,
+      phone VARCHAR(20) NULL,
+      account_start_date DATE NULL,
+      remark VARCHAR(500) NULL,
+      archived_at DATETIME NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_customers_merchant_id (merchant_id),
+      INDEX idx_customers_archived_at (archived_at),
+      CONSTRAINT fk_customers_merchant FOREIGN KEY (merchant_id) REFERENCES merchants(id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await sequelize.query(`
+    CREATE TABLE IF NOT EXISTS product_categories (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      merchant_id INT NOT NULL,
+      name VARCHAR(50) NOT NULL,
+      sort_order INT NOT NULL DEFAULT 0,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_product_categories_merchant_id (merchant_id),
+      CONSTRAINT fk_product_categories_merchant FOREIGN KEY (merchant_id) REFERENCES merchants(id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await sequelize.query(`
+    CREATE TABLE IF NOT EXISTS products (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      merchant_id INT NOT NULL,
+      category_id INT NULL,
+      name VARCHAR(80) NOT NULL,
+      unit VARCHAR(20) NOT NULL DEFAULT '件',
+      default_unit_price DECIMAL(10, 2) NULL,
+      remark VARCHAR(500) NULL,
+      archived_at DATETIME NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_products_merchant_id (merchant_id),
+      INDEX idx_products_category_id (category_id),
+      INDEX idx_products_archived_at (archived_at),
+      CONSTRAINT fk_products_merchant FOREIGN KEY (merchant_id) REFERENCES merchants(id),
+      CONSTRAINT fk_products_category FOREIGN KEY (category_id) REFERENCES product_categories(id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await sequelize.query(`
+    CREATE TABLE IF NOT EXISTS ledger_bills (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      merchant_id INT NOT NULL,
+      customer_id INT NOT NULL,
+      direction VARCHAR(10) NOT NULL,
+      bill_date DATE NOT NULL,
+      total_amount DECIMAL(10, 2) NOT NULL,
+      remark VARCHAR(500) NULL,
+      deleted_at DATETIME NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_ledger_bills_merchant_date (merchant_id, bill_date),
+      INDEX idx_ledger_bills_customer_date (customer_id, bill_date),
+      INDEX idx_ledger_bills_deleted_at (deleted_at),
+      CONSTRAINT fk_ledger_bills_merchant FOREIGN KEY (merchant_id) REFERENCES merchants(id),
+      CONSTRAINT fk_ledger_bills_customer FOREIGN KEY (customer_id) REFERENCES customers(id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await sequelize.query(`
+    CREATE TABLE IF NOT EXISTS ledger_bill_items (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      ledger_bill_id INT NOT NULL,
+      product_id INT NOT NULL,
+      product_name VARCHAR(80) NOT NULL,
+      unit VARCHAR(20) NOT NULL,
+      quantity DECIMAL(10, 2) NOT NULL,
+      unit_price DECIMAL(10, 2) NOT NULL,
+      subtotal DECIMAL(10, 2) NOT NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_ledger_bill_items_bill_id (ledger_bill_id),
+      INDEX idx_ledger_bill_items_product_id (product_id),
+      CONSTRAINT fk_ledger_bill_items_bill FOREIGN KEY (ledger_bill_id) REFERENCES ledger_bills(id),
+      CONSTRAINT fk_ledger_bill_items_product FOREIGN KEY (product_id) REFERENCES products(id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await sequelize.query(`
+    CREATE TABLE IF NOT EXISTS customer_payments (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      merchant_id INT NOT NULL,
+      customer_id INT NOT NULL,
+      amount DECIMAL(10, 2) NOT NULL,
+      payment_date DATE NOT NULL,
+      payment_method VARCHAR(20) NULL,
+      remark VARCHAR(500) NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_customer_payments_merchant_date (merchant_id, payment_date),
+      INDEX idx_customer_payments_customer_date (customer_id, payment_date),
+      CONSTRAINT fk_customer_payments_merchant FOREIGN KEY (merchant_id) REFERENCES merchants(id),
+      CONSTRAINT fk_customer_payments_customer FOREIGN KEY (customer_id) REFERENCES customers(id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await sequelize.query(`
+    CREATE TABLE IF NOT EXISTS customer_statements (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      merchant_id INT NOT NULL,
+      customer_id INT NOT NULL,
+      start_date DATE NOT NULL,
+      end_date DATE NOT NULL,
+      share_token VARCHAR(64) NOT NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      UNIQUE KEY uq_customer_statements_share_token (share_token),
+      INDEX idx_customer_statements_customer_id (customer_id),
+      CONSTRAINT fk_customer_statements_merchant FOREIGN KEY (merchant_id) REFERENCES merchants(id),
+      CONSTRAINT fk_customer_statements_customer FOREIGN KEY (customer_id) REFERENCES customers(id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
   console.log('数据库迁移已完成');
 };
 

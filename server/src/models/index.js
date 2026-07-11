@@ -9,6 +9,13 @@ const PurchaseRecord = require('./purchase_record');
 const SupplierPaymentRecord = require('./supplier_payment_record');
 const TransactionPurchaseAllocation = require('./transaction_purchase_allocation');
 const OtherCost = require('./other_cost');
+const Customer = require('./customer');
+const ProductCategory = require('./product_category');
+const Product = require('./product');
+const LedgerBill = require('./ledger_bill');
+const LedgerBillItem = require('./ledger_bill_item');
+const CustomerPayment = require('./customer_payment');
+const CustomerStatement = require('./customer_statement');
 
 const models = {
   Merchant,
@@ -19,7 +26,14 @@ const models = {
   PurchaseRecord,
   SupplierPaymentRecord,
   TransactionPurchaseAllocation,
-  OtherCost
+  OtherCost,
+  Customer,
+  ProductCategory,
+  Product,
+  LedgerBill,
+  LedgerBillItem,
+  CustomerPayment,
+  CustomerStatement
 };
 
 Object.keys(models).forEach(modelName => {
@@ -39,5 +53,12 @@ module.exports = {
   PurchaseRecord,
   SupplierPaymentRecord,
   TransactionPurchaseAllocation,
-  OtherCost
+  OtherCost,
+  Customer,
+  ProductCategory,
+  Product,
+  LedgerBill,
+  LedgerBillItem,
+  CustomerPayment,
+  CustomerStatement
 };

@@ -1,199 +1,179 @@
 .page {
-  padding-bottom: 140rpx;
   min-height: 100vh;
+  padding-bottom: 146rpx;
 }
 
 .detail-card {
   margin: 16rpx 24rpx;
+  padding: 22rpx 20rpx;
+  border: 1rpx solid #294142;
+  border-radius: 6rpx;
+  background-color: #122526;
 }
 
 .card-title {
-  font-size: 28rpx;
-  font-weight: bold;
-  color: #333333;
-  margin-bottom: 16rpx;
+  margin-bottom: 10rpx;
   padding-bottom: 12rpx;
-  border-bottom: 1rpx solid #f0f0f0;
+  border-bottom: 1rpx solid #294142;
+  color: #5de6dc;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 21rpx;
+  font-weight: 700;
+  letter-spacing: 2rpx;
 }
 
 .info-row {
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
   align-items: center;
-  padding: 16rpx 0;
+  justify-content: space-between;
+  min-height: 58rpx;
+  padding: 10rpx 0;
+  border-bottom: 1rpx solid #21393a;
+}
+
+.info-row:last-child {
+  border-bottom: none;
 }
 
 .info-label {
-  font-size: 28rpx;
-  color: #999999;
   flex-shrink: 0;
+  color: #a1b2b0;
+  font-size: 23rpx;
 }
 
 .info-value {
-  font-size: 28rpx;
-  color: #333333;
-  text-align: right;
+  overflow: hidden;
   margin-left: 24rpx;
-  word-break: break-all;
+  color: #f2f7f5;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 25rpx;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .payment-action,
 .delivery-action {
-  margin-top: 16rpx;
   display: flex;
   justify-content: flex-end;
+  margin-top: 16rpx;
+}
+
+.delivery-action .btn-small + .btn-small {
+  margin-left: 12rpx;
 }
 
 .remark-text {
-  font-size: 28rpx;
-  color: #333333;
-  line-height: 1.6;
+  color: #d3dfdd;
+  font-size: 26rpx;
+  line-height: 1.65;
 }
 
-.payment-record {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16rpx 0;
-  border-bottom: 1rpx solid #f5f5f5;
-}
-
-.payment-record:last-child {
-  border-bottom: none;
-}
-
-.payment-record-left {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
-.payment-record-amount {
-  font-size: 28rpx;
-  color: #27AE60;
-  font-weight: 500;
-  margin-right: 16rpx;
-}
-
-.payment-record-method {
-  font-size: 24rpx;
-}
-
-.payment-record-time {
-  font-size: 24rpx;
-}
-
+.payment-record,
 .source-record {
   display: flex;
-  flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  padding: 18rpx 0;
-  border-bottom: 1rpx solid #f5f5f5;
+  min-height: 72rpx;
+  padding: 13rpx 0;
+  border-bottom: 1rpx solid #21393a;
 }
 
+.payment-record:last-child,
 .source-record:last-child {
   border-bottom: none;
 }
 
+.payment-record-left,
 .source-record-left {
   display: flex;
-  flex-direction: column;
   flex: 1;
-  margin-right: 20rpx;
+  flex-direction: column;
+  min-width: 0;
+  margin-right: 18rpx;
+}
+
+.payment-record-amount,
+.source-record-cost {
+  color: #4bce91;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.payment-record-method,
+.payment-record-time,
+.source-record-meta {
+  margin-top: 4rpx;
+  color: #a1b2b0;
+  font-size: 20rpx;
 }
 
 .source-record-name {
-  font-size: 28rpx;
-  color: #333333;
-  font-weight: bold;
-  margin-bottom: 6rpx;
-}
-
-.source-record-meta {
-  font-size: 24rpx;
-  margin-top: 4rpx;
+  color: #f2f7f5;
+  font-size: 26rpx;
+  font-weight: 700;
 }
 
 .source-record-cost {
-  font-size: 28rpx;
-  flex-shrink: 0;
+  color: #e7b447;
 }
 
 .bottom-bar {
   position: fixed;
-  left: 0;
+  z-index: 100;
   right: 0;
   bottom: 0;
-  padding: 16rpx 24rpx;
-  padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
-  background-color: #ffffff;
-  box-shadow: 0 -2rpx 12rpx rgba(0, 0, 0, 0.05);
-  z-index: 100;
+  left: 0;
   display: flex;
-  justify-content: center;
-  gap: 16rpx;
+  gap: 12rpx;
+  padding: 16rpx 24rpx calc(16rpx + env(safe-area-inset-bottom));
+  border-top: 1rpx solid #294142;
+  background-color: #122526;
 }
 
 .bottom-btn {
   flex: 1;
-}
-
-.btn-danger {
-  background-color: #ffffff;
-  color: #E74C3C;
-  border: 2rpx solid #E74C3C;
-  border-radius: 12rpx;
-  padding: 20rpx 40rpx;
-  font-size: 30rpx;
-  text-align: center;
-  line-height: 1.5;
-}
-
-.btn-danger::after {
-  border: none;
+  min-height: 78rpx;
+  box-sizing: border-box;
 }
 
 .modal-mask {
   position: fixed;
+  z-index: 200;
   top: 0;
-  left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 200;
+  left: 0;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .modal-content {
-  width: 600rpx;
-  background-color: #ffffff;
-  border-radius: 16rpx;
+  width: 630rpx;
   overflow: hidden;
+  border-radius: 8rpx;
 }
 
 .modal-title {
-  font-size: 32rpx;
-  font-weight: bold;
+  padding: 26rpx 24rpx 14rpx;
+  color: #f2f7f5;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 29rpx;
+  font-weight: 700;
   text-align: center;
-  padding: 32rpx 24rpx 16rpx;
-  color: #333333;
 }
 
 .modal-body {
-  padding: 16rpx 24rpx;
+  padding: 10rpx 24rpx 20rpx;
 }
 
 .modal-field {
   display: flex;
-  flex-direction: row;
   align-items: center;
-  padding: 16rpx 0;
-  border-bottom: 1rpx solid #f5f5f5;
+  min-height: 72rpx;
+  border-bottom: 1rpx solid #294142;
 }
 
 .modal-field:last-child {
@@ -201,56 +181,37 @@
 }
 
 .modal-label {
-  width: 160rpx;
-  font-size: 28rpx;
-  color: #666666;
   flex-shrink: 0;
+  width: 154rpx;
+  color: #a1b2b0;
+  font-size: 24rpx;
 }
 
-.modal-input {
-  flex: 1;
-  font-size: 28rpx;
-  color: #333333;
-  text-align: right;
-  min-height: 56rpx;
-  line-height: 56rpx;
-}
-
+.modal-input,
 .modal-picker {
   flex: 1;
-  font-size: 28rpx;
-  color: #333333;
-  text-align: right;
+  min-height: 58rpx;
+  box-sizing: border-box;
   padding: 8rpx 0;
+  color: #f2f7f5;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 25rpx;
+  line-height: 42rpx;
+  text-align: right;
 }
 
 .modal-actions {
   display: flex;
-  flex-direction: row;
-  border-top: 1rpx solid #f0f0f0;
+  border-top: 1rpx solid #294142;
 }
 
 .modal-btn {
   flex: 1;
-  font-size: 30rpx;
-  padding: 24rpx 0;
-  text-align: center;
-  border: none;
+  padding: 22rpx 0;
   border-radius: 0;
-  line-height: 1.5;
-  background-color: #ffffff;
-}
-
-.modal-btn::after {
-  border: none;
+  font-size: 27rpx;
 }
 
 .modal-btn-cancel {
-  color: #999999;
-  border-right: 1rpx solid #f0f0f0;
-}
-
-.modal-btn-confirm {
-  color: #FF6B35;
-  font-weight: bold;
+  border-right: 1rpx solid #294142;
 }

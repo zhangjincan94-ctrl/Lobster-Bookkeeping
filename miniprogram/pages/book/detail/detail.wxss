@@ -1,0 +1,16 @@
+.detail-page { padding: 24rpx; }
+.hero-card { padding: 28rpx; border: 1rpx solid #3c6867; border-radius: 7rpx; background: #122526; }
+.direction-tag { display: inline-block; padding: 4rpx 10rpx; border-radius: 4rpx; font-size: 21rpx; }
+.direction-tag.sale, .total.sale { color: #ff967f; }
+.direction-tag.purchase, .total.purchase { color: #f2ca72; }
+.direction-tag.sale { background: rgba(255, 98, 70, .12); }
+.direction-tag.purchase { background: rgba(231, 180, 71, .12); }
+.customer { margin-left: 14rpx; color: #f2f7f5; font-size: 34rpx; font-weight: 700; }
+.total { display: block; margin-top: 28rpx; font-size: 52rpx; font-weight: 700; }
+.date { display: block; margin-top: 10rpx; color: #a1b2b0; font-size: 24rpx; }
+.section-title { display: block; margin-bottom: 14rpx; color: #f2f7f5; font-weight: 600; }
+.line { display: flex; align-items: center; justify-content: space-between; padding: 20rpx 0; border-top: 1rpx solid #294142; }
+.product { display: block; color: #f2f7f5; }
+.unit, .remark { display: block; margin-top: 7rpx; color: #a1b2b0; font-size: 23rpx; }
+.subtotal { color: #5de6dc; font-weight: 600; }
+.delete-btn { margin-top: 36rpx; }

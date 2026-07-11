@@ -1,0 +1,26 @@
+.customer-page { padding: 24rpx; }
+.page-head { display: flex; align-items: flex-end; justify-content: space-between; margin: 4rpx 0 24rpx; }
+.page-title { display: block; color: #f2f7f5; font-size: 40rpx; font-weight: 700; }
+.page-subtitle { display: block; margin-top: 8rpx; color: #a1b2b0; font-size: 23rpx; }
+.add-link { color: #5de6dc; font-size: 27rpx; }
+.search-bar { display: flex; align-items: center; height: 76rpx; margin-bottom: 20rpx; padding: 0 18rpx; border: 1rpx solid #3c6867; border-radius: 5rpx; background: #122526; }
+.search-bar input { flex: 1; color: #f2f7f5; font-size: 25rpx; }
+.search-bar text { color: #5de6dc; font-size: 24rpx; }
+.customer-row { display: flex; align-items: center; min-height: 112rpx; margin-bottom: 14rpx; padding: 0 20rpx; border: 1rpx solid #294142; border-radius: 6rpx; background: #122526; }
+.avatar { display: flex; align-items: center; justify-content: center; width: 56rpx; height: 56rpx; margin-right: 16rpx; border: 1rpx solid #3c6867; border-radius: 50%; color: #5de6dc; font-size: 26rpx; }
+.customer-info { min-width: 0; flex: 1; }
+.customer-name { display: block; overflow: hidden; color: #f2f7f5; font-size: 29rpx; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.customer-phone { display: block; margin-top: 6rpx; color: #a1b2b0; font-size: 21rpx; }
+.balance-box { min-width: 116rpx; text-align: right; }
+.balance-label { display: block; font-size: 20rpx; }
+.balance-value { display: block; margin-top: 5rpx; font-size: 25rpx; font-weight: 700; }
+.receivable { color: #ff8c8c; }
+.payable { color: #f2ca72; }
+.settled { color: #4bce91; }
+.chevron { margin-left: 12rpx; color: #5de6dc; font-size: 34rpx; }
+.empty-action { width: 240rpx; margin-top: 28rpx; }
+.dialog { width: 620rpx; padding: 30rpx; box-sizing: border-box; background: #122526; border: 1rpx solid #3c6867; border-radius: 8rpx; }
+.dialog-title { display: block; margin-bottom: 24rpx; color: #f2f7f5; font-size: 32rpx; font-weight: 600; }
+.dialog-input { display: block; width: 100%; min-height: 72rpx; box-sizing: border-box; margin-bottom: 16rpx; padding: 0 18rpx; border: 1rpx solid #3c6867; border-radius: 4rpx; color: #f2f7f5; }
+.dialog-actions { display: flex; gap: 16rpx; margin-top: 24rpx; }
+.dialog-actions button { flex: 1; }

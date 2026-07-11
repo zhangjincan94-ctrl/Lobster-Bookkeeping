@@ -26,29 +26,13 @@
   </view>
 
   <view class="menu-card card">
-    <view class="menu-title">客户管理</view>
-    <view class="menu-item" bindtap="goBuyer">
-      <text class="menu-label">买家管理</text>
+    <view class="menu-title">商品设置</view>
+    <view class="menu-item" bindtap="goProductLibrary">
+      <text class="menu-label">商品库</text>
       <text class="menu-arrow">›</text>
     </view>
-    <view class="menu-item" bindtap="goSupplier">
-      <text class="menu-label">供应商管理</text>
-      <text class="menu-arrow">›</text>
-    </view>
-  </view>
-
-  <view class="menu-card card">
-    <view class="menu-title">统计报表</view>
-    <view class="menu-item" bindtap="goStatsOverview">
-      <text class="menu-label">经营总览</text>
-      <text class="menu-arrow">›</text>
-    </view>
-    <view class="menu-item" bindtap="goStatsDebt">
-      <text class="menu-label">欠款排行</text>
-      <text class="menu-arrow">›</text>
-    </view>
-    <view class="menu-item" bindtap="goStatsProduct">
-      <text class="menu-label">品种分析</text>
+    <view class="menu-item" bindtap="goCategoryManager">
+      <text class="menu-label">分类管理</text>
       <text class="menu-arrow">›</text>
     </view>
   </view>

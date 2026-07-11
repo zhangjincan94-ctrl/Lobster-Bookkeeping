@@ -112,7 +112,7 @@
           <radio
             value="{{index}}"
             checked="{{paymentStatusIndex === index}}"
-            color="#FF6B35"
+            color="#00A9A5"
           />
           <text>{{item}}</text>
         </label>

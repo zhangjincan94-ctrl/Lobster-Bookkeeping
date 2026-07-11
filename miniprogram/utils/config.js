@@ -40,7 +40,26 @@ var api = {
   statsDebtRanking: '/api/stats/debt-ranking',
   statsProductAnalysis: '/api/stats/product-analysis',
   statsDashboard: '/api/stats/dashboard',
-  otherCostAdd: '/api/other-costs'
+  otherCostAdd: '/api/other-costs',
+  ledgerCustomerList: '/api/ledger/customers',
+  ledgerCustomerAdd: '/api/ledger/customers',
+  ledgerCustomerUpdate: function (id) { return '/api/ledger/customers/' + id },
+  ledgerCustomerDelete: function (id) { return '/api/ledger/customers/' + id },
+  ledgerCustomerBook: function (id) { return '/api/ledger/customers/' + id + '/ledger' },
+  ledgerCategoryList: '/api/ledger/categories',
+  ledgerCategoryAdd: '/api/ledger/categories',
+  ledgerCategoryDelete: function (id) { return '/api/ledger/categories/' + id },
+  ledgerProductList: '/api/ledger/products',
+  ledgerProductAdd: '/api/ledger/products',
+  ledgerProductUpdate: function (id) { return '/api/ledger/products/' + id },
+  ledgerProductDelete: function (id) { return '/api/ledger/products/' + id },
+  ledgerBillList: '/api/ledger/bills',
+  ledgerBillAdd: '/api/ledger/bills',
+  ledgerBillDetail: function (id) { return '/api/ledger/bills/' + id },
+  ledgerBillDelete: function (id) { return '/api/ledger/bills/' + id },
+  ledgerPaymentAdd: '/api/ledger/payments',
+  ledgerStatementAdd: '/api/ledger/statements',
+  ledgerStatementShare: function (token) { return '/api/ledger/share/' + token }
 }
 
 module.exports = {

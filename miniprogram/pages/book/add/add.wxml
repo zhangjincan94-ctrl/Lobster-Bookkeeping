@@ -1,0 +1,54 @@
+<view class="page bill-page">
+  <view class="title-band">
+    <text class="page-title">新建账单</text>
+    <text class="page-subtitle">客户与商品均由你自己维护</text>
+  </view>
+
+  <view class="card form-card">
+    <view class="field-row">
+      <text class="field-label">交易日期</text>
+      <view class="field-action date-actions">
+        <text class="quick-date" bindtap="chooseToday">今天</text>
+        <text class="quick-date" bindtap="chooseYesterday">昨天</text>
+        <picker mode="date" value="{{billDate}}" bindchange="onDateChange"><text class="picker-value">{{billDate}}</text></picker>
+      </view>
+    </view>
+    <view class="field-row" bindtap="openCustomerModal">
+      <text class="field-label">交易客户</text>
+      <view class="field-action"><text class="{{customerName ? 'picker-value' : 'placeholder'}}">{{customerName || '选择客户'}}</text><text class="chevron">›</text></view>
+    </view>
+    <view class="direction-row">
+      <text class="field-label">账单方向</text>
+      <view class="segmented-control">
+        <view class="segment {{direction === 'sale' ? 'segment-sale-active' : ''}}" data-direction="sale" bindtap="setDirection">出货</view>
+        <view class="segment {{direction === 'purchase' ? 'segment-purchase-active' : ''}}" data-direction="purchase" bindtap="setDirection">进货</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="card items-card">
+    <view class="section-head"><text class="section-title">商品明细</text><text class="clear-link" bindtap="clearItems">清空</text></view>
+    <view wx:if="{{items.length}}" class="item-head"><text>商品</text><text>数量</text><text>单价</text><text>小计</text></view>
+    <view wx:for="{{items}}" wx:key="rowId" class="bill-item">
+      <view class="product-cell"><text class="product-name">{{item.productName}}</text><text class="product-unit">{{item.unit}}</text></view>
+      <input class="compact-input" type="digit" value="{{item.quantity}}" data-index="{{index}}" data-field="quantity" bindinput="onItemInput" />
+      <input class="compact-input" type="digit" value="{{item.unitPrice}}" data-index="{{index}}" data-field="unitPrice" bindinput="onItemInput" />
+      <view class="subtotal-cell"><text>¥{{item.subtotal}}</text><text class="remove-item" data-index="{{index}}" bindtap="removeItem">×</text></view>
+    </view>
+    <view wx:if="{{!items.length}}" class="inline-empty">还没有商品明细</view>
+    <view class="item-actions"><button class="btn-secondary add-product" bindtap="openProductModal">+ 添加商品</button><text class="library-link" bindtap="goProductLibrary">商品库 ›</text></view>
+  </view>
+
+  <view class="card form-card">
+    <view class="field-row field-column"><text class="field-label">备注</text><textarea class="remark-input" placeholder="选填，记录本次交易说明" maxlength="200" value="{{remark}}" bindinput="onRemarkInput" /></view>
+  </view>
+
+  <view class="bottom-space"></view>
+  <view class="submit-bar"><view><text class="total-label">账单总额</text><text class="total-value">¥{{totalAmount}}</text></view><button class="submit-btn" loading="{{submitting}}" disabled="{{submitting}}" bindtap="submit">确认保存</button></view>
+</view>
+
+<view wx:if="{{showCustomerModal}}" class="modal-mask" bindtap="closeCustomerModal"><view class="sheet" catchtap="noop"><view class="sheet-head"><text>选择客户</text><text class="sheet-close" bindtap="closeCustomerModal">×</text></view><input class="search-input" placeholder="搜索客户名称或电话" value="{{customerKeyword}}" bindinput="onCustomerSearch" /><scroll-view class="sheet-list" scroll-y><view wx:for="{{customers}}" wx:key="id" class="select-row" data-index="{{index}}" bindtap="selectCustomer"><view><text>{{item.name}}</text><text wx:if="{{item.phone}}" class="row-meta">{{item.phone}}</text></view><text class="balance">¥{{item.balance}}</text></view><view wx:if="{{!customers.length}}" class="inline-empty">没有找到客户</view></scroll-view><button class="btn-primary sheet-action" bindtap="openCustomerCreate">+ 新增客户</button></view></view>
+
+<view wx:if="{{showProductModal}}" class="modal-mask" bindtap="closeProductModal"><view class="sheet" catchtap="noop"><view class="sheet-head"><text>从商品库选择</text><text class="sheet-close" bindtap="closeProductModal">×</text></view><input class="search-input" placeholder="搜索商品" value="{{productKeyword}}" bindinput="onProductSearch" /><scroll-view class="sheet-list" scroll-y><view wx:for="{{products}}" wx:key="id" class="select-row" data-index="{{index}}" bindtap="selectProduct"><view><text>{{item.name}}</text><text class="row-meta">{{item.categoryName || '未分类'}} · {{item.unit}}</text></view><text class="balance">{{item.defaultUnitPrice === null ? '待定价' : '¥' + item.defaultUnitPrice}}</text></view><view wx:if="{{!products.length}}" class="inline-empty">商品库为空，请先新增商品</view></scroll-view><button class="btn-primary sheet-action" bindtap="goProductLibrary">管理商品库</button></view></view>
+
+<view wx:if="{{showCustomerCreate}}" class="modal-mask" bindtap="closeCustomerCreate"><view class="dialog" catchtap="noop"><text class="dialog-title">新增客户</text><input class="dialog-input" placeholder="客户名称" value="{{newCustomerName}}" bindinput="onNewCustomerNameInput" /><input class="dialog-input" placeholder="联系电话（选填）" type="number" value="{{newCustomerPhone}}" bindinput="onNewCustomerPhoneInput" /><view class="dialog-actions"><button class="btn-secondary" bindtap="closeCustomerCreate">取消</button><button class="btn-primary" loading="{{creatingCustomer}}" disabled="{{creatingCustomer}}" bindtap="createCustomer">保存并选择</button></view></view></view>

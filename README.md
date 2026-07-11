@@ -34,7 +34,7 @@ npm run dev
 
 Available scripts:
 
-- `npm start`: run `src/app.js`
+- `npm start`: run the safe database migration, then start `src/app.js`
 - `npm run dev`: run with nodemon
 - `npm run sync`: recreate database tables after setting `ALLOW_DB_RESET=true`; production execution is always rejected
 

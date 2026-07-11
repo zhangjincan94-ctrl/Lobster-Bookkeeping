@@ -53,7 +53,7 @@
       <text class="form-label">结算状态</text>
       <radio-group class="radio-group" bindchange="onSettlementStatusChange">
         <label class="radio-item" wx:for="{{settlementStatusOptions}}" wx:key="index">
-          <radio value="{{index}}" checked="{{settlementStatusIndex === index}}" color="#FF6B35" />
+          <radio value="{{index}}" checked="{{settlementStatusIndex === index}}" color="#00A9A5" />
           <text>{{item}}</text>
         </label>
       </radio-group>

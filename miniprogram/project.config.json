@@ -47,8 +47,8 @@
     "disableSWC": true
   },
   "compileType": "miniprogram",
-  "libVersion": "3.3.4",
-  "appid": "wx0d6111ce5cfaa1ed",
+  "libVersion": "3.8.12",
+  "appid": "wx142a2ab7fd53a68a",
   "projectname": "lobster-accounting",
   "condition": {},
   "simulatorPluginLibVersion": {},
