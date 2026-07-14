@@ -322,9 +322,9 @@ const archiveProduct = async (merchantId, productId) => {
   return { id: product.id, archived: true };
 };
 
-const normalizeItems = async (merchantId, items, transaction) => {
+const normalizeItems = async (merchantId, items, transaction, feature = '创建多商品账单') => {
   if (!Array.isArray(items) || items.length === 0) {
-    throw serviceError('账单至少需要一条商品明细', 400, { feature: '创建多商品账单', merchantId });
+    throw serviceError('账单至少需要一条商品明细', 400, { feature, merchantId });
   }
   const productIds = items.map((item) => {
     const value = item.product_id === undefined ? item.productId : item.product_id;
@@ -344,19 +344,19 @@ const normalizeItems = async (merchantId, items, transaction) => {
     const unitPrice = toNumber(item.unit_price === undefined ? item.unitPrice : item.unit_price);
     if (hasProductId && !product) {
       throw serviceError('商品不存在或不属于当前店铺', 400, {
-        feature: '创建多商品账单', merchantId, itemIndex: index,
+        feature, merchantId, itemIndex: index,
         productId: rawProductId, quantity, unitPrice
       });
     }
     if (!product && !productName) {
       throw serviceError('商品名称不能为空', 400, {
-        feature: '创建多商品账单', merchantId, itemIndex: index,
+        feature, merchantId, itemIndex: index,
         productId: rawProductId || null, quantity, unitPrice
       });
     }
     if (quantity <= 0 || unitPrice < 0) {
       throw serviceError('商品数量或单价无效', 400, {
-        feature: '创建多商品账单', merchantId, itemIndex: index,
+        feature, merchantId, itemIndex: index,
         productId: rawProductId || null, productName: product ? product.name : productName, quantity, unitPrice
       });
     }
@@ -372,33 +372,72 @@ const normalizeItems = async (merchantId, items, transaction) => {
   return normalized;
 };
 
-const createBill = async (merchantId, data) => {
+const normalizeBillHeader = (merchantId, data, feature) => {
   const direction = data.direction;
   if (direction !== 'sale' && direction !== 'purchase') {
-    throw serviceError('账单方向必须是出货或进货', 400, { feature: '创建多商品账单', merchantId, direction });
+    throw serviceError('账单方向必须是出货或进货', 400, { feature, merchantId, direction });
   }
-  if (!isValidDate(data.bill_date || data.billDate)) {
-    throw serviceError('账单日期格式无效', 400, { feature: '创建多商品账单', merchantId });
+  const billDate = data.bill_date || data.billDate;
+  if (!isValidDate(billDate)) {
+    throw serviceError('账单日期格式无效', 400, { feature, merchantId, billDate });
   }
   const customerId = data.customer_id || data.customerId;
-  if (!customerId) throw serviceError('请选择客户', 400, { feature: '创建多商品账单', merchantId });
+  if (!customerId) throw serviceError('请选择客户', 400, { feature, merchantId });
+  return { direction, billDate, customerId };
+};
+
+const createBill = async (merchantId, data) => {
+  const feature = '创建多商品账单';
+  const { direction, billDate, customerId } = normalizeBillHeader(merchantId, data, feature);
 
   let bill;
   await sequelize.transaction(async (transaction) => {
     await findCustomer(merchantId, customerId, transaction);
-    const items = await normalizeItems(merchantId, data.items, transaction);
+    const items = await normalizeItems(merchantId, data.items, transaction, feature);
     const totalAmount = roundMoney(items.reduce((sum, item) => sum + item.subtotal, 0));
     bill = await LedgerBill.create({
       merchant_id: merchantId,
       customer_id: customerId,
       direction,
-      bill_date: data.bill_date || data.billDate,
+      bill_date: billDate,
       total_amount: totalAmount,
       remark: String(data.remark || '').trim() || null
     }, { transaction });
     await LedgerBillItem.bulkCreate(items.map((item) => ({ ...item, ledger_bill_id: bill.id })), { transaction });
   });
   return getBill(merchantId, bill.id);
+};
+
+const updateBill = async (merchantId, billId, data) => {
+  const feature = '修改多商品账单';
+  const { direction, billDate, customerId } = normalizeBillHeader(merchantId, data, feature);
+
+  await sequelize.transaction(async (transaction) => {
+    const bill = await LedgerBill.findOne({
+      where: { id: billId, merchant_id: merchantId, deleted_at: null },
+      transaction,
+      lock: transaction.LOCK.UPDATE
+    });
+    if (!bill) {
+      throw serviceError('账单不存在或已删除', 404, { feature, merchantId, billId });
+    }
+
+    await findCustomer(merchantId, customerId, transaction);
+    const items = await normalizeItems(merchantId, data.items, transaction, feature);
+    const totalAmount = roundMoney(items.reduce((sum, item) => sum + item.subtotal, 0));
+
+    await bill.update({
+      customer_id: customerId,
+      direction,
+      bill_date: billDate,
+      total_amount: totalAmount,
+      remark: String(data.remark || '').trim() || null
+    }, { transaction });
+    await LedgerBillItem.destroy({ where: { ledger_bill_id: bill.id }, transaction });
+    await LedgerBillItem.bulkCreate(items.map((item) => ({ ...item, ledger_bill_id: bill.id })), { transaction });
+  });
+
+  return getBill(merchantId, billId);
 };
 
 const getBill = async (merchantId, billId) => {
@@ -589,6 +628,7 @@ module.exports = {
   updateProduct,
   archiveProduct,
   createBill,
+  updateBill,
   getBill,
   listBills,
   removeBill,

@@ -345,6 +345,74 @@ test('多商品账单拒绝不属于当前店铺的商品库记录', async (t) =
   assert.equal(create.mock.callCount(), 0);
 });
 
+test('修改账单在事务中替换商品明细并重新计算总额', async (t) => {
+  const dbTx = createDbTx();
+  const updatedValues = [];
+  let createdItems;
+  const existingBill = {
+    id: 9,
+    update: async (values, options) => {
+      updatedValues.push({ values, options });
+    }
+  };
+
+  t.mock.method(models.sequelize, 'transaction', async (callback) => callback(dbTx));
+  t.mock.method(models.Customer, 'findOne', async () => ({ id: 3, name: '修改后客户' }));
+  t.mock.method(models.Product, 'findAll', async () => ([{ id: 5, name: '大闸蟹', unit: '箱' }]));
+  t.mock.method(models.LedgerBill, 'findOne', async (options) => {
+    if (options.transaction) {
+      assert.equal(options.transaction, dbTx);
+      assert.equal(options.lock, 'UPDATE');
+      return existingBill;
+    }
+    return {
+      id: 9,
+      customer_id: 3,
+      direction: 'sale',
+      bill_date: '2026-07-14',
+      total_amount: '35.00',
+      remark: '已修改',
+      customer: { name: '修改后客户' },
+      items: [
+        { id: 3, product_id: 5, product_name: '大闸蟹', unit: '箱', quantity: '3', unit_price: '10', subtotal: '30' },
+        { id: 4, product_id: null, product_name: '散装虾', unit: '斤', quantity: '1', unit_price: '5', subtotal: '5' }
+      ]
+    };
+  });
+  const destroy = t.mock.method(models.LedgerBillItem, 'destroy', async (options) => {
+    assert.deepEqual(options.where, { ledger_bill_id: 9 });
+    assert.equal(options.transaction, dbTx);
+    return 2;
+  });
+  t.mock.method(models.LedgerBillItem, 'bulkCreate', async (items, options) => {
+    createdItems = { items, options };
+  });
+
+  const bill = await ledgerService.updateBill(10, 9, {
+    customer_id: 3,
+    direction: 'sale',
+    bill_date: '2026-07-14',
+    remark: '已修改',
+    items: [
+      { product_id: 5, quantity: 3, unit_price: 10 },
+      { product_name: '散装虾', unit: '斤', quantity: 1, unit_price: 5 }
+    ]
+  });
+
+  assert.equal(destroy.mock.callCount(), 1);
+  assert.equal(updatedValues[0].options.transaction, dbTx);
+  assert.deepEqual(updatedValues[0].values, {
+    customer_id: 3,
+    direction: 'sale',
+    bill_date: '2026-07-14',
+    total_amount: 35,
+    remark: '已修改'
+  });
+  assert.equal(createdItems.options.transaction, dbTx);
+  assert.deepEqual(createdItems.items.map((item) => item.product_name), ['大闸蟹', '散装虾']);
+  assert.equal(bill.total_amount, 35);
+});
+
 test('通用账本拒绝未知账单方向和无效回款金额', async () => {
   await assert.rejects(
     ledgerService.createBill(10, {

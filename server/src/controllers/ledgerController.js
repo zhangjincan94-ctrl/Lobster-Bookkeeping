@@ -103,6 +103,10 @@ const createBill = async (ctx) => {
   ctx.body = success(await ledgerService.createBill(ctx.state.merchant.id, ctx.request.body));
 };
 
+const updateBill = async (ctx) => {
+  ctx.body = success(await ledgerService.updateBill(ctx.state.merchant.id, ctx.params.id, ctx.request.body));
+};
+
 const billDetail = async (ctx) => {
   const bill = await ledgerService.getBill(ctx.state.merchant.id, ctx.params.id);
   if (!bill) {
@@ -157,6 +161,7 @@ module.exports = {
   archiveProduct,
   listBills,
   createBill,
+  updateBill,
   billDetail,
   removeBill,
   customerLedger,

@@ -23,6 +23,7 @@ router.delete('/products/:id', auth(), ledgerController.archiveProduct);
 
 router.get('/bills', auth(), ledgerController.listBills);
 router.post('/bills', auth(), ledgerController.createBill);
+router.put('/bills/:id', auth(), ledgerController.updateBill);
 router.get('/bills/:id', auth(), ledgerController.billDetail);
 router.delete('/bills/:id', auth(), ledgerController.removeBill);
 
