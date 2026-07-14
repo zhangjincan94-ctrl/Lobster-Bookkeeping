@@ -14,7 +14,7 @@ const LedgerBillItem = sequelize.define('ledger_bill_items', {
   },
   product_id: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
     references: { model: 'products', key: 'id' }
   },
   product_name: {

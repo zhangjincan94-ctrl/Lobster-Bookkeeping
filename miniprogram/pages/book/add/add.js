@@ -19,21 +19,13 @@ Page({
     direction: 'sale',
     customerId: '',
     customerName: '',
-    customers: [],
     products: [],
     items: [],
     remark: '',
     totalAmount: '0.00',
-    showCustomerModal: false,
-    showProductModal: false,
-    showCustomerCreate: false,
-    customerKeyword: '',
-    productKeyword: '',
-    newCustomerName: '',
-    newCustomerPhone: '',
     submitting: false,
-    creatingCustomer: false,
-    rowSeed: 0
+    rowSeed: 0,
+    activeProductRowIndex: -1
   },
 
   onLoad: function () {
@@ -42,22 +34,12 @@ Page({
 
   onShow: function () {
     if (!checkLogin()) return
-    this.loadCustomers()
     this.loadProducts()
-  },
-
-  loadCustomers: function () {
-    var that = this
-    get(config.api.ledgerCustomerList, { pageSize: 100, keyword: this.data.customerKeyword }).then(function (data) {
-      that.setData({ customers: (data && data.list) || [] })
-    }).catch(function () {
-      that.setData({ customers: [] })
-    })
   },
 
   loadProducts: function () {
     var that = this
-    get(config.api.ledgerProductList, { pageSize: 100, keyword: this.data.productKeyword }).then(function (data) {
+    get(config.api.ledgerProductList, { pageSize: 100 }).then(function (data) {
       that.setData({ products: (data && data.list) || [] })
     }).catch(function () {
       that.setData({ products: [] })
@@ -85,97 +67,76 @@ Page({
   },
 
   openCustomerModal: function () {
-    this.setData({ showCustomerModal: true, customerKeyword: '' })
-    this.loadCustomers()
-  },
-
-  closeCustomerModal: function () {
-    this.setData({ showCustomerModal: false })
-  },
-
-  onCustomerSearch: function (e) {
-    this.setData({ customerKeyword: e.detail.value })
-    this.loadCustomers()
-  },
-
-  selectCustomer: function (e) {
-    var customer = this.data.customers[e.currentTarget.dataset.index]
-    if (!customer) return
-    this.setData({ customerId: customer.id, customerName: customer.name, showCustomerModal: false })
-  },
-
-  openCustomerCreate: function () {
-    this.setData({ showCustomerCreate: true, newCustomerName: '', newCustomerPhone: '' })
-  },
-
-  closeCustomerCreate: function () {
-    if (!this.data.creatingCustomer) this.setData({ showCustomerCreate: false })
-  },
-
-  onNewCustomerNameInput: function (e) {
-    this.setData({ newCustomerName: e.detail.value })
-  },
-
-  onNewCustomerPhoneInput: function (e) {
-    this.setData({ newCustomerPhone: e.detail.value })
-  },
-
-  createCustomer: function () {
-    var name = this.data.newCustomerName.trim()
-    if (!name || this.data.creatingCustomer) {
-      if (!name) wx.showToast({ title: '请输入客户名称', icon: 'none' })
-      return
-    }
-    var that = this
-    this.setData({ creatingCustomer: true })
-    post(config.api.ledgerCustomerAdd, { name: name, phone: this.data.newCustomerPhone.trim() }).then(function (customer) {
-      that.setData({
-        customerId: customer.id,
-        customerName: customer.name,
-        showCustomerCreate: false,
-        showCustomerModal: false,
-        creatingCustomer: false
-      })
-      that.loadCustomers()
-    }).catch(function () {
-      that.setData({ creatingCustomer: false })
+    wx.navigateTo({
+      url: '/pages/customer/select/select',
+      fail: function (err) {
+        console.error('[客户选择页面打开失败]', {
+          feature: '开单选择客户',
+          reason: err && err.errMsg ? err.errMsg : '页面跳转失败',
+          targetPage: 'pages/customer/select/select'
+        })
+        wx.showToast({ title: '客户页面打开失败', icon: 'none' })
+      }
     })
   },
 
-  openProductModal: function () {
-    this.setData({ showProductModal: true, productKeyword: '' })
-    this.loadProducts()
+  onCustomerSelected: function (customer) {
+    if (!customer || !customer.id) return
+    this.setData({ customerId: customer.id, customerName: customer.name || '' })
   },
 
-  closeProductModal: function () {
-    this.setData({ showProductModal: false })
-  },
-
-  onProductSearch: function (e) {
-    this.setData({ productKeyword: e.detail.value })
-    this.loadProducts()
-  },
-
-  selectProduct: function (e) {
-    var product = this.data.products[e.currentTarget.dataset.index]
-    if (!product) return
-    var rowId = this.data.rowSeed + 1
-    var items = this.data.items.concat([{
-      rowId: rowId,
-      productId: product.id,
-      productName: product.name,
-      unit: product.unit || '件',
-      quantity: '1',
-      unitPrice: product.defaultUnitPrice === null || product.defaultUnitPrice === undefined ? '' : String(product.defaultUnitPrice),
-      subtotal: money(product.defaultUnitPrice)
-    }])
-    this.setData({ items: items, rowSeed: rowId, showProductModal: false })
+  onProductSelected: function (product, rowIndex) {
+    if (!product || rowIndex < 0 || !this.data.items[rowIndex]) return
+    var items = this.data.items.slice()
+    items[rowIndex].productId = product.id
+    items[rowIndex].productName = product.name
+    items[rowIndex].unit = product.unit || '斤'
+    items[rowIndex].unitPrice = product.defaultUnitPrice === null || product.defaultUnitPrice === undefined ? '' : String(product.defaultUnitPrice)
+    items[rowIndex].subtotal = money((parseFloat(items[rowIndex].quantity) || 0) * (parseFloat(items[rowIndex].unitPrice) || 0))
+    this.setData({ items: items, activeProductRowIndex: rowIndex })
     this.refreshTotal()
   },
 
+  addEmptyItem: function () {
+    var rowId = this.data.rowSeed + 1
+    var items = this.data.items.concat([{
+      rowId: rowId,
+      productId: '',
+      productName: '',
+      unit: '斤',
+      quantity: '',
+      unitPrice: '',
+      subtotal: '0.00'
+    }])
+    this.setData({ items: items, rowSeed: rowId })
+  },
+
+  onProductNameFocus: function (e) {
+    this.setData({ activeProductRowIndex: Number(e.currentTarget.dataset.index) })
+  },
+
+  onProductNameInput: function (e) {
+    var index = Number(e.currentTarget.dataset.index)
+    var items = this.data.items.slice()
+    if (!items[index]) return
+    var name = e.detail.value
+    var matched = this.data.products.filter(function (product) {
+      return product.name === name.trim()
+    })[0]
+    items[index].productName = name
+    items[index].productId = matched ? matched.id : ''
+    items[index].unit = matched ? (matched.unit || '斤') : '斤'
+    this.setData({ items: items, activeProductRowIndex: index })
+  },
+
   goProductLibrary: function () {
-    this.setData({ showProductModal: false })
-    wx.navigateTo({ url: '/pages/product/list/list' })
+    var rowIndex = this.data.activeProductRowIndex
+    if (rowIndex < 0 || !this.data.items[rowIndex]) {
+      rowIndex = this.data.items.length
+      this.addEmptyItem()
+      this.setData({ activeProductRowIndex: rowIndex })
+    }
+    wx.navigateTo({ url: '/pages/product/list/list?select=1&row=' + rowIndex })
   },
 
   onItemInput: function (e) {
@@ -233,13 +194,34 @@ Page({
       return
     }
     var items = this.data.items.map(function (item) {
-      return { productId: item.productId, quantity: item.quantity, unitPrice: item.unitPrice }
+      return {
+        productId: item.productId,
+        productName: String(item.productName || '').trim(),
+        unit: item.unit || '斤',
+        quantity: item.quantity,
+        unitPrice: item.unitPrice
+      }
     })
+    var emptyProductIndex = items.findIndex(function (item) { return !item.productName })
+    if (emptyProductIndex >= 0) {
+      console.warn('[账单保存校验失败]', {
+        feature: '新建账单',
+        reason: '商品名称为空',
+        rowIndex: emptyProductIndex,
+        rowId: this.data.items[emptyProductIndex].rowId
+      })
+      wx.showModal({
+        title: '商品未填写',
+        content: '请填写第 ' + (emptyProductIndex + 1) + ' 行的商品名称',
+        showCancel: false
+      })
+      return
+    }
     var invalid = items.some(function (item) {
       return !(parseFloat(item.quantity) > 0) || parseFloat(item.unitPrice) < 0 || item.unitPrice === ''
     })
     if (invalid) {
-      wx.showToast({ title: '请检查商品数量和单价', icon: 'none' })
+      wx.showToast({ title: '请检查数量和单价', icon: 'none' })
       return
     }
     var that = this
@@ -250,10 +232,10 @@ Page({
       billDate: this.data.billDate,
       items: items,
       remark: this.data.remark.trim()
-    }).then(function () {
+    }).then(function (bill) {
       wx.showToast({ title: '账单已保存', icon: 'success' })
       that.setData({ customerId: '', customerName: '', items: [], remark: '', totalAmount: '0.00', submitting: false })
-      wx.switchTab({ url: '/pages/book/list/list' })
+      wx.navigateTo({ url: '/pages/book/detail/detail?id=' + bill.id })
     }).catch(function () {
       that.setData({ submitting: false })
     })

@@ -246,7 +246,7 @@ const run = async () => {
     CREATE TABLE IF NOT EXISTS ledger_bill_items (
       id INT AUTO_INCREMENT PRIMARY KEY,
       ledger_bill_id INT NOT NULL,
-      product_id INT NOT NULL,
+      product_id INT NULL,
       product_name VARCHAR(80) NOT NULL,
       unit VARCHAR(20) NOT NULL,
       quantity DECIMAL(10, 2) NOT NULL,
@@ -260,6 +260,21 @@ const run = async () => {
       CONSTRAINT fk_ledger_bill_items_product FOREIGN KEY (product_id) REFERENCES products(id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
+
+  const [billItemProductIdColumns] = await sequelize.query(`
+    SELECT IS_NULLABLE AS is_nullable
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'ledger_bill_items'
+      AND COLUMN_NAME = 'product_id';
+  `);
+
+  if (billItemProductIdColumns.length > 0 && String(billItemProductIdColumns[0].is_nullable).toUpperCase() === 'NO') {
+    await sequelize.query(`
+      ALTER TABLE ledger_bill_items
+      MODIFY COLUMN product_id INT NULL;
+    `);
+  }
 
   await sequelize.query(`
     CREATE TABLE IF NOT EXISTS customer_payments (

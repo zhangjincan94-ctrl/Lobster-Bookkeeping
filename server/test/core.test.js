@@ -273,12 +273,13 @@ test('多商品账单按商品数量和单价计算总额', async (t) => {
     customer_id: 2,
     direction: 'sale',
     bill_date: '2026-07-11',
-    total_amount: '34.50',
+    total_amount: '39.50',
     remark: '',
     customer: { name: '测试客户' },
     items: [
       { id: 1, product_id: 5, product_name: '大闸蟹', unit: '箱', quantity: '2', unit_price: '10', subtotal: '20' },
-      { id: 2, product_id: 6, product_name: '冰鲜虾', unit: '斤', quantity: '1.5', unit_price: '9.666', subtotal: '14.50' }
+      { id: 2, product_id: 6, product_name: '冰鲜虾', unit: '斤', quantity: '1.5', unit_price: '9.666', subtotal: '14.50' },
+      { id: 3, product_id: null, product_name: '散装虾', unit: '斤', quantity: '1', unit_price: '5', subtotal: '5.00' }
     ]
   }));
 
@@ -288,13 +289,60 @@ test('多商品账单按商品数量和单价计算总额', async (t) => {
     bill_date: '2026-07-11',
     items: [
       { product_id: 5, quantity: 2, unit_price: 10 },
-      { product_id: 6, quantity: 1.5, unit_price: '9.666' }
+      { product_id: 6, quantity: 1.5, unit_price: '9.666' },
+      { product_name: ' 散装虾 ', unit: '斤', quantity: 1, unit_price: 5 }
     ]
   });
 
   assert.equal(createdItems.options.transaction, dbTx);
-  assert.deepEqual(createdItems.items.map((item) => item.subtotal), [20, 14.5]);
-  assert.equal(bill.total_amount, 34.5);
+  assert.deepEqual(createdItems.items.map((item) => item.subtotal), [20, 14.5, 5]);
+  assert.deepEqual(createdItems.items[2], {
+    ledger_bill_id: 9,
+    product_id: null,
+    product_name: '散装虾',
+    unit: '斤',
+    quantity: 1,
+    unit_price: 5,
+    subtotal: 5
+  });
+  assert.equal(bill.total_amount, 39.5);
+});
+
+test('多商品账单拒绝商品名称为空的手工明细', async (t) => {
+  const dbTx = createDbTx();
+  t.mock.method(models.sequelize, 'transaction', async (callback) => callback(dbTx));
+  t.mock.method(models.Customer, 'findOne', async () => ({ id: 2, name: '测试客户' }));
+  const create = t.mock.method(models.LedgerBill, 'create', async () => ({ id: 9 }));
+
+  await assert.rejects(
+    ledgerService.createBill(10, {
+      customer_id: 2,
+      direction: 'sale',
+      bill_date: '2026-07-11',
+      items: [{ product_name: '   ', unit: '斤', quantity: 1, unit_price: 5 }]
+    }),
+    /商品名称不能为空/
+  );
+  assert.equal(create.mock.callCount(), 0);
+});
+
+test('多商品账单拒绝不属于当前店铺的商品库记录', async (t) => {
+  const dbTx = createDbTx();
+  t.mock.method(models.sequelize, 'transaction', async (callback) => callback(dbTx));
+  t.mock.method(models.Customer, 'findOne', async () => ({ id: 2, name: '测试客户' }));
+  t.mock.method(models.Product, 'findAll', async () => []);
+  const create = t.mock.method(models.LedgerBill, 'create', async () => ({ id: 9 }));
+
+  await assert.rejects(
+    ledgerService.createBill(10, {
+      customer_id: 2,
+      direction: 'sale',
+      bill_date: '2026-07-11',
+      items: [{ product_id: 99, product_name: '其他店铺商品', quantity: 1, unit_price: 5 }]
+    }),
+    /商品不存在或不属于当前店铺/
+  );
+  assert.equal(create.mock.callCount(), 0);
 });
 
 test('通用账本拒绝未知账单方向和无效回款金额', async () => {

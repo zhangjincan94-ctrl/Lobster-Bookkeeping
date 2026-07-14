@@ -326,29 +326,44 @@ const normalizeItems = async (merchantId, items, transaction) => {
   if (!Array.isArray(items) || items.length === 0) {
     throw serviceError('账单至少需要一条商品明细', 400, { feature: '创建多商品账单', merchantId });
   }
-  const productIds = items.map((item) => Number(item.product_id || item.productId)).filter(Boolean);
-  if (productIds.length !== items.length) {
-    throw serviceError('商品明细缺少商品', 400, { feature: '创建多商品账单', merchantId, itemCount: items.length });
-  }
-  const products = await Product.findAll({
+  const productIds = items.map((item) => {
+    const value = item.product_id === undefined ? item.productId : item.product_id;
+    return Number(value);
+  }).filter((productId) => Number.isInteger(productId) && productId > 0);
+  const products = productIds.length ? await Product.findAll({
     where: { id: { [Op.in]: productIds }, merchant_id: merchantId, archived_at: null },
     transaction
-  });
+  }) : [];
   const productMap = new Map(products.map((product) => [String(product.id), product]));
   const normalized = items.map((item, index) => {
-    const product = productMap.get(String(item.product_id || item.productId));
+    const rawProductId = item.product_id === undefined ? item.productId : item.product_id;
+    const hasProductId = rawProductId !== undefined && rawProductId !== null && String(rawProductId).trim() !== '';
+    const product = hasProductId ? productMap.get(String(rawProductId)) : null;
+    const productName = String(item.product_name === undefined ? (item.productName || '') : (item.product_name || '')).trim();
     const quantity = toNumber(item.quantity);
     const unitPrice = toNumber(item.unit_price === undefined ? item.unitPrice : item.unit_price);
-    if (!product || quantity <= 0 || unitPrice < 0) {
-      throw serviceError('商品、数量或单价无效', 400, {
+    if (hasProductId && !product) {
+      throw serviceError('商品不存在或不属于当前店铺', 400, {
         feature: '创建多商品账单', merchantId, itemIndex: index,
-        productId: item.product_id || item.productId, quantity, unitPrice
+        productId: rawProductId, quantity, unitPrice
+      });
+    }
+    if (!product && !productName) {
+      throw serviceError('商品名称不能为空', 400, {
+        feature: '创建多商品账单', merchantId, itemIndex: index,
+        productId: rawProductId || null, quantity, unitPrice
+      });
+    }
+    if (quantity <= 0 || unitPrice < 0) {
+      throw serviceError('商品数量或单价无效', 400, {
+        feature: '创建多商品账单', merchantId, itemIndex: index,
+        productId: rawProductId || null, productName: product ? product.name : productName, quantity, unitPrice
       });
     }
     return {
-      product_id: product.id,
-      product_name: product.name,
-      unit: product.unit,
+      product_id: product ? product.id : null,
+      product_name: product ? product.name : productName,
+      unit: product ? product.unit : (String(item.unit || '斤').trim() || '斤'),
       quantity,
       unit_price: unitPrice,
       subtotal: roundMoney(quantity * unitPrice)
