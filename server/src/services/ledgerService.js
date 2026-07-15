@@ -45,6 +45,9 @@ const serializeCustomer = (customer, summary = {}) => ({
   sales_amount: roundMoney(toNumber(summary.salesAmount)),
   purchase_amount: roundMoney(toNumber(summary.purchaseAmount)),
   received_amount: roundMoney(toNumber(summary.receivedAmount)),
+  paid_amount: roundMoney(toNumber(summary.paidAmount)),
+  receivable_balance: roundMoney(toNumber(summary.receivableBalance)),
+  payable_balance: roundMoney(toNumber(summary.payableBalance)),
   balance: roundMoney(toNumber(summary.balance))
 });
 
@@ -78,10 +81,11 @@ const serializeBill = (bill) => ({
   }))
 });
 
-const findCustomer = async (merchantId, customerId, transaction) => {
+const findCustomer = async (merchantId, customerId, transaction, lockForUpdate = false) => {
   const customer = await Customer.findOne({
     where: { id: customerId, merchant_id: merchantId },
-    transaction
+    transaction,
+    ...(lockForUpdate && transaction ? { lock: transaction.LOCK.UPDATE } : {})
   });
   if (!customer) {
     throw serviceError('客户不存在或不属于当前店铺', 404, {
@@ -91,7 +95,7 @@ const findCustomer = async (merchantId, customerId, transaction) => {
   return customer;
 };
 
-const getCustomerSummaries = async (merchantId, customerIds) => {
+const getCustomerSummaries = async (merchantId, customerIds, transaction) => {
   const summaries = new Map();
   if (!customerIds.length) return summaries;
 
@@ -107,37 +111,45 @@ const getCustomerSummaries = async (merchantId, customerIds) => {
       [sequelize.fn('COALESCE', sequelize.fn('SUM', sequelize.literal("CASE WHEN direction = 'purchase' THEN total_amount ELSE 0 END")), 0), 'purchase_amount']
     ],
     group: ['customer_id'],
-    raw: true
+    raw: true,
+    transaction
   });
 
   const paymentRows = await CustomerPayment.findAll({
     where: { merchant_id: merchantId, customer_id: { [Op.in]: customerIds } },
     attributes: [
       'customer_id',
-      [sequelize.fn('COALESCE', sequelize.fn('SUM', sequelize.col('amount')), 0), 'received_amount']
+      [sequelize.fn('COALESCE', sequelize.fn('SUM', sequelize.literal("CASE WHEN flow_type = 'paid' THEN 0 ELSE amount END")), 0), 'received_amount'],
+      [sequelize.fn('COALESCE', sequelize.fn('SUM', sequelize.literal("CASE WHEN flow_type = 'paid' THEN amount ELSE 0 END")), 0), 'paid_amount']
     ],
     group: ['customer_id'],
-    raw: true
+    raw: true,
+    transaction
   });
 
   billRows.forEach((row) => {
     summaries.set(String(row.customer_id), {
       salesAmount: toNumber(row.sales_amount),
       purchaseAmount: toNumber(row.purchase_amount),
-      receivedAmount: 0
+      receivedAmount: 0,
+      paidAmount: 0
     });
   });
   paymentRows.forEach((row) => {
     const summary = summaries.get(String(row.customer_id)) || {
       salesAmount: 0,
       purchaseAmount: 0,
-      receivedAmount: 0
+      receivedAmount: 0,
+      paidAmount: 0
     };
     summary.receivedAmount = toNumber(row.received_amount);
+    summary.paidAmount = toNumber(row.paid_amount);
     summaries.set(String(row.customer_id), summary);
   });
   summaries.forEach((summary) => {
-    summary.balance = roundMoney(summary.salesAmount - summary.purchaseAmount - summary.receivedAmount);
+    summary.receivableBalance = roundMoney(Math.max(summary.salesAmount - summary.receivedAmount, 0));
+    summary.payableBalance = roundMoney(Math.max(summary.purchaseAmount - summary.paidAmount, 0));
+    summary.balance = roundMoney(summary.receivableBalance - summary.payableBalance);
   });
   return summaries;
 };
@@ -502,7 +514,15 @@ const getCustomerLedger = async (merchantId, customerId, { start_date, end_date 
     CustomerPayment.findAll({ where: paymentWhere, order: [['payment_date', 'DESC'], ['id', 'DESC']] }),
     getCustomerSummaries(merchantId, [customerId])
   ]);
-  const summary = summaries.get(String(customerId)) || { salesAmount: 0, purchaseAmount: 0, receivedAmount: 0, balance: 0 };
+  const summary = summaries.get(String(customerId)) || {
+    salesAmount: 0,
+    purchaseAmount: 0,
+    receivedAmount: 0,
+    paidAmount: 0,
+    receivableBalance: 0,
+    payableBalance: 0,
+    balance: 0
+  };
   return {
     customer: serializeCustomer(customer, summary),
     period: { start_date: start_date || '', end_date: end_date || '' },
@@ -510,6 +530,7 @@ const getCustomerLedger = async (merchantId, customerId, { start_date, end_date 
     payments: payments.map((payment) => ({
       id: payment.id,
       amount: roundMoney(toNumber(payment.amount)),
+      flow_type: payment.flow_type || 'received',
       payment_date: payment.payment_date,
       payment_method: payment.payment_method || '',
       remark: payment.remark || ''
@@ -521,31 +542,46 @@ const createCustomerPayment = async (merchantId, data) => {
   const customerId = data.customer_id || data.customerId;
   const amount = roundMoney(toNumber(data.amount));
   const paymentDate = data.payment_date || data.paymentDate;
+  const flowType = data.flow_type || data.flowType || 'received';
+  const feature = flowType === 'paid' ? '供应商付款' : '客户回款';
+  if (flowType !== 'received' && flowType !== 'paid') {
+    throw serviceError('收付款类型不正确', 400, {
+      feature: '往来收付款', merchantId, customerId, flowType
+    });
+  }
   if (!customerId || amount <= 0 || !isValidDate(paymentDate)) {
-    throw serviceError('客户、回款金额和日期必须正确填写', 400, {
-      feature: '客户回款', merchantId, customerId, amount, paymentDate
+    throw serviceError('往来对象、金额和日期必须正确填写', 400, {
+      feature, merchantId, customerId, amount, paymentDate, flowType
     });
   }
   let payment;
   let balanceBefore;
   await sequelize.transaction(async (transaction) => {
-    await findCustomer(merchantId, customerId, transaction);
-    const summaries = await getCustomerSummaries(merchantId, [customerId]);
-    balanceBefore = (summaries.get(String(customerId)) || { balance: 0 }).balance;
+    await findCustomer(merchantId, customerId, transaction, true);
+    const summaries = await getCustomerSummaries(merchantId, [customerId], transaction);
+    const summary = summaries.get(String(customerId)) || { receivableBalance: 0, payableBalance: 0 };
+    balanceBefore = flowType === 'paid' ? summary.payableBalance : summary.receivableBalance;
     if (balanceBefore <= 0) {
-      throw serviceError('该客户当前没有待收余额，不能记录回款', 400, {
-        feature: '客户回款', merchantId, customerId, balanceBefore
+      const message = flowType === 'paid'
+        ? '当前没有待付余额，不能记录供应商付款'
+        : '当前没有待收余额，不能记录客户回款';
+      throw serviceError(message, 400, {
+        feature, merchantId, customerId, balanceBefore, flowType
       });
     }
     if (amount > balanceBefore) {
-      throw serviceError('回款金额不能超过当前待收余额', 400, {
-        feature: '客户回款', merchantId, customerId, amount, balanceBefore
+      const message = flowType === 'paid'
+        ? '供应商付款不能超过当前待付余额'
+        : '客户回款不能超过当前待收余额';
+      throw serviceError(message, 400, {
+        feature, merchantId, customerId, amount, balanceBefore, flowType
       });
     }
     payment = await CustomerPayment.create({
       merchant_id: merchantId,
       customer_id: customerId,
       amount,
+      flow_type: flowType,
       payment_date: paymentDate,
       payment_method: String(data.payment_method || data.paymentMethod || '').trim() || null,
       remark: String(data.remark || '').trim() || null
@@ -555,6 +591,7 @@ const createCustomerPayment = async (merchantId, data) => {
     id: payment.id,
     customer_id: customerId,
     amount,
+    flow_type: flowType,
     payment_date: payment.payment_date,
     balance_before: balanceBefore,
     balance_after: roundMoney(balanceBefore - amount)
@@ -599,7 +636,10 @@ const getPublicCustomerStatement = async (shareToken) => {
   });
   const salesAmount = ledger.bills.filter((bill) => bill.direction === 'sale').reduce((sum, bill) => sum + toNumber(bill.total_amount), 0);
   const purchaseAmount = ledger.bills.filter((bill) => bill.direction === 'purchase').reduce((sum, bill) => sum + toNumber(bill.total_amount), 0);
-  const receivedAmount = ledger.payments.reduce((sum, payment) => sum + toNumber(payment.amount), 0);
+  const receivedAmount = ledger.payments.filter((payment) => payment.flow_type !== 'paid').reduce((sum, payment) => sum + toNumber(payment.amount), 0);
+  const paidAmount = ledger.payments.filter((payment) => payment.flow_type === 'paid').reduce((sum, payment) => sum + toNumber(payment.amount), 0);
+  const receivableAmount = roundMoney(Math.max(salesAmount - receivedAmount, 0));
+  const payableAmount = roundMoney(Math.max(purchaseAmount - paidAmount, 0));
   return {
     customer: { name: ledger.customer.name },
     start_date: statement.start_date,
@@ -609,7 +649,10 @@ const getPublicCustomerStatement = async (shareToken) => {
     sales_amount: roundMoney(salesAmount),
     purchase_amount: roundMoney(purchaseAmount),
     received_amount: roundMoney(receivedAmount),
-    period_balance: roundMoney(salesAmount - purchaseAmount - receivedAmount),
+    paid_amount: roundMoney(paidAmount),
+    receivable_amount: receivableAmount,
+    payable_amount: payableAmount,
+    period_balance: roundMoney(receivableAmount - payableAmount),
     bills: ledger.bills,
     payments: ledger.payments
   };

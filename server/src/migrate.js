@@ -282,6 +282,7 @@ const run = async () => {
       merchant_id INT NOT NULL,
       customer_id INT NOT NULL,
       amount DECIMAL(10, 2) NOT NULL,
+      flow_type VARCHAR(20) NOT NULL DEFAULT 'received',
       payment_date DATE NOT NULL,
       payment_method VARCHAR(20) NULL,
       remark VARCHAR(500) NULL,
@@ -293,6 +294,21 @@ const run = async () => {
       CONSTRAINT fk_customer_payments_customer FOREIGN KEY (customer_id) REFERENCES customers(id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
+
+  const [customerPaymentFlowTypeColumns] = await sequelize.query(`
+    SELECT COUNT(*) AS count
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'customer_payments'
+      AND COLUMN_NAME = 'flow_type';
+  `);
+
+  if (Number(customerPaymentFlowTypeColumns[0].count) === 0) {
+    await sequelize.query(`
+      ALTER TABLE customer_payments
+      ADD COLUMN flow_type VARCHAR(20) NOT NULL DEFAULT 'received' AFTER amount;
+    `);
+  }
 
   await sequelize.query(`
     CREATE TABLE IF NOT EXISTS customer_statements (

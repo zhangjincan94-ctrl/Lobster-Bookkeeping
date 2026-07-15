@@ -21,6 +21,11 @@ const CustomerPayment = sequelize.define('customer_payments', {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false
   },
+  flow_type: {
+    type: DataTypes.STRING(20),
+    allowNull: false,
+    defaultValue: 'received'
+  },
   payment_date: {
     type: DataTypes.DATEONLY,
     allowNull: false

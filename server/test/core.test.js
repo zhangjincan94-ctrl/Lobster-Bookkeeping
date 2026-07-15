@@ -413,7 +413,138 @@ test('修改账单在事务中替换商品明细并重新计算总额', async (t
   assert.equal(bill.total_amount, 35);
 });
 
-test('通用账本拒绝未知账单方向和无效回款金额', async () => {
+test('通用账本分别计算待收和待付，不互相抵消', async (t) => {
+  t.mock.method(models.Customer, 'findAndCountAll', async () => ({
+    count: 1,
+    rows: [{ id: 2, name: '双向往来客户', phone: '', remark: '' }]
+  }));
+  t.mock.method(models.LedgerBill, 'findAll', async () => ([{
+    customer_id: 2,
+    sales_amount: '100.00',
+    purchase_amount: '80.00'
+  }]));
+  t.mock.method(models.CustomerPayment, 'findAll', async () => ([{
+    customer_id: 2,
+    received_amount: '20.00',
+    paid_amount: '10.00'
+  }]));
+
+  const result = await ledgerService.listCustomers(10, { page: 1, pageSize: 20 });
+
+  assert.equal(result.list[0].receivable_balance, 80);
+  assert.equal(result.list[0].payable_balance, 70);
+  assert.equal(result.list[0].balance, 10);
+});
+
+test('供应商付款在事务中锁定往来对象并减少待付', async (t) => {
+  const dbTx = createDbTx();
+  t.mock.method(models.sequelize, 'transaction', async (callback) => callback(dbTx));
+  t.mock.method(models.Customer, 'findOne', async (options) => {
+    assert.deepEqual(options.where, { id: 2, merchant_id: 10 });
+    assert.equal(options.transaction, dbTx);
+    assert.equal(options.lock, 'UPDATE');
+    return { id: 2, name: '测试供应商' };
+  });
+  t.mock.method(models.LedgerBill, 'findAll', async (options) => {
+    assert.equal(options.transaction, dbTx);
+    return [{ customer_id: 2, sales_amount: '0.00', purchase_amount: '100.00' }];
+  });
+  t.mock.method(models.CustomerPayment, 'findAll', async (options) => {
+    assert.equal(options.transaction, dbTx);
+    return [{ customer_id: 2, received_amount: '0.00', paid_amount: '20.00' }];
+  });
+  const create = t.mock.method(models.CustomerPayment, 'create', async (values, options) => {
+    assert.equal(options.transaction, dbTx);
+    return { id: 8, payment_date: values.payment_date, ...values };
+  });
+
+  const result = await ledgerService.createCustomerPayment(10, {
+    customer_id: 2,
+    flow_type: 'paid',
+    amount: 30,
+    payment_date: '2026-07-15'
+  });
+
+  assert.equal(create.mock.callCount(), 1);
+  assert.equal(create.mock.calls[0].arguments[0].flow_type, 'paid');
+  assert.equal(result.balance_before, 80);
+  assert.equal(result.balance_after, 50);
+});
+
+test('旧客户端不传收付款类型时仍按客户回款处理', async (t) => {
+  const dbTx = createDbTx();
+  t.mock.method(models.sequelize, 'transaction', async (callback) => callback(dbTx));
+  t.mock.method(models.Customer, 'findOne', async () => ({ id: 2, name: '测试客户' }));
+  t.mock.method(models.LedgerBill, 'findAll', async () => ([{
+    customer_id: 2,
+    sales_amount: '100.00',
+    purchase_amount: '0.00'
+  }]));
+  t.mock.method(models.CustomerPayment, 'findAll', async () => ([{
+    customer_id: 2,
+    received_amount: '20.00',
+    paid_amount: '0.00'
+  }]));
+  const create = t.mock.method(models.CustomerPayment, 'create', async (values) => ({ id: 9, ...values }));
+
+  const result = await ledgerService.createCustomerPayment(10, {
+    customer_id: 2,
+    amount: 30,
+    payment_date: '2026-07-15'
+  });
+
+  assert.equal(create.mock.calls[0].arguments[0].flow_type, 'received');
+  assert.equal(result.balance_before, 80);
+  assert.equal(result.balance_after, 50);
+});
+
+test('供应商付款拒绝超过当前待付余额', async (t) => {
+  const dbTx = createDbTx();
+  t.mock.method(models.sequelize, 'transaction', async (callback) => callback(dbTx));
+  t.mock.method(models.Customer, 'findOne', async () => ({ id: 2, name: '测试供应商' }));
+  t.mock.method(models.LedgerBill, 'findAll', async () => ([{
+    customer_id: 2,
+    sales_amount: '0.00',
+    purchase_amount: '50.00'
+  }]));
+  t.mock.method(models.CustomerPayment, 'findAll', async () => ([{
+    customer_id: 2,
+    received_amount: '0.00',
+    paid_amount: '20.00'
+  }]));
+  const create = t.mock.method(models.CustomerPayment, 'create', async () => ({}));
+
+  await assert.rejects(
+    ledgerService.createCustomerPayment(10, {
+      customer_id: 2,
+      flow_type: 'paid',
+      amount: 31,
+      payment_date: '2026-07-15'
+    }),
+    /供应商付款不能超过当前待付余额/
+  );
+  assert.equal(create.mock.callCount(), 0);
+});
+
+test('供应商付款拒绝其他商户的往来对象', async (t) => {
+  const dbTx = createDbTx();
+  t.mock.method(models.sequelize, 'transaction', async (callback) => callback(dbTx));
+  t.mock.method(models.Customer, 'findOne', async () => null);
+  const create = t.mock.method(models.CustomerPayment, 'create', async () => ({}));
+
+  await assert.rejects(
+    ledgerService.createCustomerPayment(10, {
+      customer_id: 99,
+      flow_type: 'paid',
+      amount: 10,
+      payment_date: '2026-07-15'
+    }),
+    /客户不存在或不属于当前店铺/
+  );
+  assert.equal(create.mock.callCount(), 0);
+});
+
+test('通用账本拒绝未知账单方向、收付款类型和无效金额', async () => {
   await assert.rejects(
     ledgerService.createBill(10, {
       customer_id: 2,
@@ -429,7 +560,16 @@ test('通用账本拒绝未知账单方向和无效回款金额', async () => {
       amount: 0,
       payment_date: '2026-07-11'
     }),
-    /客户、回款金额和日期必须正确填写/
+    /往来对象、金额和日期必须正确填写/
+  );
+  await assert.rejects(
+    ledgerService.createCustomerPayment(10, {
+      customer_id: 2,
+      flow_type: 'refund',
+      amount: 10,
+      payment_date: '2026-07-11'
+    }),
+    /收付款类型不正确/
   );
 });
 
