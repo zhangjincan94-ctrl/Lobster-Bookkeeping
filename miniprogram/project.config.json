@@ -2,7 +2,24 @@
   "description": "lobster-accounting miniprogram",
   "packOptions": {
     "ignore": [],
-    "include": []
+    "include": [
+      {
+        "value": "pages/book/edit",
+        "type": "folder"
+      },
+      {
+        "value": "pages/book/text",
+        "type": "folder"
+      },
+      {
+        "value": "pages/customer/select",
+        "type": "folder"
+      },
+      {
+        "value": "pages/product/manage",
+        "type": "folder"
+      }
+    ]
   },
   "setting": {
     "bundle": false,
@@ -17,6 +34,7 @@
     "preloadBackgroundData": false,
     "minified": true,
     "autoAudits": false,
+    "ignoreDevUnusedFiles": false,
     "newFeature": false,
     "uglifyFileName": false,
     "uploadWithSourceMap": true,

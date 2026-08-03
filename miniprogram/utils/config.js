@@ -56,6 +56,7 @@ var api = {
   ledgerBillList: '/api/ledger/bills',
   ledgerBillAdd: '/api/ledger/bills',
   ledgerBillDetail: function (id) { return '/api/ledger/bills/' + id },
+  ledgerBillUpdate: function (id) { return '/api/ledger/bills/' + id },
   ledgerBillDelete: function (id) { return '/api/ledger/bills/' + id },
   ledgerPaymentAdd: '/api/ledger/payments',
   ledgerStatementAdd: '/api/ledger/statements',

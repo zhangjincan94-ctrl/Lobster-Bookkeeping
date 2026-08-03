@@ -1,0 +1,8 @@
+.text-page { min-height: 100vh; padding: 24rpx 24rpx 150rpx; }
+.title-band { display: flex; align-items: flex-end; justify-content: space-between; margin: 4rpx 0 24rpx; }
+.page-title { color: #f2f7f5; font-size: 40rpx; font-weight: 700; }
+.page-subtitle { color: #718381; font-size: 22rpx; }
+.text-editor { min-height: 760rpx; padding: 28rpx; border: 1rpx solid #3c6867; border-radius: 8rpx; background: #122526; }
+.text-editor textarea { width: 100%; height: 720rpx; color: #f2f7f5; font-family: "SFMono-Regular", Consolas, monospace; font-size: 28rpx; line-height: 1.75; }
+.copy-bar { position: fixed; right: 0; bottom: 0; left: 0; padding: 18rpx 24rpx; border-top: 1rpx solid #294142; background: #122526; }
+.copy-btn { width: 100%; margin: 0; }

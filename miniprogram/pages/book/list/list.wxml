@@ -1,7 +1,74 @@
 <view class="page ledger-page">
-  <view class="page-head"><view><text class="page-title">总账本</text><text class="page-subtitle">按日期查看全部进出货账单</text></view><text class="create-link" bindtap="goAdd">+ 开单</text></view>
-  <view class="filter-bar"><view class="filter {{direction === '' ? 'filter-active' : ''}}" data-direction="" bindtap="chooseDirection">全部</view><view class="filter {{direction === 'sale' ? 'filter-sale-active' : ''}}" data-direction="sale" bindtap="chooseDirection">出货</view><view class="filter {{direction === 'purchase' ? 'filter-purchase-active' : ''}}" data-direction="purchase" bindtap="chooseDirection">进货</view></view>
-  <view wx:if="{{loading}}" class="loading-tip">正在加载账本...</view>
-  <view wx:elif="{{!bills.length}}" class="empty-state"><text class="empty-icon">□</text><text class="empty-text">还没有账单，先开一笔吧</text><button class="btn-primary empty-action" bindtap="goAdd">新建账单</button></view>
-  <view wx:else class="bill-list"><view wx:for="{{bills}}" wx:key="id" class="bill-card" data-id="{{item.id}}" bindtap="goDetail"><view class="bill-top"><view><text class="direction-tag {{item.directionClass}}">{{item.directionText}}</text><text class="customer-name">{{item.customerName}}</text></view><text class="bill-total {{item.directionClass}}">{{item.totalDisplay}}</text></view><view class="bill-meta"><text>{{item.billDate}}</text><text>{{item.itemCount}} 项商品</text><text class="detail-link">查看明细 ›</text></view><view wx:if="{{item.items.length}}" class="item-preview"><text wx:for="{{item.items}}" wx:key="id" wx:for-item="line">{{line.productName}}{{index + 1 < item.items.length ? '、' : ''}}</text></view></view></view>
+  <view class="page-head">
+    <view><text class="page-title">总账本</text><text class="page-subtitle">按月、日期逐层查看收支与账单</text></view>
+    <text class="create-link" bindtap="goAdd">+ 开单</text>
+  </view>
+
+  <view class="filter-bar">
+    <view class="filter {{direction === '' ? 'filter-active' : ''}}" data-direction="" bindtap="chooseDirection">全部</view>
+    <view class="filter {{direction === 'sale' ? 'filter-sale-active' : ''}}" data-direction="sale" bindtap="chooseDirection">出货</view>
+    <view class="filter {{direction === 'purchase' ? 'filter-purchase-active' : ''}}" data-direction="purchase" bindtap="chooseDirection">进货</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="loading-tip">正在汇总账本...</view>
+  <view wx:elif="{{!months.length}}" class="empty-state">
+    <text class="empty-icon">□</text>
+    <text class="empty-text">还没有账单，先开一笔吧</text>
+    <button class="btn-primary empty-action" bindtap="goAdd">新建账单</button>
+  </view>
+
+  <view wx:else class="month-list">
+    <block wx:for="{{months}}" wx:key="key" wx:for-index="monthIndex">
+      <view class="month-band" data-month-index="{{monthIndex}}" bindtap="toggleMonth">
+        <view class="band-summary">
+          <text class="band-label">{{item.label}}</text>
+          <text class="band-formula">({{item.saleDisplay}} - {{item.purchaseDisplay}} = <text class="net-value {{item.netClass}}">{{item.netDisplay}}</text>)</text>
+        </view>
+        <text class="expand-symbol">{{item.expanded ? '⌃' : '⌄'}}</text>
+      </view>
+
+      <view wx:if="{{item.expanded}}" class="day-list">
+        <block wx:for="{{item.days}}" wx:key="key" wx:for-item="day" wx:for-index="dayIndex">
+          <view class="day-band" data-month-index="{{monthIndex}}" data-day-index="{{dayIndex}}" bindtap="toggleDay">
+            <view class="band-summary">
+              <text class="band-label">{{day.label}} ({{day.billCount}}单)</text>
+              <text class="band-formula">({{day.saleDisplay}} - {{day.purchaseDisplay}} = <text class="net-value {{day.netClass}}">{{day.netDisplay}}</text>)</text>
+            </view>
+            <text class="expand-symbol">{{day.expanded ? '⌃' : '⌄'}}</text>
+          </view>
+
+          <view wx:if="{{day.expanded}}" class="bill-list">
+            <block wx:for="{{day.bills}}" wx:key="id" wx:for-item="bill" wx:for-index="billIndex">
+              <view class="bill-card">
+                <view class="bill-summary">
+                  <view class="bill-identity">
+                    <view class="direction-dot {{bill.directionClass}}"></view>
+                    <text class="direction-text {{bill.directionClass}}">{{bill.directionText}}</text>
+                    <text class="customer-name">{{bill.customerName}}</text>
+                  </view>
+                  <text class="bill-total {{bill.directionClass}}">{{bill.totalDisplay}}</text>
+                </view>
+
+                <view class="bill-actions">
+                  <button class="toggle-detail-button" data-month-index="{{monthIndex}}" data-day-index="{{dayIndex}}" data-bill-index="{{billIndex}}" catchtap="toggleBillDetail">{{bill.detailExpanded ? '隐藏' : '显示'}}</button>
+                  <button class="view-button" data-id="{{bill.id}}" catchtap="goDetail">查看</button>
+                  <button class="delete-button" data-id="{{bill.id}}" disabled="{{deletingBillId}}" catchtap="deleteBill">{{deletingBillId == bill.id ? '删除中' : '删除'}}</button>
+                </view>
+
+                <view wx:if="{{bill.detailExpanded}}" class="bill-detail">
+                  <view class="detail-row detail-head">
+                    <text>商品({{bill.itemCount}})</text><text>数量</text><text>单价</text><text>总额</text>
+                  </view>
+                  <view wx:if="{{!bill.items.length}}" class="detail-empty">该账单没有商品明细</view>
+                  <view wx:for="{{bill.items}}" wx:key="id" wx:for-item="line" class="detail-row">
+                    <text class="product-name">{{line.productName}}</text><text>{{line.quantityDisplay}}</text><text>{{line.unitPriceDisplay}}</text><text>{{line.subtotalDisplay}}</text>
+                  </view>
+                </view>
+              </view>
+            </block>
+          </view>
+        </block>
+      </view>
+    </block>
+  </view>
 </view>

@@ -1,23 +1,51 @@
-.ledger-page { padding: 24rpx; }
-.page-head { display: flex; align-items: flex-end; justify-content: space-between; margin: 4rpx 0 24rpx; }
+.ledger-page { padding: 24rpx 0 52rpx; }
+.page-head { display: flex; align-items: flex-end; justify-content: space-between; margin: 4rpx 0 24rpx; padding: 0 24rpx; }
 .page-title { display: block; color: #f2f7f5; font-size: 40rpx; font-weight: 700; }
 .page-subtitle { display: block; margin-top: 8rpx; color: #a1b2b0; font-size: 23rpx; }
 .create-link { color: #5de6dc; font-size: 27rpx; }
-.filter-bar { display: flex; gap: 12rpx; margin-bottom: 20rpx; }
+.filter-bar { display: flex; gap: 12rpx; margin-bottom: 20rpx; padding: 0 24rpx; }
 .filter { flex: 1; padding: 16rpx 0; border: 1rpx solid #294142; border-radius: 5rpx; color: #a1b2b0; font-size: 24rpx; text-align: center; }
 .filter-active { border-color: #5de6dc; color: #5de6dc; }
 .filter-sale-active { border-color: #ff967f; color: #ff967f; background: rgba(255, 98, 70, .1); }
 .filter-purchase-active { border-color: #f2ca72; color: #f2ca72; background: rgba(231, 180, 71, .1); }
-.bill-card { margin-bottom: 16rpx; padding: 22rpx 24rpx; border: 1rpx solid #294142; border-radius: 6rpx; background: #122526; }
-.bill-top, .bill-meta { display: flex; align-items: center; justify-content: space-between; }
-.customer-name { margin-left: 12rpx; color: #f2f7f5; font-size: 29rpx; font-weight: 600; }
-.direction-tag { display: inline-block; padding: 3rpx 10rpx; border-radius: 4rpx; font-size: 20rpx; }
-.direction-tag.sale { color: #ff967f; background: rgba(255, 98, 70, .12); }
-.direction-tag.purchase { color: #f2ca72; background: rgba(231, 180, 71, .12); }
-.bill-total { font-size: 31rpx; font-weight: 700; }
+.loading-tip { margin: 0 24rpx; }
+.month-list { border-top: 1rpx solid #3c6867; }
+.month-band, .day-band { display: flex; min-height: 92rpx; align-items: center; justify-content: space-between; box-sizing: border-box; padding: 16rpx 24rpx; }
+.month-band { border-bottom: 1rpx solid #5f5537; background: #332d1d; }
+.day-band { border-bottom: 1rpx solid #315463; background: #102b35; }
+.band-summary { display: flex; min-width: 0; flex: 1; flex-wrap: wrap; align-items: baseline; gap: 8rpx 12rpx; }
+.band-label { color: #f2f7f5; font-size: 30rpx; font-weight: 650; }
+.band-formula { color: #c1cbc9; font-size: 24rpx; }
+.net-value { font-weight: 700; }
+.net-value.positive { color: #ff967f; }
+.net-value.negative { color: #f2ca72; }
+.expand-symbol { width: 48rpx; flex: 0 0 48rpx; color: #a1b2b0; font-size: 34rpx; text-align: right; }
+.bill-list { padding: 18rpx 20rpx 4rpx; background: #0b1617; }
+.bill-card { overflow: hidden; margin-bottom: 18rpx; border: 1rpx solid #3c5152; border-radius: 6rpx; background: #122526; }
+.bill-summary { display: flex; min-height: 82rpx; align-items: center; justify-content: space-between; gap: 16rpx; padding: 0 20rpx; }
+.bill-identity { display: flex; min-width: 0; flex: 1; align-items: center; }
+.direction-dot { width: 18rpx; height: 18rpx; flex: 0 0 18rpx; border-radius: 50%; }
+.direction-dot.sale { background: #ff7c68; }
+.direction-dot.purchase { background: #f2ca72; }
+.direction-text { margin-left: 10rpx; font-size: 25rpx; font-weight: 650; }
+.direction-text.sale { color: #ff967f; }
+.direction-text.purchase { color: #f2ca72; }
+.customer-name { overflow: hidden; margin-left: 12rpx; color: #f2f7f5; font-size: 25rpx; text-overflow: ellipsis; white-space: nowrap; }
+.bill-total { flex: 0 0 auto; font-size: 32rpx; font-weight: 700; }
 .bill-total.sale { color: #ff967f; }
 .bill-total.purchase { color: #f2ca72; }
-.bill-meta { margin-top: 18rpx; color: #a1b2b0; font-size: 22rpx; }
-.detail-link { color: #5de6dc; }
-.item-preview { overflow: hidden; margin-top: 14rpx; color: #718381; font-size: 22rpx; text-overflow: ellipsis; white-space: nowrap; }
+.bill-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1rpx solid #294142; border-bottom: 1rpx solid #294142; }
+.bill-actions button { width: 100%; height: 66rpx; margin: 0; padding: 0; border-radius: 0; font-size: 24rpx; line-height: 66rpx; }
+.bill-actions button::after { border: 0; border-radius: 0; }
+.toggle-detail-button { border-right: 1rpx solid #294142; background: #1b3031; color: #c7d0ce; }
+.view-button { border-right: 1rpx solid #166d70; background: #0a7779; color: #eafffd; }
+.delete-button { background: #a93b45; color: #fff1f2; }
+.delete-button[disabled] { background: #543237; color: #a98e91; }
+.bill-detail { background: #0e1f20; }
+.detail-row { display: grid; grid-template-columns: minmax(0, 1.55fr) .8fr .9fr 1fr; min-height: 68rpx; align-items: center; border-bottom: 1rpx solid #294142; }
+.detail-row:last-child { border-bottom: 0; }
+.detail-row text { min-width: 0; padding: 10rpx 8rpx; color: #aab8b5; font-size: 22rpx; text-align: center; word-break: break-all; }
+.detail-head text { color: #f2f7f5; font-size: 23rpx; font-weight: 600; }
+.detail-row .product-name { color: #e5ecea; text-align: left; }
+.detail-empty { padding: 30rpx 20rpx; color: #718381; font-size: 22rpx; text-align: center; }
 .empty-action { width: 260rpx; margin-top: 30rpx; }

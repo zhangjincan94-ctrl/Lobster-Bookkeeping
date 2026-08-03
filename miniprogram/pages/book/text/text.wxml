@@ -1,0 +1,8 @@
+<view class="page text-page">
+  <view wx:if="{{loading}}" class="loading-tip">正在生成文字...</view>
+  <block wx:else>
+    <view class="title-band"><text class="page-title">账单文字</text><text class="page-subtitle">{{text.length}} 个字符</text></view>
+    <view class="text-editor"><textarea value="{{text}}" maxlength="5000" auto-height="false" bindinput="onTextInput" /></view>
+    <view class="copy-bar"><button class="submit-btn copy-btn" loading="{{copying}}" disabled="{{copying || !text}}" bindtap="copyText">复制文字</button></view>
+  </block>
+</view>

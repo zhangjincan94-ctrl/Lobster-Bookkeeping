@@ -7,6 +7,8 @@
     "pages/login/login",
     "pages/me/me",
     "pages/book/detail/detail",
+    "pages/book/edit/edit",
+    "pages/book/text/text",
     "pages/customer/detail/detail",
     "pages/customer/select/select",
     "pages/share/statement/statement",
@@ -56,7 +58,7 @@
       },
       {
         "pagePath": "pages/customer/list/list",
-        "text": "客户",
+        "text": "往来",
         "iconPath": "assets/icons/purchase.png",
         "selectedIconPath": "assets/icons/purchase-active.png"
       },

@@ -12,27 +12,48 @@ function monthStart() {
 function money(value) { return '¥' + (parseFloat(value) || 0).toFixed(2) }
 
 Page({
-  data: { id: '', book: null, loading: true, showPayment: false, paymentAmount: '', paymentDate: '', paymentRemark: '', savingPayment: false, statementStart: '', statementEnd: '', creatingStatement: false },
+  data: { id: '', book: null, loading: true, showPayment: false, paymentFlowType: 'received', paymentAmount: '', paymentDate: '', paymentRemark: '', savingPayment: false, statementStart: '', statementEnd: '', creatingStatement: false },
   onLoad: function (options) { this.setData({ id: options.id || '', paymentDate: today(), statementStart: monthStart(), statementEnd: today() }); this.loadBook() },
   loadBook: function () {
     var that = this
     get(config.api.ledgerCustomerBook(this.data.id), {}).then(function (book) {
       var customer = book.customer || {}
-      var balance = parseFloat(customer.balance) || 0
-      customer.balanceDisplay = money(Math.abs(balance))
-      customer.balanceLabel = balance > 0 ? '当前待收' : (balance < 0 ? '当前待付' : '当前已平')
-      customer.balanceClass = balance > 0 ? 'receivable' : (balance < 0 ? 'payable' : 'settled')
+      var hasSeparateBalances = customer.receivableBalance !== undefined && customer.payableBalance !== undefined
+      var legacyBalance = parseFloat(customer.balance) || 0
+      customer.receivableBalance = hasSeparateBalances ? parseFloat(customer.receivableBalance) || 0 : Math.max(legacyBalance, 0)
+      customer.payableBalance = hasSeparateBalances ? parseFloat(customer.payableBalance) || 0 : Math.max(-legacyBalance, 0)
+      customer.receivableDisplay = money(customer.receivableBalance)
+      customer.payableDisplay = money(customer.payableBalance)
       customer.salesDisplay = money(customer.salesAmount)
       customer.purchaseDisplay = money(customer.purchaseAmount)
       customer.receivedDisplay = money(customer.receivedAmount)
+      customer.paidDisplay = money(customer.paidAmount)
       book.bills = (book.bills || []).map(function (bill) { bill.totalDisplay = money(bill.totalAmount); bill.directionText = bill.direction === 'purchase' ? '进货' : '出货'; bill.directionClass = bill.direction === 'purchase' ? 'purchase' : 'sale'; return bill })
-      book.payments = (book.payments || []).map(function (payment) { payment.amountDisplay = money(payment.amount); return payment })
+      book.payments = (book.payments || []).map(function (payment) {
+        payment.amountDisplay = money(payment.amount)
+        payment.flowLabel = payment.flowType === 'paid' ? '供应商付款' : '客户回款'
+        payment.flowClass = payment.flowType === 'paid' ? 'paid' : 'received'
+        return payment
+      })
       that.setData({ book: book, loading: false })
-    }).catch(function () { that.setData({ loading: false }) })
+    }).catch(function (err) {
+      console.warn('[往来账本加载失败]', {
+        feature: '往来账本',
+        reason: err && err.message ? err.message : '请求失败',
+        customerId: that.data.id
+      })
+      that.setData({ loading: false })
+    })
   },
-  openPayment: function () {
-    if (!this.data.book || parseFloat(this.data.book.customer.balance) <= 0) { wx.showToast({ title: '当前没有待收余额', icon: 'none' }); return }
-    this.setData({ showPayment: true, paymentAmount: '', paymentDate: today(), paymentRemark: '' })
+  openPayment: function (e) {
+    var flowType = e.currentTarget.dataset.flowType === 'paid' ? 'paid' : 'received'
+    var customer = this.data.book && this.data.book.customer
+    var balance = customer ? parseFloat(flowType === 'paid' ? customer.payableBalance : customer.receivableBalance) || 0 : 0
+    if (balance <= 0) {
+      wx.showToast({ title: flowType === 'paid' ? '当前没有待付余额' : '当前没有待收余额', icon: 'none' })
+      return
+    }
+    this.setData({ showPayment: true, paymentFlowType: flowType, paymentAmount: '', paymentDate: today(), paymentRemark: '' })
   },
   closePayment: function () { if (!this.data.savingPayment) this.setData({ showPayment: false }) },
   onPaymentAmount: function (e) { this.setData({ paymentAmount: e.detail.value }) },
@@ -40,14 +61,24 @@ Page({
   onPaymentRemark: function (e) { this.setData({ paymentRemark: e.detail.value }) },
   savePayment: function () {
     var amount = parseFloat(this.data.paymentAmount)
-    if (!amount || amount <= 0 || this.data.savingPayment) { wx.showToast({ title: '请输入正确回款金额', icon: 'none' }); return }
+    var isPaid = this.data.paymentFlowType === 'paid'
+    if (!amount || amount <= 0 || this.data.savingPayment) { wx.showToast({ title: isPaid ? '请输入正确付款金额' : '请输入正确回款金额', icon: 'none' }); return }
     var that = this
     this.setData({ savingPayment: true })
-    post(config.api.ledgerPaymentAdd, { customerId: this.data.id, amount: amount, paymentDate: this.data.paymentDate, remark: this.data.paymentRemark.trim() }).then(function (result) {
-      wx.showModal({ title: '回款已记录', content: '回款前 ' + money(result.balanceBefore) + '\n回款后 ' + money(result.balanceAfter), showCancel: false })
+    post(config.api.ledgerPaymentAdd, { customerId: this.data.id, flowType: this.data.paymentFlowType, amount: amount, paymentDate: this.data.paymentDate, remark: this.data.paymentRemark.trim() }).then(function (result) {
+      var action = isPaid ? '付款' : '回款'
+      wx.showModal({ title: action + '已记录', content: action + '前 ' + money(result.balanceBefore) + '\n' + action + '后 ' + money(result.balanceAfter), showCancel: false })
       that.setData({ showPayment: false, savingPayment: false })
       that.loadBook()
-    }).catch(function () { that.setData({ savingPayment: false }) })
+    }).catch(function (err) {
+      console.warn('[往来收付款保存失败]', {
+        feature: isPaid ? '供应商付款' : '客户回款',
+        reason: err && err.message ? err.message : '请求失败',
+        customerId: that.data.id,
+        amount: amount
+      })
+      that.setData({ savingPayment: false })
+    })
   },
   onStatementStart: function (e) { this.setData({ statementStart: e.detail.value }) },
   onStatementEnd: function (e) { this.setData({ statementEnd: e.detail.value }) },

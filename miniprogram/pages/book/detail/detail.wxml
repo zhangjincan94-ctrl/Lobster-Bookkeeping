@@ -1,1 +1,24 @@
-<view class="page detail-page"><view wx:if="{{loading}}" class="loading-tip">正在加载账单...</view><view wx:elif="{{bill}}"><view class="hero-card"><view><text class="direction-tag {{bill.directionClass}}">{{bill.directionText}}</text><text class="customer">{{bill.customerName}}</text></view><text class="total {{bill.directionClass}}">{{bill.totalDisplay}}</text><text class="date">{{bill.billDate}}</text></view><view class="card"><view class="section-title">商品明细</view><view wx:for="{{bill.items}}" wx:key="id" class="line"><view><text class="product">{{item.productName}}</text><text class="unit">{{item.quantity}} {{item.unit}} × ¥{{item.unitPrice}}</text></view><text class="subtotal">{{item.subtotalDisplay}}</text></view></view><view wx:if="{{bill.remark}}" class="card"><text class="section-title">备注</text><text class="remark">{{bill.remark}}</text></view><button class="btn-danger delete-btn" bindtap="removeBill">删除账单</button></view><view wx:else class="empty-state"><text class="empty-text">账单不存在或已删除</text></view></view>
+<view class="page detail-page">
+  <view wx:if="{{loading}}" class="loading-tip">正在加载账单...</view>
+  <view wx:elif="{{bill}}">
+    <view class="bill-panel">
+      <view class="bill-meta">
+        <text class="bill-date">{{bill.billDate}}</text>
+        <view class="bill-customer"><text class="direction-tag {{bill.directionClass}}">{{bill.directionText}}</text><text>{{bill.customerName}}</text></view>
+      </view>
+      <view class="detail-head"><text>商品（{{bill.itemCount}}）</text><text>数量</text><text>单价</text><text>总额</text></view>
+      <view wx:for="{{bill.items}}" wx:key="id" class="detail-row"><text class="product-name">{{item.productName}}</text><text>{{item.quantityDisplay}}</text><text>{{item.unitPriceDisplay}}</text><text class="row-total">{{item.subtotalDisplay}}</text></view>
+      <view class="bill-total-row"><text>账单总额</text><text class="bill-total {{bill.directionClass}}">{{bill.totalDisplay}}</text></view>
+      <view wx:if="{{bill.remark}}" class="bill-remark"><text>备注</text><text>{{bill.remark}}</text></view>
+    </view>
+
+    <view class="action-grid">
+      <view class="action-item" hover-class="action-item-active" bindtap="sendImage"><text class="action-icon image-icon">↗</text><text class="action-label">{{generatingPoster ? '生成中' : '发图'}}</text></view>
+      <view class="action-item" hover-class="action-item-active" bindtap="sendText"><text class="action-icon text-icon">文</text><text class="action-label">发字</text></view>
+      <view class="action-item" hover-class="action-item-active" bindtap="editBill"><text class="action-icon edit-icon">改</text><text class="action-label">修改账单</text></view>
+      <view class="action-item" hover-class="action-item-active" bindtap="goBack"><text class="action-icon back-icon">←</text><text class="action-label">返回</text></view>
+    </view>
+  </view>
+  <view wx:else class="empty-state"><text class="empty-text">账单不存在或已删除</text></view>
+  <canvas canvas-id="billPoster" class="poster-canvas" style="height: {{posterHeight}}px;"></canvas>
+</view>

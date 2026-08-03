@@ -23,14 +23,23 @@ Page({
     this.setData({ loading: true })
     get(config.api.ledgerCustomerList, { pageSize: 100, keyword: this.data.keyword }).then(function (data) {
       var customers = ((data && data.list) || []).map(function (item) {
-        var balance = parseFloat(item.balance) || 0
-        item.balanceDisplay = '¥' + amount(Math.abs(balance))
-        item.balanceLabel = balance > 0 ? '待收' : (balance < 0 ? '待付' : '已平')
-        item.balanceClass = balance > 0 ? 'receivable' : (balance < 0 ? 'payable' : 'settled')
+        var hasSeparateBalances = item.receivableBalance !== undefined && item.payableBalance !== undefined
+        var legacyBalance = parseFloat(item.balance) || 0
+        item.receivableBalance = hasSeparateBalances ? parseFloat(item.receivableBalance) || 0 : Math.max(legacyBalance, 0)
+        item.payableBalance = hasSeparateBalances ? parseFloat(item.payableBalance) || 0 : Math.max(-legacyBalance, 0)
+        item.receivableDisplay = '¥' + amount(item.receivableBalance)
+        item.payableDisplay = '¥' + amount(item.payableBalance)
         return item
       })
       that.setData({ customers: customers, loading: false })
-    }).catch(function () { that.setData({ customers: [], loading: false }) })
+    }).catch(function (err) {
+      console.warn('[往来对象列表加载失败]', {
+        feature: '往来对象列表',
+        reason: err && err.message ? err.message : '请求失败',
+        keyword: that.data.keyword
+      })
+      that.setData({ customers: [], loading: false })
+    })
   },
   onSearchInput: function (e) { this.setData({ keyword: e.detail.value }) },
   onSearch: function () { this.loadCustomers() },
@@ -41,7 +50,7 @@ Page({
   createCustomer: function () {
     var name = this.data.newName.trim()
     if (!name || this.data.creating) {
-      if (!name) wx.showToast({ title: '请输入客户名称', icon: 'none' })
+      if (!name) wx.showToast({ title: '请输入往来对象名称', icon: 'none' })
       return
     }
     var that = this

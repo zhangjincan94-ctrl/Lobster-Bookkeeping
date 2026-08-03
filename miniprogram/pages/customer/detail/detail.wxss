@@ -2,16 +2,21 @@
 .customer-head { padding: 28rpx; border: 1rpx solid #3c6867; border-radius: 7rpx; background: #122526; }
 .customer-name { display: block; color: #f2f7f5; font-size: 40rpx; font-weight: 700; }
 .customer-phone { display: block; margin-top: 8rpx; color: #a1b2b0; font-size: 23rpx; }
-.balance-label { display: block; margin-top: 28rpx; font-size: 23rpx; }
-.balance-value { display: block; margin-top: 8rpx; font-size: 48rpx; font-weight: 700; }
+.balance-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18rpx; margin-top: 28rpx; }
+.balance-grid view { min-width: 0; padding: 18rpx; border: 1rpx solid #294142; background: #0b1d1e; }
+.balance-label { display: block; color: #a1b2b0; font-size: 22rpx; }
+.balance-value { display: block; margin-top: 8rpx; font-size: 36rpx; font-weight: 700; }
 .receivable { color: #ff8c8c; }.payable { color: #f2ca72; }.settled, .received { color: #4bce91; }
-.summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10rpx; text-align: center; }
+.paid { color: #f2ca72; }
+.summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20rpx 10rpx; text-align: center; }
 .summary-grid view { min-width: 0; }.summary-grid text { display: block; color: #a1b2b0; font-size: 21rpx; }.summary-grid text + text { margin-top: 10rpx; font-size: 25rpx; font-weight: 700; }.sale { color: #ff967f !important; }.purchase { color: #f2ca72 !important; }
-.payment-btn { margin-bottom: 20rpx; }
+.payment-actions { display: flex; gap: 14rpx; margin-bottom: 20rpx; }
+.payment-btn { min-width: 0; flex: 1; margin: 0; }
+.settled-tip { margin-bottom: 20rpx; padding: 24rpx; border: 1rpx solid #294142; color: #4bce91; text-align: center; }
 .statement-card { padding-bottom: 22rpx; }.statement-dates { display: flex; align-items: center; justify-content: space-between; color: #a1b2b0; font-size: 23rpx; }.statement-dates picker { min-width: 220rpx; padding: 14rpx 0; border-bottom: 1rpx solid #294142; color: #f2f7f5; text-align: center; }.statement-btn { margin-top: 20rpx; }
 .section-title { display: block; margin-bottom: 14rpx; color: #f2f7f5; font-weight: 600; }
 .record-row { display: flex; align-items: center; justify-content: space-between; min-height: 82rpx; border-top: 1rpx solid #294142; }
-.record-tag { display: inline-block; padding: 3rpx 9rpx; border-radius: 4rpx; font-size: 20rpx; }.record-tag.sale { color: #ff967f; background: rgba(255, 98, 70, .1); }.record-tag.purchase { color: #f2ca72; background: rgba(231, 180, 71, .1); }.record-tag.received { color: #4bce91; background: rgba(75, 206, 145, .1); }
-.record-date { margin-left: 12rpx; color: #a1b2b0; font-size: 22rpx; }.record-total { font-weight: 600; }.record-total.sale { color: #ff967f; }.record-total.purchase { color: #f2ca72; }.record-total.received { color: #4bce91; }
+.record-tag { display: inline-block; padding: 3rpx 9rpx; border-radius: 4rpx; font-size: 20rpx; }.record-tag.sale { color: #ff967f; background: rgba(255, 98, 70, .1); }.record-tag.purchase, .record-tag.paid { color: #f2ca72; background: rgba(231, 180, 71, .1); }.record-tag.received { color: #4bce91; background: rgba(75, 206, 145, .1); }
+.record-date { margin-left: 12rpx; color: #a1b2b0; font-size: 22rpx; }.record-total { font-weight: 600; }.record-total.sale { color: #ff967f; }.record-total.purchase, .record-total.paid { color: #f2ca72; }.record-total.received { color: #4bce91; }
 .inline-empty { padding: 30rpx 0; color: #a1b2b0; text-align: center; font-size: 23rpx; }
 .dialog { width: 620rpx; padding: 30rpx; box-sizing: border-box; background: #122526; border: 1rpx solid #3c6867; border-radius: 8rpx; }.dialog-title { display: block; margin-bottom: 24rpx; color: #f2f7f5; font-size: 32rpx; font-weight: 600; }.dialog-input, .date-picker { width: 100%; min-height: 72rpx; box-sizing: border-box; margin-bottom: 16rpx; padding: 0 18rpx; border: 1rpx solid #3c6867; border-radius: 4rpx; color: #f2f7f5; line-height: 72rpx; }.dialog-actions { display: flex; gap: 16rpx; margin-top: 24rpx; }.dialog-actions button { flex: 1; }

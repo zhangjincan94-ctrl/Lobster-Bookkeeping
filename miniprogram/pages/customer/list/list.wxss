@@ -11,9 +11,9 @@
 .customer-info { min-width: 0; flex: 1; }
 .customer-name { display: block; overflow: hidden; color: #f2f7f5; font-size: 29rpx; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
 .customer-phone { display: block; margin-top: 6rpx; color: #a1b2b0; font-size: 21rpx; }
-.balance-box { min-width: 116rpx; text-align: right; }
-.balance-label { display: block; font-size: 20rpx; }
-.balance-value { display: block; margin-top: 5rpx; font-size: 25rpx; font-weight: 700; }
+.balance-box { min-width: 178rpx; text-align: right; }
+.balance-line { display: flex; justify-content: space-between; gap: 10rpx; font-size: 21rpx; font-weight: 600; }
+.balance-line + .balance-line { margin-top: 7rpx; }
 .receivable { color: #ff8c8c; }
 .payable { color: #f2ca72; }
 .settled { color: #4bce91; }

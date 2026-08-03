@@ -1,22 +1,22 @@
 <view class="page customer-page">
   <view class="page-head">
     <view>
-      <text class="page-title">选择客户</text>
-      <text class="page-subtitle">选择后自动返回开单页</text>
+      <text class="page-title">选择往来对象</text>
+      <text class="page-subtitle">客户与供应商使用同一份名单</text>
     </view>
     <text class="add-link" bindtap="openAdd">+ 新增</text>
   </view>
 
   <view class="search-bar">
-    <input placeholder="搜索客户名称或电话" value="{{keyword}}" bindinput="onSearchInput" confirm-type="search" bindconfirm="onSearch" />
+    <input placeholder="搜索名称或电话" value="{{keyword}}" bindinput="onSearchInput" confirm-type="search" bindconfirm="onSearch" />
     <text bindtap="onSearch">搜索</text>
   </view>
 
-  <view wx:if="{{loading}}" class="loading-tip">正在加载客户...</view>
+  <view wx:if="{{loading}}" class="loading-tip">正在加载往来对象...</view>
   <view wx:elif="{{!customers.length}}" class="empty-state">
     <text class="empty-icon">○</text>
-    <text class="empty-text">还没有客户</text>
-    <button class="btn-primary empty-action" bindtap="openAdd">新增客户</button>
+    <text class="empty-text">还没有往来对象</text>
+    <button class="btn-primary empty-action" bindtap="openAdd">新增往来对象</button>
   </view>
   <view wx:else>
     <view wx:for="{{customers}}" wx:key="id" class="customer-row" data-index="{{index}}" bindtap="selectCustomer">
@@ -26,8 +26,9 @@
         <text class="customer-phone">{{item.phone || '未设置电话'}}</text>
       </view>
       <view class="balance-box">
-        <text class="balance-label {{item.balanceClass}}">{{item.balanceLabel}}</text>
-        <text class="balance-value {{item.balanceClass}}">{{item.balanceDisplay}}</text>
+        <view wx:if="{{item.receivableBalance > 0}}" class="balance-line receivable"><text>待收</text><text>{{item.receivableDisplay}}</text></view>
+        <view wx:if="{{item.payableBalance > 0}}" class="balance-line payable"><text>待付</text><text>{{item.payableDisplay}}</text></view>
+        <text wx:if="{{item.receivableBalance <= 0 && item.payableBalance <= 0}}" class="settled">已平</text>
       </view>
       <text class="chevron">›</text>
     </view>
@@ -36,8 +37,8 @@
 
 <view wx:if="{{showAdd}}" class="modal-mask" bindtap="closeAdd">
   <view class="dialog" catchtap="noop">
-    <view class="dialog-title">新增客户</view>
-    <input class="dialog-input" placeholder="客户名称" value="{{newName}}" bindinput="onNameInput" />
+    <view class="dialog-title">新增往来对象</view>
+    <input class="dialog-input" placeholder="名称" value="{{newName}}" bindinput="onNameInput" />
     <input class="dialog-input" placeholder="联系电话（选填）" type="number" value="{{newPhone}}" bindinput="onPhoneInput" />
     <view class="dialog-actions">
       <button class="btn-secondary" bindtap="closeAdd">取消</button>
