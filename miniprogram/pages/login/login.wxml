@@ -1,7 +1,7 @@
 <view class="login-page">
   <view class="login-container">
     <view class="logo-area">
-      <image class="logo-icon" src="/assets/lobster-accounting-avatar-144.png" mode="aspectFill" />
+      <image class="logo-icon" src="/assets/miniprogram-avatar-144.png" mode="aspectFill" />
       <text class="logo-text">龙虾记账</text>
     </view>
     <text class="subtitle">轻松记账，高效管理</text>
