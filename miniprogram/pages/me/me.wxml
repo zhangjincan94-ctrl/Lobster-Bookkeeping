@@ -31,8 +31,12 @@
       <text class="menu-label">商品库</text>
       <text class="menu-arrow">›</text>
     </view>
-    <view class="menu-item" bindtap="goCategoryManager">
-      <text class="menu-label">分类管理</text>
+  </view>
+
+  <view class="menu-card card">
+    <view class="menu-title">经营分析</view>
+    <view class="menu-item" bindtap="goTradeStats">
+      <text class="menu-label">交易统计</text>
       <text class="menu-arrow">›</text>
     </view>
   </view>

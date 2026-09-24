@@ -24,7 +24,7 @@
 .bill-item { min-height: 92rpx; }
 .product-cell, .compact-input, .subtotal-cell, .remove-item { box-sizing: border-box; border-right: 1rpx solid #294142; border-bottom: 1rpx solid #294142; }
 .product-cell { display: flex; min-width: 0; flex-direction: column; justify-content: center; padding: 0 10rpx; }
-.product-unit, .row-meta { display: block; margin-top: 5rpx; color: #718381; font-size: 20rpx; }
+.row-meta { display: block; margin-top: 5rpx; color: #718381; font-size: 20rpx; }
 .product-input { width: 100%; min-height: 42rpx; padding: 0; border: 0; color: #f2f7f5; font-size: 23rpx; }
 .compact-input { width: 100%; min-height: 90rpx; padding: 0 6rpx; border: 0; border-right: 1rpx solid #294142; border-bottom: 1rpx solid #294142; color: #f2f7f5; font-size: 23rpx; text-align: center; }
 .subtotal-cell { display: flex; align-items: center; justify-content: center; color: #ff967f; font-size: 22rpx; }

@@ -1,0 +1,36 @@
+<view class="page trade-page">
+  <view class="trade-head">
+    <view><text class="page-title">交易统计</text><text class="range-text">{{range}}</text></view>
+    <view class="period-switch"><view class="period-option {{days === 7 ? 'selected' : ''}}" data-days="7" bindtap="switchDays">近7天</view><view class="period-option {{days === 30 ? 'selected' : ''}}" data-days="30" bindtap="switchDays">近30天</view></view>
+  </view>
+  <view wx:if="{{loading && !range}}" class="state-text">正在汇总交易...</view>
+  <view wx:elif="{{error}}" class="state-text"><text>统计暂时无法加载</text><button class="retry-button" bindtap="loadStats">重试</button></view>
+  <block wx:else>
+    <view class="summary-band">
+      <view class="summary-top"><text>账单成交额</text><text>{{count}} 笔</text></view>
+      <text class="total-amount">{{totalDisplay}}</text>
+      <view class="ring-layout">
+        <view class="ring-wrap"><canvas canvas-id="tradeRing" class="ring-canvas" width="220" height="220"></canvas><cover-view class="ring-center"><cover-view>出货占比</cover-view><cover-view class="ring-percent">{{salePercent}}%</cover-view></cover-view></view>
+        <view class="ring-legend">
+          <view class="legend-item"><view class="legend-name"><text class="legend-dot sale-dot"></text><text>出货</text><text class="legend-share">{{salePercent}}%</text></view><text class="legend-amount">{{saleDisplay}}</text><text class="legend-change">{{saleChange}}</text></view>
+          <view class="legend-item"><view class="legend-name"><text class="legend-dot purchase-dot"></text><text>进货</text><text class="legend-share">{{purchasePercent}}%</text></view><text class="legend-amount">{{purchaseDisplay}}</text><text class="legend-change">{{purchaseChange}}</text></view>
+        </view>
+      </view>
+    </view>
+    <view class="insight-band"><text>{{insight}}</text></view>
+    <view class="chart-section">
+      <view class="section-head"><text>交易节奏</text><text>{{days === 7 ? '每日' : '每5天'}} · 按账单日期</text></view>
+      <view wx:if="{{empty}}" class="empty-chart">本期暂无交易</view>
+      <view wx:else class="bar-chart">
+        <view wx:for="{{bars}}" wx:key="label" class="bar-group {{selectedIndex === index ? 'selected' : ''}}" data-index="{{index}}" bindtap="selectBar">
+          <view class="bar-track"><view class="bar sale-bar" style="height: {{item.saleHeight}}%"></view><view class="bar purchase-bar" style="height: {{item.purchaseHeight}}%"></view></view>
+          <text class="bar-label">{{item.label}}</text>
+          <text class="bar-count">{{item.count}}笔</text>
+        </view>
+      </view>
+      <view class="chart-key"><text><text class="legend-dot sale-dot"></text>出货</text><text><text class="legend-dot purchase-dot"></text>进货</text></view>
+      <view wx:if="{{!empty && selectedBar}}" class="bar-detail"><text>{{selectedBar.label}} · {{selectedBar.count}}笔</text><view><text>出货 {{selectedBar.saleDisplay}}</text><text>进货 {{selectedBar.purchaseDisplay}}</text></view></view>
+    </view>
+    <view class="method-note">仅统计未删除账单；归档对象的历史账单仍计入。金额按账单日期归属，不等于实际收付款或利润。</view>
+  </block>
+</view>

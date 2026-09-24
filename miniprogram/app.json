@@ -30,7 +30,8 @@
     "pages/share/purchase-record/purchase-record",
     "pages/stats/overview/overview",
     "pages/stats/debt/debt",
-    "pages/stats/product/product"
+    "pages/stats/product/product",
+    "pages/stats/trade/trade"
   ],
   "window": {
     "backgroundTextStyle": "dark",

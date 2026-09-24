@@ -4,7 +4,7 @@
     <text class="add-link" bindtap="openAdd">+ 新增</text>
   </view>
   <view class="search-bar"><input placeholder="搜索名称或电话" value="{{keyword}}" bindinput="onSearchInput" confirm-type="search" bindconfirm="onSearch" /><text bindtap="onSearch">搜索</text></view>
-  <view class="status-tabs"><view class="status-tab {{!archived ? 'active' : ''}}" data-archived="0" bindtap="switchStatus">往来对象</view><view class="status-tab {{archived ? 'active' : ''}}" data-archived="1" bindtap="switchStatus">已归档</view></view>
+  <view class="status-tabs"><view class="status-tab {{!archived ? 'active' : ''}}" data-archived="0" bindtap="switchStatus">往来对象</view><view class="status-tab {{archived ? 'active' : ''}}" data-archived="1" bindtap="switchStatus">已归档记录</view></view>
   <view wx:if="{{loading}}" class="loading-tip">正在加载往来对象...</view>
   <view wx:elif="{{!customers.length}}" class="empty-state"><text class="empty-icon">○</text><text class="empty-text">{{archived ? '还没有已归档的往来对象' : '还没有往来对象'}}</text><button wx:if="{{!archived}}" class="btn-primary empty-action" bindtap="openAdd">新增往来对象</button></view>
   <view wx:else>

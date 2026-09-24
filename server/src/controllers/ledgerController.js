@@ -13,6 +13,13 @@ const listCustomers = async (ctx) => {
   ctx.body = paginate(result.list, result.total, page, pageSize);
 };
 
+const tradeStats = async (ctx) => {
+  ctx.body = success(await ledgerService.getTradeStats(ctx.state.merchant.id, {
+    days: ctx.query.days,
+    endDate: ctx.query.end_date
+  }));
+};
+
 const createCustomer = async (ctx) => {
   const customer = await ledgerService.createCustomer(ctx.state.merchant.id, ctx.request.body);
   ctx.body = success(customer);
@@ -150,6 +157,7 @@ const publicStatement = async (ctx) => {
 
 module.exports = {
   listCustomers,
+  tradeStats,
   createCustomer,
   updateCustomer,
   archiveCustomer,

@@ -99,8 +99,8 @@ Page({
     wx.navigateTo({ url: '/pages/product/list/list' })
   },
 
-  goCategoryManager: function () {
-    wx.navigateTo({ url: '/pages/product/list/list?category=1' })
+  goTradeStats: function () {
+    wx.navigateTo({ url: '/pages/stats/trade/trade' })
   },
 
   onLogout: function () {

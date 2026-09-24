@@ -60,6 +60,7 @@ var api = {
   ledgerBillDelete: function (id) { return '/api/ledger/bills/' + id },
   ledgerPaymentAdd: '/api/ledger/payments',
   ledgerStatementAdd: '/api/ledger/statements',
+  ledgerTradeStats: '/api/ledger/stats/trade',
   ledgerStatementShare: function (token) { return '/api/ledger/share/' + token }
 }
 

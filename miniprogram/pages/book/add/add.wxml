@@ -29,9 +29,9 @@
     </view>
 
     <view class="bill-table">
-      <view class="item-head"><text>商品（{{items.length}}）</text><text>数量(斤)</text><text>单价</text><text>结算</text><text>移除</text></view>
+      <view class="item-head"><text>商品（{{items.length}}）</text><text>数量</text><text>单价</text><text>结算</text><text>移除</text></view>
       <view wx:for="{{items}}" wx:key="rowId" class="bill-item">
-        <view class="product-cell"><input class="product-input" placeholder="商品" value="{{item.productName}}" data-index="{{index}}" bindfocus="onProductNameFocus" bindinput="onProductNameInput" /><text class="product-unit">{{item.unit}}</text></view>
+        <view class="product-cell"><input class="product-input" placeholder="商品" value="{{item.productName}}" data-index="{{index}}" bindfocus="onProductNameFocus" bindinput="onProductNameInput" /></view>
         <input class="compact-input" type="digit" value="{{item.quantity}}" data-index="{{index}}" data-field="quantity" bindinput="onItemInput" />
         <input class="compact-input" type="digit" value="{{item.unitPrice}}" data-index="{{index}}" data-field="unitPrice" bindinput="onItemInput" />
         <text class="subtotal-cell">¥{{item.subtotal}}</text>

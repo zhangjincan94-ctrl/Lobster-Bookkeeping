@@ -182,6 +182,81 @@ const listCustomers = async (merchantId, { keyword, page = 1, pageSize = 20, arc
   };
 };
 
+const getTradeStats = async (merchantId, { days = 7, endDate } = {}) => {
+  const periodDays = Number(days);
+  if (![7, 30].includes(periodDays) || !/^\d{4}-\d{2}-\d{2}$/.test(String(endDate || ''))) {
+    throw serviceError('统计周期或日期无效', 400, {
+      feature: '交易统计', reason: '参数无效', merchantId, days, endDate
+    });
+  }
+  const end = new Date(endDate + 'T12:00:00Z');
+  if (Number.isNaN(end.getTime()) || end.toISOString().slice(0, 10) !== endDate) {
+    throw serviceError('统计日期无效', 400, {
+      feature: '交易统计', reason: '日期不存在', merchantId, endDate
+    });
+  }
+  const dateAt = (offset) => {
+    const value = new Date(end);
+    value.setUTCDate(value.getUTCDate() + offset);
+    return value.toISOString().slice(0, 10);
+  };
+  const currentStart = dateAt(1 - periodDays);
+  const previousStart = dateAt(1 - periodDays * 2);
+  const rows = await LedgerBill.findAll({
+    where: {
+      merchant_id: merchantId,
+      deleted_at: null,
+      bill_date: { [Op.between]: [previousStart, endDate] }
+    },
+    attributes: [
+      'bill_date', 'direction',
+      [sequelize.fn('COUNT', sequelize.col('id')), 'order_count'],
+      [sequelize.fn('COALESCE', sequelize.fn('SUM', sequelize.col('total_amount')), 0), 'amount']
+    ],
+    group: ['bill_date', 'direction'],
+    order: [['bill_date', 'ASC']],
+    raw: true
+  });
+  const totals = { sale: 0, purchase: 0, count: 0 };
+  const previous = { sale: 0, purchase: 0, count: 0 };
+  const daily = {};
+  rows.forEach((row) => {
+    const date = String(row.bill_date);
+    const target = date >= currentStart ? totals : previous;
+    const direction = row.direction;
+    if (direction !== 'sale' && direction !== 'purchase') {
+      console.warn('[交易统计数据异常]', { feature: '交易统计', reason: '未知账单方向', merchantId, date, direction });
+      return;
+    }
+    const amount = Math.round(toNumber(row.amount) * 100);
+    target[direction] += amount;
+    target.count += Number(row.order_count) || 0;
+    if (date >= currentStart) {
+      if (!daily[date]) daily[date] = { date, sale: 0, purchase: 0, count: 0 };
+      daily[date][direction] += amount;
+      daily[date].count += Number(row.order_count) || 0;
+    }
+  });
+  const money = (cents) => roundMoney(cents / 100);
+  return {
+    days: periodDays,
+    start_date: currentStart,
+    end_date: endDate,
+    sale_amount: money(totals.sale),
+    purchase_amount: money(totals.purchase),
+    order_count: totals.count,
+    previous_sale_amount: money(previous.sale),
+    previous_purchase_amount: money(previous.purchase),
+    previous_order_count: previous.count,
+    daily: Object.keys(daily).sort().map((date) => ({
+      date,
+      sale_amount: money(daily[date].sale),
+      purchase_amount: money(daily[date].purchase),
+      order_count: daily[date].count
+    }))
+  };
+};
+
 const createCustomer = async (merchantId, data) => {
   const name = String(data.name || '').trim();
   if (!name) {
@@ -675,6 +750,7 @@ const getPublicCustomerStatement = async (shareToken) => {
 };
 
 module.exports = {
+  getTradeStats,
   listCustomers,
   createCustomer,
   updateCustomer,

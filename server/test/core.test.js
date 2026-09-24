@@ -502,6 +502,31 @@ test('已归档列表可查询，且账本仍返回原账单和收付款', async
   assert.equal(book.payments[0].id, 9);
 });
 
+test('交易统计按账单日期汇总本期和上期，并排除删除账单', async (t) => {
+  t.mock.method(models.LedgerBill, 'findAll', async (options) => {
+    assert.equal(options.where.merchant_id, 10);
+    assert.equal(options.where.deleted_at, null);
+    return [
+      { bill_date: '2026-09-10', direction: 'sale', order_count: 1, amount: '50.00' },
+      { bill_date: '2026-09-18', direction: 'sale', order_count: 2, amount: '120.00' },
+      { bill_date: '2026-09-18', direction: 'purchase', order_count: 1, amount: '40.00' },
+      { bill_date: '2026-09-24', direction: 'purchase', order_count: 1, amount: '30.00' }
+    ];
+  });
+  const result = await ledgerService.getTradeStats(10, { days: 7, endDate: '2026-09-24' });
+  assert.equal(result.start_date, '2026-09-18');
+  assert.equal(result.previous_sale_amount, 50);
+  assert.equal(result.sale_amount, 120);
+  assert.equal(result.purchase_amount, 70);
+  assert.equal(result.order_count, 4);
+  assert.equal(result.daily.length, 2);
+});
+
+test('交易统计拒绝无效周期和日期', async () => {
+  await assert.rejects(ledgerService.getTradeStats(10, { days: 8, endDate: '2026-09-24' }), /周期或日期无效/);
+  await assert.rejects(ledgerService.getTradeStats(10, { days: 7, endDate: '2026-02-30' }), /日期无效/);
+});
+
 test('已归档的往来对象不能再用于开单', async (t) => {
   const dbTx = createDbTx();
   t.mock.method(models.sequelize, 'transaction', async (callback) => callback(dbTx));

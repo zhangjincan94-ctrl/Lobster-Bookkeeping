@@ -1,0 +1,48 @@
+.trade-page { min-height: 100vh; box-sizing: border-box; padding: 28rpx 24rpx 80rpx; background: #0b1617; color: #f2f7f5; }
+.trade-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16rpx; margin-bottom: 28rpx; }
+.page-title { display: block; font-size: 38rpx; font-weight: 700; }
+.range-text { display: block; margin-top: 10rpx; color: #a1b2b0; font-size: 21rpx; }
+.period-switch { display: flex; flex-shrink: 0; padding: 4rpx; border: 1rpx solid #3c6867; border-radius: 5rpx; }
+.period-option { min-width: 76rpx; padding: 10rpx 8rpx; color: #a1b2b0; font-size: 22rpx; text-align: center; }
+.period-option.selected { background: #295655; color: #f2f7f5; }
+.state-text { padding: 80rpx 0; color: #a1b2b0; text-align: center; font-size: 26rpx; }
+.retry-button { width: 180rpx; margin-top: 24rpx; font-size: 24rpx; }
+.summary-band { padding: 28rpx 0 34rpx; border-top: 1rpx solid #294142; border-bottom: 1rpx solid #294142; }
+.summary-top { display: flex; justify-content: space-between; color: #a1b2b0; font-size: 24rpx; }
+.total-amount { display: block; margin-top: 8rpx; font-size: 48rpx; font-weight: 700; }
+.ring-layout { display: flex; align-items: center; gap: 12rpx; margin-top: 20rpx; }
+.ring-wrap { position: relative; flex: 0 0 330rpx; width: 330rpx; height: 330rpx; }
+.ring-canvas { width: 330rpx; height: 330rpx; }
+.ring-center { position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; color: #a1b2b0; font-size: 22rpx; }
+.ring-percent { margin-top: 5rpx; color: #f2f7f5; font-size: 42rpx; font-weight: 700; }
+.ring-legend { min-width: 0; flex: 1; }
+.legend-item { padding: 14rpx 0; border-bottom: 1rpx solid #294142; }
+.legend-item:last-child { border-bottom: 0; }
+.legend-name { display: flex; align-items: center; gap: 8rpx; font-size: 23rpx; }
+.legend-dot { display: inline-block; flex: 0 0 12rpx; width: 12rpx; height: 12rpx; border-radius: 50%; }
+.sale-dot { background: #5de6dc; }
+.purchase-dot { background: #f2ca72; }
+.legend-share { margin-left: auto; color: #a1b2b0; }
+.legend-amount { display: block; margin-top: 8rpx; font-size: 26rpx; font-weight: 600; }
+.legend-change { display: block; margin-top: 5rpx; color: #a1b2b0; font-size: 20rpx; }
+.insight-band { padding: 26rpx 0; border-bottom: 1rpx solid #294142; color: #d3e1dd; font-size: 24rpx; line-height: 1.6; }
+.chart-section { margin-top: 36rpx; }
+.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12rpx; }
+.section-head text:first-child { font-size: 30rpx; font-weight: 700; }
+.section-head text:last-child { color: #a1b2b0; font-size: 21rpx; }
+.bar-chart { display: flex; align-items: flex-end; gap: 8rpx; height: 320rpx; padding-top: 40rpx; border-bottom: 1rpx solid #3c6867; }
+.empty-chart { padding: 100rpx 0; color: #829795; font-size: 24rpx; text-align: center; }
+.bar-group { display: flex; min-width: 0; flex: 1; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+.bar-track { display: flex; width: 100%; height: 245rpx; align-items: flex-end; justify-content: center; gap: 4rpx; }
+.bar { width: 32%; max-width: 42rpx; min-height: 0; border-radius: 3rpx 3rpx 0 0; }
+.bar-group.selected .bar { opacity: 1; }
+.bar-group:not(.selected) .bar { opacity: .72; }
+.sale-bar { background: #5de6dc; }
+.purchase-bar { background: #f2ca72; }
+.bar-label { display: block; margin-top: 10rpx; color: #a1b2b0; font-size: 19rpx; text-align: center; white-space: nowrap; }
+.bar-count { display: block; margin-top: 4rpx; color: #718381; font-size: 19rpx; }
+.chart-key { display: flex; justify-content: center; gap: 30rpx; margin-top: 26rpx; color: #a1b2b0; font-size: 22rpx; }
+.chart-key text { display: flex; align-items: center; gap: 8rpx; }
+.bar-detail { display: flex; justify-content: space-between; gap: 10rpx; margin-top: 28rpx; padding: 20rpx 0; border-top: 1rpx solid #294142; border-bottom: 1rpx solid #294142; color: #d3e1dd; font-size: 22rpx; }
+.bar-detail view { display: flex; flex-direction: column; align-items: flex-end; gap: 8rpx; }
+.method-note { margin-top: 38rpx; padding-top: 20rpx; border-top: 1rpx solid #294142; color: #829795; font-size: 21rpx; line-height: 1.6; }

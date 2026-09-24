@@ -5,6 +5,7 @@ const auth = require('../middlewares/auth');
 const router = new Router({ prefix: '/api/ledger' });
 
 router.get('/share/:token', ledgerController.publicStatement);
+router.get('/stats/trade', auth(), ledgerController.tradeStats);
 
 router.get('/customers', auth(), ledgerController.listCustomers);
 router.post('/customers', auth(), ledgerController.createCustomer);
