@@ -1,4 +1,4 @@
-var { get, post } = require('../../../utils/request')
+var { get, post, del } = require('../../../utils/request')
 var config = require('../../../utils/config')
 
 function today() {
@@ -12,7 +12,7 @@ function monthStart() {
 function money(value) { return '¥' + (parseFloat(value) || 0).toFixed(2) }
 
 Page({
-  data: { id: '', book: null, loading: true, showPayment: false, paymentFlowType: 'received', paymentAmount: '', paymentDate: '', paymentRemark: '', savingPayment: false, statementStart: '', statementEnd: '', creatingStatement: false },
+  data: { id: '', book: null, loading: true, showPayment: false, paymentFlowType: 'received', paymentAmount: '', paymentDate: '', paymentRemark: '', savingPayment: false, statementStart: '', statementEnd: '', creatingStatement: false, deletingCustomer: false },
   onLoad: function (options) { this.setData({ id: options.id || '', paymentDate: today(), statementStart: monthStart(), statementEnd: today() }); this.loadBook() },
   loadBook: function () {
     var that = this
@@ -98,6 +98,46 @@ Page({
       that.setData({ creatingStatement: false })
       wx.navigateTo({ url: '/pages/share/statement/statement?token=' + result.shareToken })
     }).catch(function () { that.setData({ creatingStatement: false }) })
+  },
+  deleteCustomer: function () {
+    var customer = this.data.book && this.data.book.customer
+    if (!customer || !this.data.id) {
+      console.warn('[往来对象删除失败]', { feature: '往来对象删除', reason: '缺少往来对象信息', customerId: this.data.id })
+      wx.showToast({ title: '往来对象信息缺失', icon: 'none' })
+      return
+    }
+    if (this.data.deletingCustomer) return
+    if (customer.receivableBalance > 0 || customer.payableBalance > 0) {
+      console.warn('[往来对象删除失败]', {
+        feature: '往来对象删除', reason: '往来余额未结清', customerId: this.data.id,
+        receivableBalance: customer.receivableBalance, payableBalance: customer.payableBalance
+      })
+      wx.showToast({ title: '请先结清待收和待付款', icon: 'none' })
+      return
+    }
+    var that = this
+    wx.showModal({
+      title: '删除往来对象',
+      content: '删除后将从往来列表隐藏，已有账单和收付款记录仍会保留。确定删除“' + customer.name + '”吗？',
+      confirmText: '删除', confirmColor: '#ff6868',
+      success: function (result) {
+        if (!result.confirm) return
+        that.setData({ deletingCustomer: true })
+        del(config.api.ledgerCustomerDelete(that.data.id), {}).then(function () {
+          wx.showToast({ title: '已删除', icon: 'success' })
+          wx.navigateBack({ fail: function (err) {
+            console.warn('[往来对象删除返回失败]', { feature: '往来对象删除', reason: err && err.errMsg ? err.errMsg : '返回失败', customerId: that.data.id })
+            that.setData({ deletingCustomer: false })
+          } })
+        }).catch(function (err) {
+          console.warn('[往来对象删除失败]', { feature: '往来对象删除', reason: err && err.message ? err.message : '请求失败', customerId: that.data.id })
+          that.setData({ deletingCustomer: false })
+        })
+      },
+      fail: function (err) {
+        console.warn('[往来对象删除确认失败]', { feature: '往来对象删除', reason: err && err.errMsg ? err.errMsg : '弹窗失败', customerId: that.data.id })
+      }
+    })
   },
   goBill: function (e) { wx.navigateTo({ url: '/pages/book/detail/detail?id=' + e.currentTarget.dataset.id }) },
   noop: function () {}

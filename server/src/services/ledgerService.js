@@ -92,6 +92,11 @@ const findCustomer = async (merchantId, customerId, transaction, lockForUpdate =
       feature: '通用账本客户校验', merchantId, customerId
     });
   }
+  if (customer.archived_at) {
+    throw serviceError('往来对象已归档', 404, {
+      feature: '通用账本客户校验', reason: '往来对象已归档', merchantId, customerId
+    });
+  }
   return customer;
 };
 
@@ -215,9 +220,19 @@ const updateCustomer = async (merchantId, customerId, data) => {
 };
 
 const archiveCustomer = async (merchantId, customerId) => {
-  const customer = await findCustomer(merchantId, customerId);
-  await customer.update({ archived_at: new Date() });
-  return { id: customer.id, archived: true };
+  return sequelize.transaction(async (transaction) => {
+    const customer = await findCustomer(merchantId, customerId, transaction, true);
+    const summaries = await getCustomerSummaries(merchantId, [customerId], transaction);
+    const summary = summaries.get(String(customerId));
+    if (summary && (summary.receivableBalance > 0 || summary.payableBalance > 0)) {
+      throw serviceError('该往来对象还有待收或待付款，请结清后删除', 400, {
+        feature: '归档往来对象', reason: '往来余额未结清', merchantId, customerId,
+        receivableBalance: summary.receivableBalance, payableBalance: summary.payableBalance
+      });
+    }
+    await customer.update({ archived_at: new Date() }, { transaction });
+    return { id: customer.id, archived: true };
+  });
 };
 
 const listCategories = async (merchantId) => {
@@ -404,7 +419,7 @@ const createBill = async (merchantId, data) => {
 
   let bill;
   await sequelize.transaction(async (transaction) => {
-    await findCustomer(merchantId, customerId, transaction);
+    await findCustomer(merchantId, customerId, transaction, true);
     const items = await normalizeItems(merchantId, data.items, transaction, feature);
     const totalAmount = roundMoney(items.reduce((sum, item) => sum + item.subtotal, 0));
     bill = await LedgerBill.create({
@@ -434,7 +449,7 @@ const updateBill = async (merchantId, billId, data) => {
       throw serviceError('账单不存在或已删除', 404, { feature, merchantId, billId });
     }
 
-    await findCustomer(merchantId, customerId, transaction);
+    await findCustomer(merchantId, customerId, transaction, true);
     const items = await normalizeItems(merchantId, data.items, transaction, feature);
     const totalAmount = roundMoney(items.reduce((sum, item) => sum + item.subtotal, 0));
 

@@ -436,6 +436,66 @@ test('通用账本分别计算待收和待付，不互相抵消', async (t) => {
   assert.equal(result.list[0].balance, 10);
 });
 
+test('未结清的往来对象不能归档，且不修改记录', async (t) => {
+  const dbTx = createDbTx();
+  t.mock.method(models.sequelize, 'transaction', async (callback) => callback(dbTx));
+  const update = t.mock.fn(async () => {});
+  t.mock.method(models.Customer, 'findOne', async (options) => {
+    assert.deepEqual(options.where, { id: 2, merchant_id: 10 });
+    assert.equal(options.transaction, dbTx);
+    assert.equal(options.lock, 'UPDATE');
+    return { id: 2, archived_at: null, update };
+  });
+  t.mock.method(models.LedgerBill, 'findAll', async () => ([{
+    customer_id: 2, sales_amount: '100.00', purchase_amount: '100.00'
+  }]));
+  t.mock.method(models.CustomerPayment, 'findAll', async () => ([{
+    customer_id: 2, received_amount: '100.00', paid_amount: '20.00'
+  }]));
+
+  await assert.rejects(ledgerService.archiveCustomer(10, 2), (err) => {
+    assert.equal(err.status, 400);
+    assert.match(err.message, /待收或待付款/);
+    return true;
+  });
+  assert.equal(update.mock.callCount(), 0);
+});
+
+test('已结清的往来对象软归档并保留历史账单', async (t) => {
+  const dbTx = createDbTx();
+  t.mock.method(models.sequelize, 'transaction', async (callback) => callback(dbTx));
+  const update = t.mock.fn(async () => {});
+  t.mock.method(models.Customer, 'findOne', async () => ({ id: 2, archived_at: null, update }));
+  t.mock.method(models.LedgerBill, 'findAll', async () => ([{
+    customer_id: 2, sales_amount: '100.00', purchase_amount: '0.00'
+  }]));
+  t.mock.method(models.CustomerPayment, 'findAll', async () => ([{
+    customer_id: 2, received_amount: '100.00', paid_amount: '0.00'
+  }]));
+
+  assert.deepEqual(await ledgerService.archiveCustomer(10, 2), { id: 2, archived: true });
+  assert.equal(update.mock.callCount(), 1);
+  assert.ok(update.mock.calls[0].arguments[0].archived_at instanceof Date);
+  assert.equal(update.mock.calls[0].arguments[1].transaction, dbTx);
+});
+
+test('已归档的往来对象不能再用于开单', async (t) => {
+  const dbTx = createDbTx();
+  t.mock.method(models.sequelize, 'transaction', async (callback) => callback(dbTx));
+  t.mock.method(models.Customer, 'findOne', async (options) => {
+    assert.equal(options.transaction, dbTx);
+    assert.equal(options.lock, 'UPDATE');
+    return { id: 2, archived_at: new Date() };
+  });
+  const create = t.mock.method(models.LedgerBill, 'create', async () => ({}));
+
+  await assert.rejects(ledgerService.createBill(10, {
+    customer_id: 2, direction: 'sale', bill_date: '2026-09-24',
+    items: [{ product_name: '商品', quantity: 1, unit_price: 10 }]
+  }), /往来对象已归档/);
+  assert.equal(create.mock.callCount(), 0);
+});
+
 test('供应商付款在事务中锁定往来对象并减少待付', async (t) => {
   const dbTx = createDbTx();
   t.mock.method(models.sequelize, 'transaction', async (callback) => callback(dbTx));
