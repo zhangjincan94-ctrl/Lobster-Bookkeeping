@@ -10,12 +10,12 @@
 .summary-band { padding: 28rpx 0 34rpx; border-top: 1rpx solid #294142; border-bottom: 1rpx solid #294142; }
 .summary-top { display: flex; justify-content: space-between; color: #a1b2b0; font-size: 24rpx; }
 .total-amount { display: block; margin-top: 8rpx; font-size: 48rpx; font-weight: 700; }
-.ring-layout { display: flex; align-items: center; gap: 12rpx; margin-top: 20rpx; }
-.ring-wrap { position: relative; flex: 0 0 330rpx; width: 330rpx; height: 330rpx; }
-.ring-canvas { width: 330rpx; height: 330rpx; }
+.ring-layout { display: flex; align-items: center; gap: 8rpx; margin-top: 20rpx; }
+.ring-wrap { position: relative; flex: 0 0 280rpx; width: 280rpx; height: 280rpx; }
+.ring-canvas { display: block; width: 280rpx; height: 280rpx; }
 .ring-center { position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; color: #a1b2b0; font-size: 22rpx; }
 .ring-percent { margin-top: 5rpx; color: #f2f7f5; font-size: 42rpx; font-weight: 700; }
-.ring-legend { min-width: 0; flex: 1; }
+.ring-legend { min-width: 0; flex: 1; overflow: hidden; }
 .legend-item { padding: 14rpx 0; border-bottom: 1rpx solid #294142; }
 .legend-item:last-child { border-bottom: 0; }
 .legend-name { display: flex; align-items: center; gap: 8rpx; font-size: 23rpx; }

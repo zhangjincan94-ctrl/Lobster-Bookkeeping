@@ -10,7 +10,7 @@
       <view class="summary-top"><text>账单成交额</text><text>{{count}} 笔</text></view>
       <text class="total-amount">{{totalDisplay}}</text>
       <view class="ring-layout">
-        <view class="ring-wrap"><canvas canvas-id="tradeRing" class="ring-canvas" width="220" height="220"></canvas><cover-view class="ring-center"><cover-view>出货占比</cover-view><cover-view class="ring-percent">{{salePercent}}%</cover-view></cover-view></view>
+        <view class="ring-wrap"><canvas canvas-id="tradeRing" class="ring-canvas" width="280" height="280"></canvas><cover-view class="ring-center"><cover-view>出货占比</cover-view><cover-view class="ring-percent">{{salePercent}}%</cover-view></cover-view></view>
         <view class="ring-legend">
           <view class="legend-item"><view class="legend-name"><text class="legend-dot sale-dot"></text><text>出货</text><text class="legend-share">{{salePercent}}%</text></view><text class="legend-amount">{{saleDisplay}}</text><text class="legend-change">{{saleChange}}</text></view>
           <view class="legend-item"><view class="legend-name"><text class="legend-dot purchase-dot"></text><text>进货</text><text class="legend-share">{{purchasePercent}}%</text></view><text class="legend-amount">{{purchaseDisplay}}</text><text class="legend-change">{{purchaseChange}}</text></view>

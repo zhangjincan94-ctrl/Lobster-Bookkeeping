@@ -140,8 +140,8 @@ Page({
   drawRing: function (sale, purchase) {
     var ctx = wx.createCanvasContext('tradeRing', this)
     var total = sale + purchase
-    var center = 110
-    var radius = 82
+    var center = 140
+    var radius = 104
     ctx.setLineWidth(20)
     ctx.setLineCap('round')
     ctx.setStrokeStyle('#294142')
