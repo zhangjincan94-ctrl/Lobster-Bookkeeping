@@ -479,6 +479,29 @@ test('已结清的往来对象软归档并保留历史账单', async (t) => {
   assert.equal(update.mock.calls[0].arguments[1].transaction, dbTx);
 });
 
+test('已归档列表可查询，且账本仍返回原账单和收付款', async (t) => {
+  const archivedAt = new Date();
+  t.mock.method(models.Customer, 'findAndCountAll', async (options) => {
+    assert.equal(options.where.merchant_id, 10);
+    assert.ok(options.where.archived_at);
+    return { count: 1, rows: [{ id: 2, name: '张先生', archived_at: archivedAt }] };
+  });
+  t.mock.method(models.Customer, 'findOne', async () => ({ id: 2, name: '张先生', archived_at: archivedAt }));
+  t.mock.method(models.LedgerBill, 'findAll', async (options) => options.attributes ? [{
+    customer_id: 2, sales_amount: '10.00', purchase_amount: '0.00'
+  }] : [{ id: 8, customer_id: 2, direction: 'sale', total_amount: '10.00', items: [] }]);
+  t.mock.method(models.CustomerPayment, 'findAll', async (options) => options.attributes ? [{
+    customer_id: 2, received_amount: '10.00', paid_amount: '0.00'
+  }] : [{ id: 9, amount: '10.00', flow_type: 'received', payment_date: '2026-09-24' }]);
+
+  const list = await ledgerService.listCustomers(10, { archived: true, page: 1, pageSize: 20 });
+  const book = await ledgerService.getCustomerLedger(10, 2, {});
+  assert.equal(list.list[0].archived, true);
+  assert.equal(book.customer.archived, true);
+  assert.equal(book.bills[0].id, 8);
+  assert.equal(book.payments[0].id, 9);
+});
+
 test('已归档的往来对象不能再用于开单', async (t) => {
   const dbTx = createDbTx();
   t.mock.method(models.sequelize, 'transaction', async (callback) => callback(dbTx));

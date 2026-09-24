@@ -19,6 +19,7 @@ function truncate(value, length) {
 Page({
   data: {
     id: '',
+    readOnly: false,
     bill: null,
     loading: true,
     generatingPoster: false,
@@ -27,7 +28,7 @@ Page({
 
   onLoad: function (options) {
     var id = options && options.id ? options.id : ''
-    this.setData({ id: id })
+    this.setData({ id: id, readOnly: options && options.readonly === '1' })
     if (!id) {
       console.warn('[账单详情加载失败]', {
         feature: '账单详情',

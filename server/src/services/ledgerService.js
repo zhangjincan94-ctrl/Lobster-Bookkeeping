@@ -42,6 +42,7 @@ const serializeCustomer = (customer, summary = {}) => ({
   phone: customer.phone || '',
   account_start_date: customer.account_start_date || '',
   remark: customer.remark || '',
+  archived: Boolean(customer.archived_at),
   sales_amount: roundMoney(toNumber(summary.salesAmount)),
   purchase_amount: roundMoney(toNumber(summary.purchaseAmount)),
   received_amount: roundMoney(toNumber(summary.receivedAmount)),
@@ -81,7 +82,7 @@ const serializeBill = (bill) => ({
   }))
 });
 
-const findCustomer = async (merchantId, customerId, transaction, lockForUpdate = false) => {
+const findCustomer = async (merchantId, customerId, transaction, lockForUpdate = false, includeArchived = false) => {
   const customer = await Customer.findOne({
     where: { id: customerId, merchant_id: merchantId },
     transaction,
@@ -92,7 +93,7 @@ const findCustomer = async (merchantId, customerId, transaction, lockForUpdate =
       feature: '通用账本客户校验', merchantId, customerId
     });
   }
-  if (customer.archived_at) {
+  if (customer.archived_at && !includeArchived) {
     throw serviceError('往来对象已归档', 404, {
       feature: '通用账本客户校验', reason: '往来对象已归档', merchantId, customerId
     });
@@ -159,8 +160,8 @@ const getCustomerSummaries = async (merchantId, customerIds, transaction) => {
   return summaries;
 };
 
-const listCustomers = async (merchantId, { keyword, page = 1, pageSize = 20 }) => {
-  const where = { merchant_id: merchantId, archived_at: null };
+const listCustomers = async (merchantId, { keyword, page = 1, pageSize = 20, archived = false }) => {
+  const where = { merchant_id: merchantId, archived_at: archived ? { [Op.ne]: null } : null };
   if (keyword) {
     where[Op.or] = [
       { name: { [Op.like]: `%${keyword}%` } },
@@ -512,7 +513,7 @@ const removeBill = async (merchantId, billId) => {
 };
 
 const getCustomerLedger = async (merchantId, customerId, { start_date, end_date }) => {
-  const customer = await findCustomer(merchantId, customerId);
+  const customer = await findCustomer(merchantId, customerId, undefined, false, true);
   const billWhere = { merchant_id: merchantId, customer_id: customerId, deleted_at: null };
   const paymentWhere = { merchant_id: merchantId, customer_id: customerId };
   if (start_date || end_date) {

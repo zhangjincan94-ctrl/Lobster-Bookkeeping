@@ -7,7 +7,8 @@ const listCustomers = async (ctx) => {
   const result = await ledgerService.listCustomers(ctx.state.merchant.id, {
     keyword: ctx.query.keyword,
     page,
-    pageSize
+    pageSize,
+    archived: ctx.query.archived === '1'
   });
   ctx.body = paginate(result.list, result.total, page, pageSize);
 };

@@ -6,6 +6,9 @@
 .search-bar { display: flex; align-items: center; height: 76rpx; margin-bottom: 20rpx; padding: 0 18rpx; border: 1rpx solid #3c6867; border-radius: 5rpx; background: #122526; }
 .search-bar input { flex: 1; color: #f2f7f5; font-size: 25rpx; }
 .search-bar text { color: #5de6dc; font-size: 24rpx; }
+.status-tabs { display: flex; margin-bottom: 20rpx; border-bottom: 1rpx solid #294142; }
+.status-tab { flex: 1; padding: 16rpx 0; color: #a1b2b0; font-size: 26rpx; text-align: center; }
+.status-tab.active { color: #5de6dc; border-bottom: 3rpx solid #5de6dc; }
 .customer-row { display: flex; align-items: center; min-height: 112rpx; margin-bottom: 14rpx; padding: 0 20rpx; border: 1rpx solid #294142; border-radius: 6rpx; background: #122526; }
 .avatar { display: flex; align-items: center; justify-content: center; width: 56rpx; height: 56rpx; margin-right: 16rpx; border: 1rpx solid #3c6867; border-radius: 50%; color: #5de6dc; font-size: 26rpx; }
 .customer-info { min-width: 0; flex: 1; }

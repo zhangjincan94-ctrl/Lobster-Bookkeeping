@@ -15,7 +15,7 @@
     <view class="action-grid">
       <view class="action-item" hover-class="action-item-active" bindtap="sendImage"><text class="action-icon image-icon">↗</text><text class="action-label">{{generatingPoster ? '生成中' : '发图'}}</text></view>
       <view class="action-item" hover-class="action-item-active" bindtap="sendText"><text class="action-icon text-icon">文</text><text class="action-label">发字</text></view>
-      <view class="action-item" hover-class="action-item-active" bindtap="editBill"><text class="action-icon edit-icon">改</text><text class="action-label">修改账单</text></view>
+      <view wx:if="{{!readOnly}}" class="action-item" hover-class="action-item-active" bindtap="editBill"><text class="action-icon edit-icon">改</text><text class="action-label">修改账单</text></view>
       <view class="action-item" hover-class="action-item-active" bindtap="goBack"><text class="action-icon back-icon">←</text><text class="action-label">返回</text></view>
     </view>
   </view>

@@ -118,7 +118,7 @@ Page({
     var that = this
     wx.showModal({
       title: '删除往来对象',
-      content: '删除后将从往来列表隐藏，已有账单和收付款记录仍会保留。确定删除“' + customer.name + '”吗？',
+      content: '删除后将移至已归档，可查看原账单和收付款记录。确定删除“' + customer.name + '”吗？',
       confirmText: '删除', confirmColor: '#ff6868',
       success: function (result) {
         if (!result.confirm) return
@@ -139,6 +139,6 @@ Page({
       }
     })
   },
-  goBill: function (e) { wx.navigateTo({ url: '/pages/book/detail/detail?id=' + e.currentTarget.dataset.id }) },
+  goBill: function (e) { wx.navigateTo({ url: '/pages/book/detail/detail?id=' + e.currentTarget.dataset.id + (this.data.book.customer.archived ? '&readonly=1' : '') }) },
   noop: function () {}
 })

@@ -3,6 +3,7 @@
   <view wx:elif="{{book}}">
     <view class="customer-head">
       <text class="customer-name">{{book.customer.name}}</text>
+      <text wx:if="{{book.customer.archived}}" class="archive-label">已归档 · 只读</text>
       <text class="customer-phone">{{book.customer.phone || '未设置联系电话'}}</text>
       <view class="balance-grid">
         <view>
@@ -23,13 +24,13 @@
       <view><text>已付供应商</text><text class="paid">{{book.customer.paidDisplay}}</text></view>
     </view>
 
-    <view wx:if="{{book.customer.receivableBalance > 0 || book.customer.payableBalance > 0}}" class="payment-actions">
+    <view wx:if="{{!book.customer.archived && (book.customer.receivableBalance > 0 || book.customer.payableBalance > 0)}}" class="payment-actions">
       <button wx:if="{{book.customer.receivableBalance > 0}}" class="btn-primary payment-btn" data-flow-type="received" bindtap="openPayment">+ 记录客户回款</button>
       <button wx:if="{{book.customer.payableBalance > 0}}" class="btn-secondary payment-btn" data-flow-type="paid" bindtap="openPayment">+ 记录供应商付款</button>
     </view>
-    <view wx:else class="settled-tip">当前往来已结清</view>
+    <view wx:elif="{{!book.customer.archived}}" class="settled-tip">当前往来已结清</view>
 
-    <view class="card statement-card">
+    <view wx:if="{{!book.customer.archived}}" class="card statement-card">
       <text class="section-title">生成结账信息</text>
       <view class="statement-dates">
         <picker mode="date" value="{{statementStart}}" bindchange="onStatementStart"><view>{{statementStart}}</view></picker>
@@ -56,7 +57,7 @@
         <text class="record-total {{item.flowClass}}">{{item.amountDisplay}}</text>
       </view>
     </view>
-    <button class="delete-customer-btn" loading="{{deletingCustomer}}" disabled="{{deletingCustomer}}" bindtap="deleteCustomer">删除往来对象</button>
+    <button wx:if="{{!book.customer.archived}}" class="delete-customer-btn" loading="{{deletingCustomer}}" disabled="{{deletingCustomer}}" bindtap="deleteCustomer">删除往来对象</button>
   </view>
   <view wx:else class="empty-state"><text class="empty-text">往来对象不存在或已归档</text></view>
 </view>
