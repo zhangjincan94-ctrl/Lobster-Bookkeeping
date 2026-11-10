@@ -1,0 +1,100 @@
+<view class="page export-page theme-{{theme}}">
+  <view class="card">
+    <view class="block-title">时间范围</view>
+    <view class="range-tabs">
+      <view
+        wx:for="{{ranges}}"
+        wx:key="key"
+        class="range-tab {{rangeKey === item.key ? 'active' : ''}}"
+        data-key="{{item.key}}"
+        bindtap="chooseRange"
+      >{{item.label}}</view>
+    </view>
+
+    <view class="range-custom" wx:if="{{rangeKey === 'custom'}}">
+      <picker class="date-picker" mode="date" value="{{startDate}}" end="{{today}}" bindchange="onStartChange">
+        <view class="date-value">{{startDate}}</view>
+      </picker>
+      <text class="range-sep">至</text>
+      <picker class="date-picker" mode="date" value="{{endDate}}" start="{{startDate}}" end="{{today}}" bindchange="onEndChange">
+        <view class="date-value">{{endDate}}</view>
+      </picker>
+    </view>
+
+    <view class="range-text">{{rangeText}}</view>
+  </view>
+
+  <view class="card">
+    <view class="block-title">导出内容</view>
+    <view class="option-row {{includeItems ? 'selected' : ''}}" data-mode="items" bindtap="chooseMode">
+      <view class="option-main">
+        <text class="option-name">账单汇总 + 商品明细</text>
+        <text class="option-desc">汇总表每笔账单一行，明细表逐个商品列出</text>
+      </view>
+      <view class="check-dot">{{includeItems ? '✓' : ''}}</view>
+    </view>
+    <view class="option-row {{includeItems ? '' : 'selected'}}" data-mode="summary" bindtap="chooseMode">
+      <view class="option-main">
+        <text class="option-name">仅账单汇总</text>
+        <text class="option-desc">数据量更小，适合账单较多的区间</text>
+      </view>
+      <view class="check-dot">{{includeItems ? '' : '✓'}}</view>
+    </view>
+  </view>
+
+  <view class="card sheet-card">
+    <view class="block-title">将生成 {{includeItems ? 3 : 2}} 个工作表</view>
+    <view class="sheet-row">
+      <text class="sheet-name">概览</text>
+      <text class="sheet-desc">区间、笔数、出货 / 进货 / 净额</text>
+    </view>
+    <view class="sheet-row">
+      <text class="sheet-name">账单汇总</text>
+      <text class="sheet-desc">每笔账单一行，末尾带合计</text>
+    </view>
+    <view class="sheet-row" wx:if="{{includeItems}}">
+      <text class="sheet-name">商品明细</text>
+      <text class="sheet-desc">每件商品一行，含数量、单价、小计</text>
+    </view>
+  </view>
+
+  <view class="foot-note">出货记为正数、进货记为负数，可直接在 Excel 中求和；仅统计未删除的账单。</view>
+
+  <button
+    class="btn-primary generate-btn"
+    bindtap="onGenerate"
+    loading="{{generating}}"
+    disabled="{{generating}}"
+  >{{generating ? '正在生成...' : (generated ? '重新生成' : '生成 Excel')}}</button>
+
+  <view class="card result-card" wx:if="{{generated && summary}}">
+    <view class="result-head">
+      <text class="result-name">{{shareName}}</text>
+      <text class="result-size">{{summary.sizeText}}</text>
+    </view>
+    <view class="result-range">{{summary.rangeText}}</view>
+
+    <view class="result-stats">
+      <view class="stat"><text class="stat-key">账单</text><text class="stat-value">{{summary.billCount}} 笔</text></view>
+      <view class="stat"><text class="stat-key">明细</text><text class="stat-value">{{summary.itemCount}} 行</text></view>
+    </view>
+
+    <view class="money-row">
+      <text class="money-key">出货合计</text>
+      <text class="money-value text-income">{{summary.saleText}}</text>
+    </view>
+    <view class="money-row">
+      <text class="money-key">进货合计</text>
+      <text class="money-value text-price">{{summary.purchaseText}}</text>
+    </view>
+    <view class="money-row">
+      <text class="money-key">净额</text>
+      <text class="money-value">{{summary.netText}}</text>
+    </view>
+
+    <view class="result-actions">
+      <button class="btn-secondary result-btn" bindtap="onShareFile">发送到微信</button>
+      <button class="btn-primary result-btn" bindtap="onOpenFile">打开文件</button>
+    </view>
+  </view>
+</view>

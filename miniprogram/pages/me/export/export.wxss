@@ -1,0 +1,256 @@
+.export-page {
+  padding: 24rpx;
+}
+
+.block-title {
+  margin-bottom: 18rpx;
+  color: var(--text-muted);
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 20rpx;
+  font-weight: 700;
+  letter-spacing: 2rpx;
+}
+
+.range-tabs {
+  display: flex;
+  gap: 12rpx;
+}
+
+.range-tab {
+  flex: 1;
+  padding: 18rpx 0;
+  border: 1rpx solid var(--border);
+  border-radius: 6rpx;
+  background-color: var(--surface-2);
+  color: var(--text-muted);
+  font-size: 24rpx;
+  text-align: center;
+}
+
+.range-tab.active {
+  border-color: var(--primary);
+  background-color: var(--primary-weak);
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.range-custom {
+  display: flex;
+  align-items: center;
+  margin-top: 16rpx;
+}
+
+.date-picker {
+  flex: 1;
+}
+
+.date-value {
+  padding: 18rpx 0;
+  border: 1rpx solid var(--border);
+  border-radius: 6rpx;
+  background-color: var(--surface-2);
+  color: var(--text);
+  font-size: 25rpx;
+  text-align: center;
+}
+
+.range-sep {
+  padding: 0 16rpx;
+  color: var(--text-faint);
+  font-size: 24rpx;
+}
+
+.range-text {
+  margin-top: 16rpx;
+  color: var(--text-muted);
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 22rpx;
+}
+
+.option-row {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid var(--border);
+}
+
+.option-row:last-child {
+  border-bottom: none;
+}
+
+.option-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.option-name {
+  color: var(--text);
+  font-size: 27rpx;
+}
+
+.option-row.selected .option-name {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.option-desc {
+  margin-top: 6rpx;
+  color: var(--text-muted);
+  font-size: 22rpx;
+}
+
+.check-dot {
+  flex: 0 0 auto;
+  width: 36rpx;
+  height: 36rpx;
+  margin-left: 16rpx;
+  border: 1rpx solid var(--border-strong);
+  border-radius: 50%;
+  color: var(--on-primary);
+  font-size: 22rpx;
+  line-height: 36rpx;
+  text-align: center;
+}
+
+.option-row.selected .check-dot {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+
+.sheet-row {
+  display: flex;
+  align-items: baseline;
+  padding: 14rpx 0;
+  border-bottom: 1rpx solid var(--border);
+}
+
+.sheet-row:last-child {
+  border-bottom: none;
+}
+
+.sheet-name {
+  flex: 0 0 150rpx;
+  color: var(--text);
+  font-size: 25rpx;
+  font-weight: 700;
+}
+
+.sheet-desc {
+  flex: 1;
+  color: var(--text-muted);
+  font-size: 22rpx;
+}
+
+.foot-note {
+  padding: 4rpx 8rpx 24rpx;
+  color: var(--text-faint);
+  font-size: 21rpx;
+  line-height: 1.6;
+}
+
+.generate-btn {
+  width: 100%;
+  padding: 24rpx 0;
+  font-size: 29rpx;
+}
+
+.result-card {
+  margin-top: 20rpx;
+}
+
+.result-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.result-name {
+  flex: 1;
+  overflow: hidden;
+  margin-right: 16rpx;
+  color: var(--text);
+  font-size: 27rpx;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.result-size {
+  flex: 0 0 auto;
+  color: var(--text-faint);
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 21rpx;
+}
+
+.result-range {
+  margin-top: 8rpx;
+  color: var(--text-muted);
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 21rpx;
+}
+
+.result-stats {
+  display: flex;
+  gap: 16rpx;
+  margin: 22rpx 0 12rpx;
+}
+
+.stat {
+  flex: 1;
+  padding: 16rpx;
+  border-radius: 6rpx;
+  background-color: var(--surface-2);
+}
+
+.stat-key {
+  display: block;
+  color: var(--text-muted);
+  font-size: 21rpx;
+}
+
+.stat-value {
+  display: block;
+  margin-top: 6rpx;
+  color: var(--text);
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 27rpx;
+  font-weight: 700;
+}
+
+.money-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12rpx 0;
+  border-bottom: 1rpx solid var(--border);
+}
+
+.money-row:last-of-type {
+  border-bottom: none;
+}
+
+.money-key {
+  color: var(--text-muted);
+  font-size: 24rpx;
+}
+
+.money-value {
+  color: var(--text);
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.result-actions {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 20rpx;
+}
+
+.result-btn {
+  flex: 1;
+  padding: 20rpx 0;
+  font-size: 26rpx;
+}
