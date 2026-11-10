@@ -14,66 +14,54 @@
     "pages/share/statement/statement",
     "pages/product/list/list",
     "pages/product/manage/manage",
-    "pages/index/index",
-    "pages/transaction/list/list",
-    "pages/transaction/add/add",
-    "pages/transaction/detail/detail",
-    "pages/purchase/list/list",
-    "pages/purchase/add/add",
-    "pages/purchase/detail/detail",
-    "pages/buyer/list/list",
-    "pages/buyer/detail/detail",
-    "pages/supplier/list/list",
-    "pages/supplier/detail/detail",
     "pages/share/records/records",
     "pages/share/supplier-records/supplier-records",
     "pages/share/purchase-record/purchase-record",
-    "pages/stats/overview/overview",
-    "pages/stats/debt/debt",
-    "pages/stats/product/product",
-    "pages/stats/trade/trade"
+    "pages/stats/trade/trade",
+    "pages/me/theme/theme",
+    "pages/me/export/export"
   ],
   "window": {
     "backgroundTextStyle": "dark",
-    "navigationBarBackgroundColor": "#0B1617",
+    "navigationBarBackgroundColor": "#faf9f5",
     "navigationBarTitleText": "龙虾记账",
-    "navigationBarTextStyle": "white"
+    "navigationBarTextStyle": "black"
   },
   "tabBar": {
-    "color": "#A1B2B0",
-    "selectedColor": "#5DE6DC",
-    "backgroundColor": "#122526",
+    "color": "#a39e90",
+    "selectedColor": "#3f4b31",
+    "backgroundColor": "#ffffff",
     "borderStyle": "white",
     "list": [
       {
         "pagePath": "pages/book/add/add",
         "text": "开单",
-        "iconPath": "assets/icons/home.png",
-        "selectedIconPath": "assets/icons/home-active.png"
+        "iconPath": "assets/icons/home-idle-olive.png",
+        "selectedIconPath": "assets/icons/home-active-olive.png"
       },
       {
         "pagePath": "pages/book/list/list",
         "text": "总账本",
-        "iconPath": "assets/icons/order.png",
-        "selectedIconPath": "assets/icons/order-active.png"
+        "iconPath": "assets/icons/order-idle-olive.png",
+        "selectedIconPath": "assets/icons/order-active-olive.png"
       },
       {
         "pagePath": "pages/customer/list/list",
         "text": "往来",
-        "iconPath": "assets/icons/purchase.png",
-        "selectedIconPath": "assets/icons/purchase-active.png"
+        "iconPath": "assets/icons/purchase-idle-olive.png",
+        "selectedIconPath": "assets/icons/purchase-active-olive.png"
       },
       {
         "pagePath": "pages/query/list/list",
         "text": "查询",
-        "iconPath": "assets/icons/order.png",
-        "selectedIconPath": "assets/icons/order-active.png"
+        "iconPath": "assets/icons/search-idle-olive.png",
+        "selectedIconPath": "assets/icons/search-active-olive.png"
       },
       {
         "pagePath": "pages/me/me",
         "text": "我的",
-        "iconPath": "assets/icons/me.png",
-        "selectedIconPath": "assets/icons/me-active.png"
+        "iconPath": "assets/icons/me-idle-olive.png",
+        "selectedIconPath": "assets/icons/me-active-olive.png"
       }
     ]
   },
