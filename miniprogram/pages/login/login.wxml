@@ -1,4 +1,4 @@
-<view class="login-page">
+<view class="login-page theme-{{theme}}">
   <view class="login-container">
     <view class="logo-area">
       <image class="logo-icon" src="/assets/miniprogram-avatar-144.png" mode="aspectFill" />

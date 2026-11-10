@@ -5,9 +5,7 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background-color: #0b1617;
-  background-image: linear-gradient(rgba(41, 65, 66, 0.18) 1rpx, transparent 1rpx), linear-gradient(90deg, rgba(41, 65, 66, 0.18) 1rpx, transparent 1rpx);
-  background-size: 40rpx 40rpx;
+  background-color: var(--bg);
 }
 
 .login-page::before,
@@ -21,8 +19,8 @@
   right: 0;
   left: 0;
   height: 2rpx;
-  background-color: #5de6dc;
-  box-shadow: 0 0 16rpx rgba(93, 230, 220, 0.6);
+  background-color: var(--primary);
+  box-shadow: 0 0 16rpx rgba(var(--primary-rgb), 0.6);
 }
 
 .login-page::after {
@@ -30,8 +28,8 @@
   bottom: 120rpx;
   width: 96rpx;
   height: 96rpx;
-  border-right: 1rpx solid #294142;
-  border-bottom: 1rpx solid #294142;
+  border-right: 1rpx solid var(--border);
+  border-bottom: 1rpx solid var(--border);
 }
 
 .login-container {
@@ -52,14 +50,14 @@
   width: 144rpx;
   height: 144rpx;
   overflow: hidden;
-  border: 1rpx solid #5de6dc;
+  border: 1rpx solid var(--primary);
   border-radius: 12rpx;
-  box-shadow: 0 0 24rpx rgba(93, 230, 220, 0.2);
+  box-shadow: 0 0 24rpx rgba(var(--primary-rgb), 0.2);
 }
 
 .logo-text {
   margin-top: 28rpx;
-  color: #f2f7f5;
+  color: var(--text);
   font-family: "SFMono-Regular", Consolas, monospace;
   font-size: 42rpx;
   font-weight: 700;
@@ -69,7 +67,7 @@
 .subtitle {
   display: block;
   margin-top: 14rpx;
-  color: #a1b2b0;
+  color: var(--text-muted);
   font-size: 26rpx;
   text-align: center;
 }
@@ -78,27 +76,27 @@
   width: 100%;
   height: 92rpx;
   margin-top: 88rpx;
-  border: 1rpx solid #5de6dc;
+  border: 1rpx solid var(--primary);
   border-radius: 6rpx;
-  background-color: #00a9a5;
-  color: #002b2a;
+  background-color: var(--primary);
+  color: var(--on-primary);
   font-size: 30rpx;
   font-weight: 700;
   line-height: 90rpx;
-  box-shadow: 0 0 22rpx rgba(93, 230, 220, 0.18);
+  box-shadow: 0 0 22rpx rgba(var(--primary-rgb), 0.18);
 }
 
 .login-btn[disabled] {
-  border-color: #435756;
-  background-color: #435756;
-  color: #9eaeac;
+  border-color: var(--border-strong);
+  background-color: var(--border-strong);
+  color: var(--text-faint);
   box-shadow: none;
 }
 
 .terms-text {
   display: block;
   margin-top: 28rpx;
-  color: #718381;
+  color: var(--text-faint);
   font-size: 20rpx;
   line-height: 1.6;
   text-align: center;

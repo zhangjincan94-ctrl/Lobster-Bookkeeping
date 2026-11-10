@@ -1,10 +1,16 @@
 const { post } = require('../../utils/request')
 const { setLoginInfo } = require('../../utils/auth')
 const config = require('../../utils/config')
+const theme = require('../../utils/theme')
 
 Page({
   data: {
+    theme: '',
     loading: false
+  },
+
+  onShow: function () {
+    this.setData({ theme: theme.get() })
   },
 
   onLogin: function () {
@@ -30,7 +36,7 @@ Page({
             that.setupProfile()
           } else {
             wx.switchTab({
-              url: '/pages/index/index'
+              url: '/pages/book/add/add'
             })
           }
         }).catch(function () {
@@ -50,7 +56,7 @@ Page({
 
   setupProfile: function () {
     wx.switchTab({
-      url: '/pages/index/index'
+      url: '/pages/book/add/add'
     })
   }
 })
