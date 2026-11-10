@@ -1,5 +1,15 @@
+var config = require('./utils/config')
+var theme = require('./utils/theme')
+
 App({
   onLaunch: function (options) {
+    theme.apply(theme.get())
+    if (config.apiMode === 'cloud' && wx.cloud) {
+      wx.cloud.init({
+        env: config.cloudEnv || undefined,
+        traceUser: true
+      })
+    }
     var token = wx.getStorageSync('token')
     var launchPath = options && options.path ? options.path : ''
     var publicPages = [

@@ -1,6 +1,16 @@
 // 后端服务地址：
 // - 开发者工具本机调试：保持 http://localhost:3000，并在工具里勾选「不校验合法域名」
 // - 真机/体验版：改成内网 IP 或 HTTPS 公网域名，并在小程序后台配置 request 合法域名
+// 接口运行模式：
+// - 'http'  ：走 Koa 服务（Render / 自建服务器）的 REST 接口
+// - 'cloud' ：走微信云开发云函数（miniprogram/cloudfunctions/api）
+// 两种模式共用同一份后端业务代码，切换只需改这一行。
+var apiMode = 'cloud'
+
+// 云开发环境 ID，apiMode 为 'cloud' 时必须填写
+var cloudEnv = 'cloud1-d5g9jp7qzc8094334'
+var cloudFunctionName = 'api'
+
 var baseUrl = 'https://lobster-bookkeeping-test.onrender.com'
 
 var lobsterSizes = [
@@ -54,6 +64,7 @@ var api = {
   ledgerProductUpdate: function (id) { return '/api/ledger/products/' + id },
   ledgerProductDelete: function (id) { return '/api/ledger/products/' + id },
   ledgerBillList: '/api/ledger/bills',
+  ledgerBillExport: '/api/ledger/bills/export',
   ledgerBillAdd: '/api/ledger/bills',
   ledgerBillDetail: function (id) { return '/api/ledger/bills/' + id },
   ledgerBillUpdate: function (id) { return '/api/ledger/bills/' + id },
@@ -65,6 +76,9 @@ var api = {
 }
 
 module.exports = {
+  apiMode: apiMode,
+  cloudEnv: cloudEnv,
+  cloudFunctionName: cloudFunctionName,
   baseUrl: baseUrl,
   lobsterSizes: lobsterSizes,
   api: api
