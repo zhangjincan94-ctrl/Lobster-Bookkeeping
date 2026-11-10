@@ -17,6 +17,10 @@ const Merchant = sequelize.define('merchants', {
   },
   phone: {
     type: DataTypes.STRING(20)
+  },
+  // 店铺头像以压缩后的 data URL 存储，避免额外引入对象存储服务
+  avatar: {
+    type: DataTypes.TEXT('medium')
   }
 });
 

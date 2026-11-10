@@ -15,6 +15,7 @@ const updateProfile = async (merchantId, data) => {
   const updateFields = {};
   if (data.shop_name !== undefined) updateFields.shop_name = data.shop_name;
   if (data.phone !== undefined) updateFields.phone = data.phone;
+  if (data.avatar !== undefined) updateFields.avatar = data.avatar || null;
 
   await merchant.update(updateFields);
 

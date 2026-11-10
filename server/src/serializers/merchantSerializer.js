@@ -5,6 +5,7 @@ const serializeMerchant = (merchant) => {
     id: merchant.id,
     shop_name: merchant.shop_name,
     phone: merchant.phone,
+    avatar: merchant.avatar || '',
     openid: merchant.openid,
     created_at: merchant.created_at
   };
