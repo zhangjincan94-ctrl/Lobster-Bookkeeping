@@ -24,3 +24,7 @@ Thumbs.db
 
 # Mini program local settings
 miniprogram/project.private.config.json
+
+# Cloud function generated code (synced from server/src by scripts/build-cloud-api.js)
+miniprogram/cloudfunctions/api/src/
+miniprogram/cloudfunctions/api/node_modules/
