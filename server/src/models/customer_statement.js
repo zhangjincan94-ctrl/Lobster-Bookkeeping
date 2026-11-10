@@ -29,6 +29,14 @@ const CustomerStatement = sequelize.define('customer_statements', {
     type: DataTypes.STRING(64),
     allowNull: false,
     unique: true
+  },
+  expires_at: {
+    type: DataTypes.DATE,
+    allowNull: true
+  },
+  revoked_at: {
+    type: DataTypes.DATE,
+    allowNull: true
   }
 });
 

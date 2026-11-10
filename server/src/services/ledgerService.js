@@ -10,6 +10,12 @@ const {
   CustomerStatement
 } = require('../models');
 const { randomUUID } = require('crypto');
+const {
+  isValidDate,
+  assertAmount,
+  assertStringLength,
+  assertArrayLength
+} = require('../utils/validate');
 
 const { Op } = Sequelize;
 
@@ -26,8 +32,6 @@ const serviceError = (message, status, context) => {
   err.context = context;
   return err;
 };
-
-const isValidDate = (value) => /^\d{4}-\d{2}-\d{2}$/.test(String(value || ''));
 
 const buildDateRange = (startDate, endDate) => {
   const range = {};
@@ -62,25 +66,30 @@ const serializeProduct = (product) => ({
   remark: product.remark || ''
 });
 
-const serializeBill = (bill) => ({
-  id: bill.id,
-  customer_id: bill.customer_id,
-  customer_name: bill.customer ? bill.customer.name : '',
-  direction: bill.direction,
-  bill_date: bill.bill_date,
-  total_amount: roundMoney(toNumber(bill.total_amount)),
-  remark: bill.remark || '',
-  item_count: bill.items ? bill.items.length : 0,
-  items: (bill.items || []).map((item) => ({
-    id: item.id,
-    product_id: item.product_id,
-    product_name: item.product_name,
-    unit: item.unit,
-    quantity: roundMoney(toNumber(item.quantity)),
-    unit_price: roundMoney(toNumber(item.unit_price)),
-    subtotal: roundMoney(toNumber(item.subtotal))
-  }))
-});
+const serializeBill = (bill, { withItems = true } = {}) => {
+  const data = {
+    id: bill.id,
+    customer_id: bill.customer_id,
+    customer_name: bill.customer ? bill.customer.name : '',
+    direction: bill.direction,
+    bill_date: bill.bill_date,
+    total_amount: roundMoney(toNumber(bill.total_amount)),
+    remark: bill.remark || '',
+    item_count: bill.item_count === undefined ? (bill.items ? bill.items.length : 0) : bill.item_count
+  };
+  if (withItems) {
+    data.items = (bill.items || []).map((item) => ({
+      id: item.id,
+      product_id: item.product_id,
+      product_name: item.product_name,
+      unit: item.unit,
+      quantity: roundMoney(toNumber(item.quantity)),
+      unit_price: roundMoney(toNumber(item.unit_price)),
+      subtotal: roundMoney(toNumber(item.subtotal))
+    }));
+  }
+  return data;
+};
 
 const findCustomer = async (merchantId, customerId, transaction, lockForUpdate = false, includeArchived = false) => {
   const customer = await Customer.findOne({
@@ -158,6 +167,39 @@ const getCustomerSummaries = async (merchantId, customerIds, transaction) => {
     summary.balance = roundMoney(summary.receivableBalance - summary.payableBalance);
   });
   return summaries;
+};
+
+const getCustomerPaymentTotals = async (merchantId, customerId, transaction) => {
+  const row = await CustomerPayment.findOne({
+    where: { merchant_id: merchantId, customer_id: customerId },
+    attributes: [
+      [sequelize.fn('COALESCE', sequelize.fn('SUM', sequelize.literal("CASE WHEN flow_type = 'paid' THEN 0 ELSE amount END")), 0), 'received_amount'],
+      [sequelize.fn('COALESCE', sequelize.fn('SUM', sequelize.literal("CASE WHEN flow_type = 'paid' THEN amount ELSE 0 END")), 0), 'paid_amount']
+    ],
+    raw: true,
+    transaction
+  });
+  return {
+    receivedAmount: roundMoney(toNumber(row && row.received_amount)),
+    paidAmount: roundMoney(toNumber(row && row.paid_amount))
+  };
+};
+
+const getCustomerBillTotal = async (merchantId, customerId, direction, excludeBillId, transaction) => {
+  const where = { merchant_id: merchantId, customer_id: customerId, direction, deleted_at: null };
+  if (excludeBillId) where.id = { [Op.ne]: excludeBillId };
+  const total = await LedgerBill.sum('total_amount', { where, transaction });
+  return roundMoney(toNumber(total));
+};
+
+// 账单/收付款没有外键关联，资金一致性只能按客户维度聚合判断。
+const assertFundsConsistent = (direction, billTotal, paidTotal, feature, context) => {
+  const remaining = roundMoney(billTotal - paidTotal);
+  if (remaining >= 0) return;
+  const message = direction === 'purchase'
+    ? '删除或修改后将导致已付款超过应付，请先调整收付款记录'
+    : '删除或修改后将导致已回款超过应收，请先调整收付款记录';
+  throw serviceError(message, 409, { feature, ...context });
 };
 
 const listCustomers = async (merchantId, { keyword, page = 1, pageSize = 20, archived = false }) => {
@@ -316,7 +358,23 @@ const listCategories = async (merchantId) => {
     where: { merchant_id: merchantId },
     order: [['sort_order', 'ASC'], ['id', 'DESC']]
   });
-  return rows.map((item) => ({ id: item.id, name: item.name, sort_order: item.sort_order }));
+  // 带上在售商品数，前端可直接说明分类为什么不能删。
+  const counts = await Product.findAll({
+    where: { merchant_id: merchantId, archived_at: null, category_id: { [Op.ne]: null } },
+    attributes: ['category_id', [sequelize.fn('COUNT', sequelize.col('id')), 'product_count']],
+    group: ['category_id'],
+    raw: true
+  });
+  const countMap = {};
+  counts.forEach((row) => {
+    countMap[String(row.category_id)] = parseInt(row.product_count, 10) || 0;
+  });
+  return rows.map((item) => ({
+    id: item.id,
+    name: item.name,
+    sort_order: item.sort_order,
+    product_count: countMap[String(item.id)] || 0
+  }));
 };
 
 const createCategory = async (merchantId, data) => {
@@ -335,11 +393,19 @@ const removeCategory = async (merchantId, categoryId) => {
   if (!category) return null;
   const productCount = await Product.count({ where: { merchant_id: merchantId, category_id: categoryId, archived_at: null } });
   if (productCount > 0) {
-    throw serviceError('该分类仍有关联商品，不能删除', 400, {
+    throw serviceError('该分类下还有 ' + productCount + ' 个商品，请先删除商品', 400, {
       feature: '删除商品分类', merchantId, categoryId, productCount
     });
   }
-  await category.destroy();
+  await sequelize.transaction(async (transaction) => {
+    // 已归档商品的行仍引用该分类，外键会挡住删除，先解除关联；
+    // 商品名、单位、单价在账单明细里已有快照，不影响历史账目。
+    await Product.update({ category_id: null }, {
+      where: { merchant_id: merchantId, category_id: categoryId },
+      transaction
+    });
+    await category.destroy({ transaction });
+  });
   return { id: categoryId };
 };
 
@@ -429,6 +495,7 @@ const normalizeItems = async (merchantId, items, transaction, feature = '创建�
   if (!Array.isArray(items) || items.length === 0) {
     throw serviceError('账单至少需要一条商品明细', 400, { feature, merchantId });
   }
+  assertArrayLength(items, 200, '账单明细');
   const productIds = items.map((item) => {
     const value = item.product_id === undefined ? item.productId : item.product_id;
     return Number(value);
@@ -463,6 +530,10 @@ const normalizeItems = async (merchantId, items, transaction, feature = '创建�
         productId: rawProductId || null, productName: product ? product.name : productName, quantity, unitPrice
       });
     }
+    assertAmount(quantity, '商品数量');
+    assertAmount(unitPrice, '商品单价');
+    assertStringLength(product ? product.name : productName, 80, '商品名称');
+    assertStringLength(product ? product.unit : (String(item.unit || '斤').trim() || '斤'), 20, '商品单位');
     return {
       product_id: product ? product.id : null,
       product_name: product ? product.name : productName,
@@ -486,6 +557,7 @@ const normalizeBillHeader = (merchantId, data, feature) => {
   }
   const customerId = data.customer_id || data.customerId;
   if (!customerId) throw serviceError('请选择客户', 400, { feature, merchantId });
+  assertStringLength(data.remark, 500, '账单备注');
   return { direction, billDate, customerId };
 };
 
@@ -529,6 +601,26 @@ const updateBill = async (merchantId, billId, data) => {
     const items = await normalizeItems(merchantId, data.items, transaction, feature);
     const totalAmount = roundMoney(items.reduce((sum, item) => sum + item.subtotal, 0));
 
+    const previousAmount = roundMoney(toNumber(bill.total_amount));
+    const customerChanged = String(bill.customer_id) !== String(customerId);
+    const directionChanged = bill.direction !== direction;
+    const paymentTotals = await getCustomerPaymentTotals(merchantId, bill.customer_id, transaction);
+    const hasPayments = paymentTotals.receivedAmount > 0 || paymentTotals.paidAmount > 0;
+
+    if (hasPayments && (customerChanged || directionChanged)) {
+      throw serviceError('该往来对象已有收付款记录，不能修改账单的客户或出入方向', 409, {
+        feature, reason: '已有收付款记录', merchantId, billId,
+        customerChanged, directionChanged
+      });
+    }
+    if (hasPayments && !customerChanged && !directionChanged && previousAmount !== totalAmount) {
+      const otherBillTotal = await getCustomerBillTotal(merchantId, customerId, direction, bill.id, transaction);
+      const paidTotal = direction === 'purchase' ? paymentTotals.paidAmount : paymentTotals.receivedAmount;
+      assertFundsConsistent(direction, roundMoney(otherBillTotal + totalAmount), paidTotal, feature, {
+        merchantId, billId, previousAmount, nextAmount: totalAmount, paidTotal
+      });
+    }
+
     await bill.update({
       customer_id: customerId,
       direction,
@@ -560,31 +652,114 @@ const listBills = async (merchantId, { direction, customer_id, product_id, start
   if (direction === 'sale' || direction === 'purchase') where.direction = direction;
   if (customer_id) where.customer_id = customer_id;
   if (start_date || end_date) where.bill_date = buildDateRange(start_date, end_date);
-  const itemInclude = { model: LedgerBillItem, as: 'items' };
-  if (product_id) {
-    itemInclude.where = { product_id };
-    itemInclude.required = true;
+  const productId = product_id ? parseInt(product_id, 10) : NaN;
+  const include = [{ model: Customer, as: 'customer', attributes: ['id', 'name'] }];
+  if (Number.isFinite(productId)) {
+    include.push({
+      model: LedgerBillItem,
+      as: 'items',
+      attributes: [],
+      where: { product_id: productId },
+      required: true
+    });
+  }
+  const totalsWhere = { ...where };
+  if (Number.isFinite(productId)) {
+    totalsWhere.id = {
+      [Op.in]: sequelize.literal(
+        `(SELECT DISTINCT ledger_bill_id FROM ledger_bill_items WHERE product_id = ${productId})`
+      )
+    };
   }
   const offset = (page - 1) * pageSize;
-  const { count, rows } = await LedgerBill.findAndCountAll({
-    where,
-    include: [
-      { model: Customer, as: 'customer', attributes: ['id', 'name'] },
-      itemInclude
-    ],
-    limit: pageSize,
-    offset,
-    distinct: true,
-    order: [['bill_date', 'DESC'], ['id', 'DESC']]
+  const [billsResult, totalsRows] = await Promise.all([
+    LedgerBill.findAndCountAll({
+      where,
+      include,
+      limit: pageSize,
+      offset,
+      distinct: true,
+      order: [['bill_date', 'DESC'], ['id', 'DESC']]
+    }),
+    LedgerBill.findAll({
+      where: totalsWhere,
+      attributes: ['direction', [sequelize.fn('SUM', sequelize.col('total_amount')), 'amount']],
+      group: ['direction'],
+      raw: true
+    })
+  ]);
+
+  let itemCountMap = {};
+  const billIds = billsResult.rows.map((bill) => bill.id);
+  if (billIds.length) {
+    const countRows = await LedgerBillItem.findAll({
+      where: { ledger_bill_id: { [Op.in]: billIds } },
+      attributes: ['ledger_bill_id', [sequelize.fn('COUNT', sequelize.col('id')), 'item_count']],
+      group: ['ledger_bill_id'],
+      raw: true
+    });
+    itemCountMap = countRows.reduce((map, row) => {
+      map[String(row.ledger_bill_id)] = parseInt(row.item_count, 10) || 0;
+      return map;
+    }, {});
+  }
+
+  const list = billsResult.rows.map((bill) => {
+    const plain = typeof bill.get === 'function' ? bill.get({ plain: true }) : bill;
+    return serializeBill({ ...plain, item_count: itemCountMap[String(plain.id)] || 0 }, { withItems: false });
   });
-  return { list: rows.map(serializeBill), total: count };
+  const totals = { sale_amount: 0, purchase_amount: 0 };
+  totalsRows.forEach((row) => {
+    if (row.direction === 'sale') totals.sale_amount = roundMoney(toNumber(row.amount));
+    if (row.direction === 'purchase') totals.purchase_amount = roundMoney(toNumber(row.amount));
+  });
+  return { list, total: billsResult.count, totals };
 };
 
 const removeBill = async (merchantId, billId) => {
-  const bill = await LedgerBill.findOne({ where: { id: billId, merchant_id: merchantId, deleted_at: null } });
-  if (!bill) return null;
-  await bill.update({ deleted_at: new Date() });
-  return { id: bill.id, deleted: true };
+  return sequelize.transaction(async (transaction) => {
+    const bill = await LedgerBill.findOne({
+      where: { id: billId, merchant_id: merchantId, deleted_at: null },
+      transaction,
+      lock: transaction.LOCK.UPDATE
+    });
+    if (!bill) return null;
+
+    const now = new Date();
+    const activeStatement = await CustomerStatement.findOne({
+      where: {
+        merchant_id: merchantId,
+        customer_id: bill.customer_id,
+        start_date: { [Op.lte]: bill.bill_date },
+        end_date: { [Op.gte]: bill.bill_date },
+        revoked_at: null,
+        [Op.or]: [
+          { expires_at: null },
+          { expires_at: { [Op.gt]: now } }
+        ]
+      },
+      transaction
+    });
+    if (activeStatement) {
+      throw serviceError('该账单所在区间已生成结账分享，请先作废分享链接', 409, {
+        feature: '删除账单', reason: '账单所在区间已生成结账分享',
+        merchantId, billId, statementId: activeStatement.id
+      });
+    }
+
+    const paymentTotals = await getCustomerPaymentTotals(merchantId, bill.customer_id, transaction);
+    const direction = bill.direction;
+    if (direction === 'sale' || direction === 'purchase') {
+      const paidTotal = direction === 'purchase' ? paymentTotals.paidAmount : paymentTotals.receivedAmount;
+      const otherBillTotal = await getCustomerBillTotal(merchantId, bill.customer_id, direction, bill.id, transaction);
+      assertFundsConsistent(direction, otherBillTotal, paidTotal, '删除账单', {
+        merchantId, billId, paidTotal
+      });
+    }
+
+    await bill.update({ deleted_at: now }, { transaction });
+    return { id: bill.id, deleted: true };
+  });
 };
 
 const getCustomerLedger = async (merchantId, customerId, { start_date, end_date }) => {
@@ -645,6 +820,9 @@ const createCustomerPayment = async (merchantId, data) => {
       feature, merchantId, customerId, amount, paymentDate, flowType
     });
   }
+  assertAmount(amount, '收付款金额', { allowZero: false });
+  assertStringLength(data.payment_method || data.paymentMethod, 20, '收付款方式');
+  assertStringLength(data.remark, 500, '收付款备注');
   let payment;
   let balanceBefore;
   await sequelize.transaction(async (transaction) => {
@@ -699,19 +877,37 @@ const createCustomerStatement = async (merchantId, data) => {
     });
   }
   await findCustomer(merchantId, customerId);
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
   const statement = await CustomerStatement.create({
     merchant_id: merchantId,
     customer_id: customerId,
     start_date: startDate,
     end_date: endDate,
-    share_token: randomUUID()
+    share_token: randomUUID(),
+    expires_at: expiresAt
   });
   return {
     id: statement.id,
     share_token: statement.share_token,
     start_date: statement.start_date,
-    end_date: statement.end_date
+    end_date: statement.end_date,
+    expires_at: statement.expires_at || expiresAt
   };
+};
+
+const revokeCustomerStatement = async (merchantId, statementId) => {
+  const statement = await CustomerStatement.findOne({
+    where: { id: statementId, merchant_id: merchantId }
+  });
+  if (!statement) {
+    throw serviceError('结账分享不存在', 404, {
+      feature: '作废结账分享', merchantId, statementId
+    });
+  }
+  if (!statement.revoked_at) {
+    await statement.update({ revoked_at: new Date() });
+  }
+  return { id: statement.id, revoked: true };
 };
 
 const getPublicCustomerStatement = async (shareToken) => {
@@ -719,6 +915,15 @@ const getPublicCustomerStatement = async (shareToken) => {
   if (!statement) {
     throw serviceError('结账信息不存在或已失效', 404, {
       feature: '查看客户结账信息', shareTokenPrefix: String(shareToken || '').slice(0, 8)
+    });
+  }
+  // 旧数据 expires_at 为空表示长期有效，保持兼容。
+  const expired = statement.expires_at && new Date(statement.expires_at).getTime() <= Date.now();
+  if (statement.revoked_at || expired) {
+    throw serviceError('分享链接已失效', 410, {
+      feature: '查看客户结账信息',
+      reason: statement.revoked_at ? '分享链接已作废' : '分享链接已过期',
+      shareTokenPrefix: String(shareToken || '').slice(0, 8)
     });
   }
   const ledger = await getCustomerLedger(statement.merchant_id, statement.customer_id, {
@@ -770,5 +975,6 @@ module.exports = {
   getCustomerLedger,
   createCustomerPayment,
   createCustomerStatement,
+  revokeCustomerStatement,
   getPublicCustomerStatement
 };

@@ -5,7 +5,9 @@ const models = require('../src/models');
 const transactionService = require('../src/services/transactionService');
 const purchaseService = require('../src/services/purchaseService');
 const ledgerService = require('../src/services/ledgerService');
+const ledgerController = require('../src/controllers/ledgerController');
 const { normalizePagination } = require('../src/utils/pagination');
+const rateLimit = require('../src/utils/rateLimit');
 const {
   serializeTransactionListItem,
   serializePurchaseDetail
@@ -358,6 +360,7 @@ test('修改账单在事务中替换商品明细并重新计算总额', async (t
 
   t.mock.method(models.sequelize, 'transaction', async (callback) => callback(dbTx));
   t.mock.method(models.Customer, 'findOne', async () => ({ id: 3, name: '修改后客户' }));
+  t.mock.method(models.CustomerPayment, 'findOne', async () => null);
   t.mock.method(models.Product, 'findAll', async () => ([{ id: 5, name: '大闸蟹', unit: '箱' }]));
   t.mock.method(models.LedgerBill, 'findOne', async (options) => {
     if (options.transaction) {
@@ -500,6 +503,39 @@ test('已归档列表可查询，且账本仍返回原账单和收付款', async
   assert.equal(book.customer.archived, true);
   assert.equal(book.bills[0].id, 8);
   assert.equal(book.payments[0].id, 9);
+});
+
+test('账单列表不回传明细，只返回明细数量和筛选金额汇总', async (t) => {
+  t.mock.method(models.LedgerBill, 'findAndCountAll', async (options) => {
+    assert.equal(options.limit, 30);
+    assert.equal(options.offset, 0);
+    assert.equal(options.include.length, 1);
+    return {
+      count: 2,
+      rows: [
+        { id: 1, customer_id: 2, customer: { name: '甲' }, direction: 'sale', bill_date: '2026-09-02', total_amount: '10.00', remark: '' },
+        { id: 2, customer_id: 3, customer: { name: '乙' }, direction: 'purchase', bill_date: '2026-09-01', total_amount: '5.00', remark: '' }
+      ]
+    };
+  });
+  t.mock.method(models.LedgerBill, 'findAll', async () => ([
+    { direction: 'sale', amount: '10.00' },
+    { direction: 'purchase', amount: '5.00' }
+  ]));
+  t.mock.method(models.LedgerBillItem, 'findAll', async (options) => {
+    assert.deepEqual(options.where.ledger_bill_id[models.Sequelize.Op.in], [1, 2]);
+    return [
+      { ledger_bill_id: 1, item_count: '3' },
+      { ledger_bill_id: 2, item_count: '2' }
+    ];
+  });
+
+  const result = await ledgerService.listBills(10, { page: 1, pageSize: 30 });
+  assert.equal(result.list.length, 2);
+  assert.equal(result.list[0].item_count, 3);
+  assert.equal(result.list[1].item_count, 2);
+  assert.equal(result.list[0].items, undefined);
+  assert.deepEqual(result.totals, { sale_amount: 10, purchase_amount: 5 });
 });
 
 test('交易统计按账单日期汇总本期和上期，并排除删除账单', async (t) => {
@@ -691,4 +727,167 @@ test('结账信息拒绝错误的日期范围，且不修改账单或回款', as
     /客户和结账日期范围必须正确填写/
   );
   assert.ok(models.CustomerStatement.associations.customer);
+});
+
+const createRemovableBill = () => ({
+  id: 9,
+  customer_id: 2,
+  direction: 'sale',
+  bill_date: '2026-07-11',
+  total_amount: '100.00',
+  update: async (values, options) => {
+    assert.ok(options.transaction);
+    assert.ok(values.deleted_at instanceof Date);
+  }
+});
+
+test('账单所在区间已生成结账分享时拒绝删除', async (t) => {
+  const dbTx = createDbTx();
+  const bill = createRemovableBill();
+  const update = t.mock.fn(bill.update);
+  t.mock.method(models.sequelize, 'transaction', async (callback) => callback(dbTx));
+  t.mock.method(models.LedgerBill, 'findOne', async (options) => {
+    assert.equal(options.lock, 'UPDATE');
+    return { ...bill, update };
+  });
+  t.mock.method(models.CustomerStatement, 'findOne', async () => ({ id: 5 }));
+
+  await assert.rejects(ledgerService.removeBill(10, 9), /已生成结账分享/);
+  assert.equal(update.mock.callCount(), 0);
+});
+
+test('删除账单会导致已回款超过应收时拒绝', async (t) => {
+  const dbTx = createDbTx();
+  const bill = createRemovableBill();
+  const update = t.mock.fn(bill.update);
+  t.mock.method(models.sequelize, 'transaction', async (callback) => callback(dbTx));
+  t.mock.method(models.LedgerBill, 'findOne', async () => ({ ...bill, update }));
+  t.mock.method(models.CustomerStatement, 'findOne', async () => null);
+  t.mock.method(models.CustomerPayment, 'findOne', async () => ({
+    received_amount: '150.00', paid_amount: '0.00'
+  }));
+  t.mock.method(models.LedgerBill, 'sum', async () => '100.00');
+
+  await assert.rejects(ledgerService.removeBill(10, 9), /已回款超过应收/);
+  assert.equal(update.mock.callCount(), 0);
+});
+
+test('无资金冲突时账单删除在事务内软删除', async (t) => {
+  const dbTx = createDbTx();
+  const bill = createRemovableBill();
+  const update = t.mock.fn(bill.update);
+  t.mock.method(models.sequelize, 'transaction', async (callback) => callback(dbTx));
+  t.mock.method(models.LedgerBill, 'findOne', async () => ({ ...bill, update }));
+  t.mock.method(models.CustomerStatement, 'findOne', async () => null);
+  t.mock.method(models.CustomerPayment, 'findOne', async () => null);
+  t.mock.method(models.LedgerBill, 'sum', async () => '100.00');
+
+  assert.deepEqual(await ledgerService.removeBill(10, 9), { id: 9, deleted: true });
+  assert.equal(update.mock.callCount(), 1);
+});
+
+test('已有收付款时不能修改账单客户或出入方向', async (t) => {
+  const dbTx = createDbTx();
+  t.mock.method(models.sequelize, 'transaction', async (callback) => callback(dbTx));
+  t.mock.method(models.LedgerBill, 'findOne', async () => ({
+    id: 9,
+    customer_id: 2,
+    direction: 'sale',
+    total_amount: '100.00',
+    update: async () => {}
+  }));
+  t.mock.method(models.Customer, 'findOne', async () => ({ id: 3 }));
+  t.mock.method(models.CustomerPayment, 'findOne', async () => ({
+    received_amount: '50.00', paid_amount: '0.00'
+  }));
+
+  await assert.rejects(ledgerService.updateBill(10, 9, {
+    customer_id: 3,
+    direction: 'sale',
+    bill_date: '2026-07-11',
+    items: [{ product_name: '商品', quantity: 1, unit_price: 10 }]
+  }), /不能修改账单的客户或出入方向/);
+});
+
+test('账单金额调整后已回款超过应收时拒绝修改', async (t) => {
+  const dbTx = createDbTx();
+  t.mock.method(models.sequelize, 'transaction', async (callback) => callback(dbTx));
+  t.mock.method(models.LedgerBill, 'findOne', async () => ({
+    id: 9,
+    customer_id: 2,
+    direction: 'sale',
+    total_amount: '100.00',
+    update: async () => {}
+  }));
+  t.mock.method(models.Customer, 'findOne', async () => ({ id: 2 }));
+  t.mock.method(models.CustomerPayment, 'findOne', async () => ({
+    received_amount: '150.00', paid_amount: '0.00'
+  }));
+  t.mock.method(models.LedgerBill, 'sum', async () => '100.00');
+
+  await assert.rejects(ledgerService.updateBill(10, 9, {
+    customer_id: 2,
+    direction: 'sale',
+    bill_date: '2026-07-11',
+    items: [{ product_name: '商品', quantity: 1, unit_price: 30 }]
+  }), /已回款超过应收/);
+});
+
+test('幂等 key 命中时直接回放历史响应且不重复执行业务', async (t) => {
+  const stored = { code: 0, message: '操作成功', data: { id: 9 } };
+  t.mock.method(models.RequestKey, 'findOne', async () => ({
+    response_json: JSON.stringify(stored)
+  }));
+  const createBill = t.mock.method(ledgerService, 'createBill', async () => {
+    throw new Error('不应重复执行');
+  });
+  const ctx = {
+    state: { merchant: { id: 10 } },
+    request: { body: {} },
+    get: () => 'idem-key-1'
+  };
+
+  await ledgerController.createBill(ctx);
+
+  assert.deepEqual(ctx.body, stored);
+  assert.equal(createBill.mock.callCount(), 0);
+});
+
+test('幂等 key 未命中时执行业务并保存响应', async (t) => {
+  t.mock.method(models.RequestKey, 'findOne', async () => null);
+  const saveKey = t.mock.method(models.RequestKey, 'create', async () => ({ id: 1 }));
+  t.mock.method(ledgerService, 'createBill', async () => ({ id: 9 }));
+  const ctx = {
+    state: { merchant: { id: 10 } },
+    request: { body: {} },
+    get: () => 'idem-key-2'
+  };
+
+  await ledgerController.createBill(ctx);
+
+  assert.equal(ctx.body.data.id, 9);
+  assert.equal(saveKey.mock.callCount(), 1);
+  assert.equal(saveKey.mock.calls[0].arguments[0].key, 'idem-key-2');
+});
+
+test('已撤销的结账分享按失效处理', async (t) => {
+  t.mock.method(models.CustomerStatement, 'findOne', async () => ({
+    id: 1,
+    revoked_at: new Date(),
+    expires_at: null
+  }));
+
+  await assert.rejects(ledgerService.getPublicCustomerStatement('token-1'), (err) => {
+    assert.equal(err.status, 410);
+    assert.match(err.message, /分享链接已失效/);
+    return true;
+  });
+});
+
+test('分享链接限流超过每分钟阈值后拒绝', () => {
+  const key = 'share-test:' + Date.now();
+  for (let i = 0; i < 30; i += 1) {
+    assert.equal(rateLimit.hit(key).allowed, true);
+  }
+  assert.equal(rateLimit.hit(key).allowed, false);
 });

@@ -5,6 +5,7 @@ const {
   serializePaymentResult
 } = require('../serializers');
 const { Op } = Sequelize;
+const { isValidDateTime, assertAmount, assertStringLength } = require('../utils/validate');
 
 const toNumber = (value) => {
   const num = parseFloat(value);
@@ -82,6 +83,9 @@ const listTransactions = async (merchantId, { buyer_id, payment_status, start_da
 };
 
 const createTransaction = async (merchantId, data) => {
+  if (!isValidDateTime(data.transaction_time)) {
+    throw serviceError('交易时间格式无效', 400, { feature: '创建销售单', merchantId });
+  }
   let total_amount = data.total_amount;
   if (total_amount === undefined && data.weight !== undefined && data.unit_price !== undefined) {
     total_amount = roundMoney(toNumber(data.weight) * toNumber(data.unit_price));
@@ -91,6 +95,8 @@ const createTransaction = async (merchantId, data) => {
   if (total_amount <= 0) {
     throw serviceError('交易总金额必须大于0', 400, { feature: '创建销售单', merchantId });
   }
+  assertAmount(total_amount, '交易总金额', { allowZero: false });
+  assertStringLength(data.remark, 200, '销售单备注');
 
   let paid_amount = toNumber(data.paid_amount);
   if (Number(data.payment_status) === 1) {
@@ -199,6 +205,15 @@ const updateTransaction = async (merchantId, transactionId, data) => {
     ];
     for (const field of allowedFields) {
       if (data[field] !== undefined) updateFields[field] = data[field];
+    }
+
+    if (updateFields.transaction_time !== undefined && !isValidDateTime(updateFields.transaction_time)) {
+      throw serviceError('交易时间格式无效', 400, {
+        feature: '更新销售单', merchantId, transactionId
+      });
+    }
+    if (updateFields.remark !== undefined) {
+      assertStringLength(updateFields.remark, 200, '销售单备注');
     }
 
     if (Number(transaction.order_status) === 1) {
@@ -375,12 +390,18 @@ const _restorePurchaseAllocations = async (transactionId, dbTx) => {
 };
 
 const addPaymentRecord = async (merchantId, transactionId, data) => {
+  if (!isValidDateTime(data.paid_at)) {
+    throw serviceError('付款时间格式无效', 400, {
+      feature: '销售补录付款', merchantId, transactionId
+    });
+  }
   const amount = roundMoney(toNumber(data.amount));
   if (amount <= 0) {
     throw serviceError('付款金额必须大于0', 400, {
       feature: '销售补录付款', merchantId, transactionId
     });
   }
+  assertAmount(amount, '付款金额', { allowZero: false });
 
   let transaction;
   let paymentRecord;

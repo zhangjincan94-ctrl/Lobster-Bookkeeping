@@ -32,9 +32,9 @@ const sequelize = new Sequelize(
       ...(ssl ? { ssl } : {})
     },
     pool: {
-      max: 10,
+      max: config.db.poolMax,
       min: 0,
-      acquire: 30000,
+      acquire: config.db.acquireMs,
       idle: 10000
     },
     timezone: '+08:00',

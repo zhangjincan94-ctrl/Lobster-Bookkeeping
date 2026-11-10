@@ -7,6 +7,8 @@ const config = require('./config');
 
 dotenv.config();
 
+config.assertConfig();
+
 const app = new Koa();
 
 app.use(async (ctx, next) => {
@@ -40,17 +42,13 @@ if (config.corsOrigin) {
   app.use(cors({ origin: config.corsOrigin }));
 }
 
-app.use(bodyParser());
+app.use(bodyParser({ jsonLimit: '2mb' }));
 
 const router = require('./routes');
 app.use(router.routes());
 app.use(router.allowedMethods());
 
 const PORT = config.port || 3000;
-
-if (!config.jwt.secret || config.jwt.secret === 'change_me') {
-  throw new Error('JWT_SECRET 未配置或仍为示例值，服务拒绝启动');
-}
 
 app.listen(PORT, () => {
   console.log(`服务器运行在端口 ${PORT}`);

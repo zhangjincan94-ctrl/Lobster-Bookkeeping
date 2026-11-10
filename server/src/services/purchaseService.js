@@ -15,6 +15,7 @@ const {
   serializeSupplierPaymentResult
 } = require('../serializers');
 const { Op } = Sequelize;
+const { isValidDateTime, assertAmount, assertStringLength } = require('../utils/validate');
 
 const toNumber = (value) => {
   const num = parseFloat(value);
@@ -125,12 +126,21 @@ const listAvailablePurchases = async (merchantId, { lobster_size, page = 1, page
 };
 
 const createPurchase = async (merchantId, data) => {
+  if (!isValidDateTime(data.received_at)) {
+    throw serviceError('收货时间格式无效', 400, {
+      feature: '创建采购单', merchantId
+    });
+  }
   const amounts = buildPurchaseAmounts(data);
   if (amounts.netWeight <= 0 || amounts.unitCost <= 0 || amounts.totalCost <= 0) {
     throw serviceError('采购净重、单价和总成本必须大于0', 400, {
       feature: '创建采购单', merchantId
     });
   }
+  assertAmount(amounts.netWeight, '采购净重', { allowZero: false });
+  assertAmount(amounts.unitCost, '采购单价', { allowZero: false });
+  assertAmount(amounts.totalCost, '采购总成本', { allowZero: false });
+  assertStringLength(data.remark, 500, '采购备注');
   if (amounts.paidAmount < 0 || amounts.paidAmount > amounts.totalCost) {
     throw serviceError('已付金额必须在0和采购总成本之间', 400, {
       feature: '创建采购单', merchantId
@@ -265,6 +275,15 @@ const updatePurchase = async (merchantId, purchaseId, data) => {
       if (data[field] !== undefined) updateFields[field] = data[field];
     }
 
+    if (updateFields.received_at !== undefined && !isValidDateTime(updateFields.received_at)) {
+      throw serviceError('收货时间格式无效', 400, {
+        feature: '更新采购单', merchantId, purchaseId
+      });
+    }
+    if (updateFields.remark !== undefined) {
+      assertStringLength(updateFields.remark, 500, '采购备注');
+    }
+
     if (Number(record.order_status) === 1) {
       throw serviceError('已取消的采购单不能恢复或修改', 400, {
         feature: '更新采购单', merchantId, purchaseId
@@ -346,12 +365,18 @@ const updatePurchase = async (merchantId, purchaseId, data) => {
 };
 
 const addSupplierPaymentRecord = async (merchantId, purchaseId, data) => {
+  if (!isValidDateTime(data.paid_at)) {
+    throw serviceError('付款时间格式无效', 400, {
+      feature: '采购补录付款', merchantId, purchaseId
+    });
+  }
   const amount = roundMoney(toNumber(data.amount));
   if (amount <= 0) {
     throw serviceError('付款金额必须大于0', 400, {
       feature: '采购补录付款', merchantId, purchaseId
     });
   }
+  assertAmount(amount, '付款金额', { allowZero: false });
 
   let record;
   let paymentRecord;

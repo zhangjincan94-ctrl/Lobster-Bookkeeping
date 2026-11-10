@@ -16,6 +16,7 @@ const LedgerBill = require('./ledger_bill');
 const LedgerBillItem = require('./ledger_bill_item');
 const CustomerPayment = require('./customer_payment');
 const CustomerStatement = require('./customer_statement');
+const RequestKey = require('./request_key');
 
 const models = {
   Merchant,
@@ -33,7 +34,8 @@ const models = {
   LedgerBill,
   LedgerBillItem,
   CustomerPayment,
-  CustomerStatement
+  CustomerStatement,
+  RequestKey
 };
 
 Object.keys(models).forEach(modelName => {
@@ -60,5 +62,6 @@ module.exports = {
   LedgerBill,
   LedgerBillItem,
   CustomerPayment,
-  CustomerStatement
+  CustomerStatement,
+  RequestKey
 };

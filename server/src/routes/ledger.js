@@ -23,6 +23,8 @@ router.put('/products/:id', auth(), ledgerController.updateProduct);
 router.delete('/products/:id', auth(), ledgerController.archiveProduct);
 
 router.get('/bills', auth(), ledgerController.listBills);
+// 必须放在 /bills/:id 之前，否则 export 会被当成账单 id。
+router.get('/bills/export', auth(), ledgerController.exportBills);
 router.post('/bills', auth(), ledgerController.createBill);
 router.put('/bills/:id', auth(), ledgerController.updateBill);
 router.get('/bills/:id', auth(), ledgerController.billDetail);
@@ -30,5 +32,6 @@ router.delete('/bills/:id', auth(), ledgerController.removeBill);
 
 router.post('/payments', auth(), ledgerController.createPayment);
 router.post('/statements', auth(), ledgerController.createStatement);
+router.delete('/statements/:id', auth(), ledgerController.revokeStatement);
 
 module.exports = router;

@@ -7,6 +7,21 @@ const run = async () => {
   // Create only missing model tables; never alter or reset existing data.
   await sequelize.sync();
 
+  const [merchantAvatarColumns] = await sequelize.query(`
+    SELECT COUNT(*) AS count
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'merchants'
+      AND COLUMN_NAME = 'avatar';
+  `);
+
+  if (Number(merchantAvatarColumns[0].count) === 0) {
+    await sequelize.query(`
+      ALTER TABLE merchants
+      ADD COLUMN avatar MEDIUMTEXT NULL AFTER phone;
+    `);
+  }
+
   await sequelize.query(`
     CREATE TABLE IF NOT EXISTS suppliers (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -318,12 +333,59 @@ const run = async () => {
       start_date DATE NOT NULL,
       end_date DATE NOT NULL,
       share_token VARCHAR(64) NOT NULL,
+      expires_at DATETIME NULL,
+      revoked_at DATETIME NULL,
       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       UNIQUE KEY uq_customer_statements_share_token (share_token),
       INDEX idx_customer_statements_customer_id (customer_id),
       CONSTRAINT fk_customer_statements_merchant FOREIGN KEY (merchant_id) REFERENCES merchants(id),
       CONSTRAINT fk_customer_statements_customer FOREIGN KEY (customer_id) REFERENCES customers(id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  const [statementExpiresColumns] = await sequelize.query(`
+    SELECT COUNT(*) AS count
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'customer_statements'
+      AND COLUMN_NAME = 'expires_at';
+  `);
+
+  if (Number(statementExpiresColumns[0].count) === 0) {
+    await sequelize.query(`
+      ALTER TABLE customer_statements
+      ADD COLUMN expires_at DATETIME NULL AFTER share_token;
+    `);
+  }
+
+  const [statementRevokedColumns] = await sequelize.query(`
+    SELECT COUNT(*) AS count
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'customer_statements'
+      AND COLUMN_NAME = 'revoked_at';
+  `);
+
+  if (Number(statementRevokedColumns[0].count) === 0) {
+    await sequelize.query(`
+      ALTER TABLE customer_statements
+      ADD COLUMN revoked_at DATETIME NULL AFTER expires_at;
+    `);
+  }
+
+  // 幂等请求记录：key + merchant_id + route 唯一，重复提交直接回放历史响应。
+  await sequelize.query(`
+    CREATE TABLE IF NOT EXISTS request_keys (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      \`key\` VARCHAR(128) NOT NULL,
+      merchant_id INT NOT NULL,
+      route VARCHAR(64) NOT NULL,
+      response_json TEXT NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      UNIQUE KEY uk_request_keys_key (\`key\`, merchant_id, route),
+      CONSTRAINT fk_request_keys_merchant FOREIGN KEY (merchant_id) REFERENCES merchants(id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
 
