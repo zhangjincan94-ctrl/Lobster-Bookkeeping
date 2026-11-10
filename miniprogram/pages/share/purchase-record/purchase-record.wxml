@@ -1,4 +1,4 @@
-<view class="page" wx:if="{{purchase}}">
+<view class="page theme-{{theme}}" wx:if="{{purchase}}">
   <view class="supplier-card card">
     <text class="supplier-name">{{purchase.supplierName}}</text>
     <text class="supplier-phone text-muted">{{purchase.supplierPhone || '未填写电话'}}</text>

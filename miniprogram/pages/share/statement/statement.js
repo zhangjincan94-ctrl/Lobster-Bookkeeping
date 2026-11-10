@@ -1,10 +1,13 @@
 var { get } = require('../../../utils/request')
+var { formatPrice } = require('../../../utils/format')
 var config = require('../../../utils/config')
-
-function money(value) { return '¥' + (parseFloat(value) || 0).toFixed(2) }
+var theme = require('../../../utils/theme')
 
 Page({
-  data: { token: '', statement: null, loading: true },
+  data: { theme: '', token: '', statement: null, loading: true },
+  onShow: function () {
+    this.setData({ theme: theme.get() })
+  },
   onLoad: function (options) {
     this.setData({ token: options.token || '' })
     this.loadStatement()
@@ -13,19 +16,19 @@ Page({
     if (!this.data.token) { this.setData({ loading: false }); return }
     var that = this
     get(config.api.ledgerStatementShare(this.data.token), {}).then(function (statement) {
-      statement.salesDisplay = money(statement.salesAmount)
-      statement.purchaseDisplay = money(statement.purchaseAmount)
-      statement.receivedDisplay = money(statement.receivedAmount)
-      statement.paidDisplay = money(statement.paidAmount)
+      statement.salesDisplay = formatPrice(statement.salesAmount)
+      statement.purchaseDisplay = formatPrice(statement.purchaseAmount)
+      statement.receivedDisplay = formatPrice(statement.receivedAmount)
+      statement.paidDisplay = formatPrice(statement.paidAmount)
       var hasSeparateBalances = statement.receivableAmount !== undefined && statement.payableAmount !== undefined
       var legacyBalance = parseFloat(statement.periodBalance) || 0
       statement.receivableAmount = hasSeparateBalances ? parseFloat(statement.receivableAmount) || 0 : Math.max(legacyBalance, 0)
       statement.payableAmount = hasSeparateBalances ? parseFloat(statement.payableAmount) || 0 : Math.max(-legacyBalance, 0)
-      statement.receivableDisplay = money(statement.receivableAmount)
-      statement.payableDisplay = money(statement.payableAmount)
-      statement.bills = (statement.bills || []).map(function (bill) { bill.totalDisplay = money(bill.totalAmount); bill.directionText = bill.direction === 'purchase' ? '进货' : '出货'; bill.directionClass = bill.direction === 'purchase' ? 'purchase' : 'sale'; return bill })
+      statement.receivableDisplay = formatPrice(statement.receivableAmount)
+      statement.payableDisplay = formatPrice(statement.payableAmount)
+      statement.bills = (statement.bills || []).map(function (bill) { bill.totalDisplay = formatPrice(bill.totalAmount); bill.directionText = bill.direction === 'purchase' ? '进货' : '出货'; bill.directionClass = bill.direction === 'purchase' ? 'purchase' : 'sale'; return bill })
       statement.payments = (statement.payments || []).map(function (payment) {
-        payment.amountDisplay = money(payment.amount)
+        payment.amountDisplay = formatPrice(payment.amount)
         payment.flowLabel = payment.flowType === 'paid' ? '供应商付款' : '客户回款'
         payment.flowClass = payment.flowType === 'paid' ? 'paid' : 'received'
         return payment

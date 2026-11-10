@@ -1,1 +1,52 @@
-<view class="page manage-page"><view class="title-band"><text class="page-title">添加商品</text><text class="page-subtitle">商品名称和默认单价会用于开单</text></view><view class="card form-card"><view class="form-row"><text>商品名称</text><input placeholder="例如 小青龙、冰鲜虾" value="{{name}}" bindinput="onNameInput" /></view><view class="form-row"><text>默认价格</text><input type="digit" placeholder="输入单价" value="{{defaultUnitPrice}}" bindinput="onPriceInput" /></view><view class="form-row"><text>单位</text><input placeholder="斤、件、箱" value="{{unit}}" bindinput="onUnitInput" /></view><view class="form-row"><text>分类</text><picker range="{{categoryNames}}" value="{{categoryIndex}}" bindchange="onCategoryChange"><view class="picker-value">{{categoryNames[categoryIndex]}} <text>›</text></view></picker></view></view><button class="btn-primary save-btn" loading="{{saving}}" disabled="{{saving}}" bindtap="save">添加商品</button></view>
+<view class="page manage-page theme-{{theme}}">
+  <view class="page-head">
+    <text class="page-title">添加商品</text>
+    <text class="page-subtitle">商品名称和默认单价会用于开单</text>
+  </view>
+
+  <view class="card form-card">
+    <view class="form-row">
+      <text class="form-label">商品名称</text>
+      <input class="form-input" placeholder="例如 小青龙、冰鲜虾" value="{{name}}" bindinput="onNameInput" />
+    </view>
+    <view class="form-row">
+      <text class="form-label">默认价格</text>
+      <input class="form-input" type="digit" placeholder="输入单价" value="{{defaultUnitPrice}}" bindinput="onPriceInput" />
+    </view>
+    <view class="form-row">
+      <text class="form-label">单位</text>
+      <input class="form-input" placeholder="斤、件、箱" value="{{unit}}" bindinput="onUnitInput" />
+    </view>
+    <view class="form-row" bindtap="openCategorySheet">
+      <text class="form-label">分类</text>
+      <view class="picker-value">
+        <text class="picker-text">{{categoryNames[categoryIndex]}}</text>
+        <text class="picker-arrow">›</text>
+      </view>
+    </view>
+  </view>
+
+  <button class="btn-primary save-btn" loading="{{saving}}" disabled="{{saving}}" bindtap="save">添加商品</button>
+</view>
+
+<view wx:if="{{showCategorySheet}}" class="modal-mask sheet-mask theme-{{theme}}" bindtap="closeCategorySheet">
+  <view class="bottom-sheet" catchtap="noop">
+    <view class="sheet-head">
+      <text class="sheet-title">选择分类</text>
+      <text class="sheet-close" bindtap="closeCategorySheet">✕</text>
+    </view>
+    <scroll-view class="sheet-list" scroll-y style="height: {{sheetListHeight}}rpx;">
+      <view
+        wx:for="{{categoryNames}}"
+        wx:key="*this"
+        class="sheet-row {{index === categoryIndex ? 'active' : ''}}"
+        data-index="{{index}}"
+        bindtap="chooseCategory"
+      >
+        <text class="sheet-name">{{item}}</text>
+        <text wx:if="{{index === categoryIndex}}" class="sheet-check">✓</text>
+      </view>
+    </scroll-view>
+    <button class="btn-secondary sheet-cancel" bindtap="closeCategorySheet">取消</button>
+  </view>
+</view>

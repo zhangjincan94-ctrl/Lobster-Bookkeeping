@@ -1,59 +1,141 @@
-var { get, post, del } = require('../../../utils/request')
+var { get, post, put, del } = require('../../../utils/request')
 var { checkLogin } = require('../../../utils/auth')
+var { formatPrice } = require('../../../utils/format')
 var config = require('../../../utils/config')
+var theme = require('../../../utils/theme')
 
-function amount(value) { return (parseFloat(value) || 0).toFixed(2) }
+var PAGE_SIZE = 20
+
+function mapCustomer(item) {
+  var hasSeparateBalances = item.receivableBalance !== undefined && item.payableBalance !== undefined
+  var legacyBalance = parseFloat(item.balance) || 0
+  item.receivableBalance = hasSeparateBalances ? parseFloat(item.receivableBalance) || 0 : Math.max(legacyBalance, 0)
+  item.payableBalance = hasSeparateBalances ? parseFloat(item.payableBalance) || 0 : Math.max(-legacyBalance, 0)
+  item.receivableDisplay = formatPrice(item.receivableBalance)
+  item.payableDisplay = formatPrice(item.payableBalance)
+  return item
+}
 
 Page({
   data: {
+    theme: '',
     keyword: '',
     customers: [],
     archived: false,
     loading: false,
+    loadingMore: false,
+    hasLoaded: false,
+    error: '',
+    loadedCount: 0,
+    totalCount: 0,
+    hasMore: false,
     showAdd: false,
     newName: '',
     newPhone: '',
     creating: false,
-    deletingCustomer: false
+    deletingCustomer: false,
+    showEditCustomer: false,
+    editCustomerId: '',
+    editCustomerName: '',
+    editPhone: '',
+    savingEditCustomer: false
   },
   onShow: function () {
+    this.setData({ theme: theme.get() })
     if (!checkLogin()) return
     this.loadCustomers()
   },
+  fetchPage: function (page) {
+    return get(config.api.ledgerCustomerList, {
+      page: page,
+      pageSize: PAGE_SIZE,
+      keyword: this.data.keyword,
+      archived: this.data.archived ? '1' : '0'
+    }, { silent: true })
+  },
   loadCustomers: function () {
     var that = this
-    var archived = this.data.archived
-    var keyword = this.data.keyword
-    this.setData({ loading: true })
-    get(config.api.ledgerCustomerList, { pageSize: 100, keyword: keyword, archived: archived ? '1' : '0' }).then(function (data) {
-      if (that.data.archived !== archived || that.data.keyword !== keyword) return
-      var customers = ((data && data.list) || []).map(function (item) {
-        var hasSeparateBalances = item.receivableBalance !== undefined && item.payableBalance !== undefined
-        var legacyBalance = parseFloat(item.balance) || 0
-        item.receivableBalance = hasSeparateBalances ? parseFloat(item.receivableBalance) || 0 : Math.max(legacyBalance, 0)
-        item.payableBalance = hasSeparateBalances ? parseFloat(item.payableBalance) || 0 : Math.max(-legacyBalance, 0)
-        item.receivableDisplay = '¥' + amount(item.receivableBalance)
-        item.payableDisplay = '¥' + amount(item.payableBalance)
-        return item
+    var requestId = (this._requestId || 0) + 1
+    this._requestId = requestId
+    this._page = 1
+    this.setData({ loading: true, loadingMore: false })
+    return this.fetchPage(1).then(function (data) {
+      if (requestId !== that._requestId) return
+      var list = ((data && data.list) || []).map(mapCustomer)
+      var total = parseInt(data && data.total, 10) || 0
+      that._customers = list
+      that.setData({
+        customers: list,
+        loading: false,
+        hasLoaded: true,
+        error: '',
+        loadedCount: list.length,
+        totalCount: total,
+        hasMore: list.length < total
       })
-      that.setData({ customers: customers, loading: false })
     }).catch(function (err) {
-      if (that.data.archived !== archived || that.data.keyword !== keyword) return
+      if (requestId !== that._requestId) return
       console.warn('[往来对象列表加载失败]', {
         feature: '往来对象列表',
         reason: err && err.message ? err.message : '请求失败',
-        keyword: keyword,
-        archived: archived
+        archived: that.data.archived
       })
-      that.setData({ customers: [], loading: false })
+      var hasLoaded = that.data.hasLoaded
+      that.setData({
+        loading: false,
+        loadingMore: false,
+        error: hasLoaded ? '刷新失败，正在显示上次数据' : '加载失败，请检查网络后重试',
+        customers: hasLoaded ? that.data.customers : [],
+        loadedCount: hasLoaded ? that.data.loadedCount : 0,
+        totalCount: hasLoaded ? that.data.totalCount : 0,
+        hasMore: hasLoaded ? that.data.hasMore : false
+      })
+      if (!hasLoaded) that._customers = []
     })
+  },
+  loadMore: function () {
+    if (this.data.loading || this.data.loadingMore || !this.data.hasMore) return Promise.resolve()
+    var that = this
+    var requestId = this._requestId
+    var nextPage = (this._page || 1) + 1
+    this.setData({ loadingMore: true })
+    return this.fetchPage(nextPage).then(function (data) {
+      if (requestId !== that._requestId) return
+      var list = ((data && data.list) || []).map(mapCustomer)
+      var total = parseInt(data && data.total, 10) || 0
+      that._page = nextPage
+      that._customers = (that._customers || []).concat(list)
+      that.setData({
+        customers: that._customers,
+        loadingMore: false,
+        error: '',
+        loadedCount: that._customers.length,
+        totalCount: total,
+        hasMore: that._customers.length < total && list.length > 0
+      })
+    }).catch(function (err) {
+      if (requestId !== that._requestId) return
+      console.warn('[往来对象列表加载更多失败]', {
+        feature: '往来对象列表',
+        reason: err && err.message ? err.message : '请求失败',
+        page: nextPage
+      })
+      that.setData({ loadingMore: false, error: '加载更多失败，正在显示已有数据' })
+    })
+  },
+  retry: function () {
+    return this.loadCustomers()
+  },
+  onReachBottom: function () {
+    return this.loadMore()
   },
   onSearchInput: function (e) { this.setData({ keyword: e.detail.value }) },
   onSearch: function () { this.loadCustomers() },
   switchStatus: function (e) {
     var archived = e.currentTarget.dataset.archived === '1'
     if (archived === this.data.archived) return
-    this.setData({ archived: archived, customers: [] })
+    this._customers = []
+    this.setData({ archived: archived, customers: [], loadedCount: 0, totalCount: 0, hasMore: false, error: '' })
     this.loadCustomers()
   },
   openAdd: function () { this.setData({ showAdd: true, newName: '', newPhone: '', creating: false }) },
@@ -79,6 +161,55 @@ Page({
     var id = e.currentTarget.dataset.id
     wx.navigateTo({ url: '/pages/customer/detail/detail?id=' + id })
   },
+  openEditCustomer: function (e) {
+    var id = e.currentTarget.dataset.id
+    var customer = this.data.customers.find(function (item) { return String(item.id) === String(id) })
+    if (!customer) {
+      console.warn('[往来对象编辑失败]', { feature: '编辑往来对象', reason: '找不到所选对象', customerId: id })
+      return
+    }
+    this.setData({
+      showEditCustomer: true,
+      editCustomerId: customer.id,
+      editCustomerName: customer.name,
+      editPhone: customer.phone || '',
+      savingEditCustomer: false
+    })
+  },
+  closeEditCustomer: function () { if (!this.data.savingEditCustomer) this.setData({ showEditCustomer: false }) },
+  onEditNameInput: function (e) { this.setData({ editCustomerName: e.detail.value }) },
+  onEditPhoneInput: function (e) { this.setData({ editPhone: e.detail.value }) },
+  saveCustomer: function () {
+    var name = this.data.editCustomerName.trim()
+    var phone = this.data.editPhone.trim()
+    if (!name || this.data.savingEditCustomer) {
+      if (!name) wx.showToast({ title: '请输入名称', icon: 'none' })
+      return
+    }
+    var that = this
+    var customerId = this.data.editCustomerId
+    this.setData({ savingEditCustomer: true })
+    put(config.api.ledgerCustomerUpdate(customerId), { name: name, phone: phone }).then(function (customer) {
+      var savedName = (customer && customer.name) || name
+      var savedPhone = customer && customer.phone !== undefined ? customer.phone : phone
+      var list = that.data.customers.map(function (item) {
+        if (String(item.id) === String(customerId)) {
+          item.name = savedName
+          item.phone = savedPhone
+        }
+        return item
+      })
+      that.setData({ customers: list, showEditCustomer: false, savingEditCustomer: false })
+      wx.showToast({ title: '已保存', icon: 'success' })
+    }).catch(function (err) {
+      console.warn('[往来对象编辑保存失败]', {
+        feature: '编辑往来对象',
+        reason: err && err.message ? err.message : '请求失败',
+        customerId: customerId
+      })
+      that.setData({ savingEditCustomer: false })
+    })
+  },
   onCustomerLongPress: function (e) {
     this.suppressNextTap = true
     var that = this
@@ -101,7 +232,7 @@ Page({
   },
   confirmDeleteCustomer: function (customer) {
     if (customer.receivableBalance > 0 || customer.payableBalance > 0) {
-      console.warn('[往来对象删除失败]', { feature: '往来对象列表删除', reason: '往来余额未结清', customerId: customer.id, receivableBalance: customer.receivableBalance, payableBalance: customer.payableBalance })
+      console.warn('[往来对象删除失败]', { feature: '往来对象列表删除', reason: '往来余额未结清', customerId: customer.id })
       wx.showToast({ title: '请先结清待收和待付款', icon: 'none' })
       return
     }
@@ -128,8 +259,7 @@ Page({
     })
   },
   onPullDownRefresh: function () {
-    this.loadCustomers()
-    setTimeout(function () { wx.stopPullDownRefresh() }, 300)
+    return this.loadCustomers().then(function () { wx.stopPullDownRefresh() }, function () { wx.stopPullDownRefresh() })
   },
   noop: function () {}
 })

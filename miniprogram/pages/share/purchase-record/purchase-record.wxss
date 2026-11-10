@@ -1,17 +1,17 @@
 .page { min-height: 100vh; padding: 24rpx; }
-.supplier-card, .detail-card { margin-bottom: 16rpx; padding: 22rpx 20rpx; border: 1rpx solid #294142; border-radius: 6rpx; background-color: #122526; }
-.supplier-card { border-color: #3c6867; }
-.supplier-card::before { display: block; margin-bottom: 12rpx; color: #5de6dc; font-family: "SFMono-Regular", Consolas, monospace; font-size: 19rpx; letter-spacing: 2rpx; content: "PURCHASE DOCUMENT"; }
-.supplier-name { display: block; color: #f2f7f5; font-size: 34rpx; font-weight: 700; }
-.supplier-phone { display: block; margin-top: 8rpx; color: #a1b2b0; font-family: "SFMono-Regular", Consolas, monospace; font-size: 22rpx; }
-.card-title { margin-bottom: 10rpx; padding-bottom: 12rpx; border-bottom: 1rpx solid #294142; color: #5de6dc; font-family: "SFMono-Regular", Consolas, monospace; font-size: 21rpx; letter-spacing: 2rpx; }
-.info-row { display: flex; align-items: center; justify-content: space-between; min-height: 58rpx; padding: 10rpx 0; border-bottom: 1rpx solid #21393a; }
+.supplier-card, .detail-card { margin-bottom: 16rpx; padding: 22rpx 20rpx; border: 1rpx solid var(--border); border-radius: 6rpx; background-color: var(--surface); }
+.supplier-card { border-color: var(--border-strong); }
+.supplier-card::before { display: block; margin-bottom: 12rpx; color: var(--primary); font-family: "SFMono-Regular", Consolas, monospace; font-size: 19rpx; letter-spacing: 2rpx; content: "PURCHASE DOCUMENT"; }
+.supplier-name { display: block; color: var(--text); font-size: 34rpx; font-weight: 700; }
+.supplier-phone { display: block; margin-top: 8rpx; color: var(--text-muted); font-family: "SFMono-Regular", Consolas, monospace; font-size: 22rpx; }
+.card-title { margin-bottom: 10rpx; padding-bottom: 12rpx; border-bottom: 1rpx solid var(--border); color: var(--primary); font-family: "SFMono-Regular", Consolas, monospace; font-size: 21rpx; letter-spacing: 2rpx; }
+.info-row { display: flex; align-items: center; justify-content: space-between; min-height: 58rpx; padding: 10rpx 0; border-bottom: 1rpx solid var(--border); }
 .info-row:last-child { border-bottom: none; }
-.info-label { color: #a1b2b0; font-size: 23rpx; }
-.info-value { overflow: hidden; margin-left: 24rpx; color: #f2f7f5; font-family: "SFMono-Regular", Consolas, monospace; font-size: 25rpx; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
-.remark-text { color: #d3dfdd; font-size: 26rpx; line-height: 1.65; }
-.payment-record { display: flex; align-items: center; justify-content: space-between; min-height: 72rpx; padding: 13rpx 0; border-bottom: 1rpx solid #21393a; }
+.info-label { color: var(--text-muted); font-size: 23rpx; }
+.info-value { overflow: hidden; margin-left: 24rpx; color: var(--text); font-family: "SFMono-Regular", Consolas, monospace; font-size: 25rpx; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
+.remark-text { color: var(--text); font-size: 26rpx; line-height: 1.65; }
+.payment-record { display: flex; align-items: center; justify-content: space-between; min-height: 72rpx; padding: 13rpx 0; border-bottom: 1rpx solid var(--border); }
 .payment-record:last-child { border-bottom: none; }
 .payment-record-left { display: flex; flex: 1; flex-direction: column; min-width: 0; margin-right: 18rpx; }
-.payment-record-amount { color: #4bce91; font-family: "SFMono-Regular", Consolas, monospace; font-size: 26rpx; font-weight: 700; }
-.payment-record-method, .payment-record-time { margin-top: 4rpx; color: #a1b2b0; font-size: 20rpx; }
+.payment-record-amount { color: var(--purchase); font-family: "SFMono-Regular", Consolas, monospace; font-size: 26rpx; font-weight: 700; }
+.payment-record-method, .payment-record-time { margin-top: 4rpx; color: var(--text-muted); font-size: 20rpx; }

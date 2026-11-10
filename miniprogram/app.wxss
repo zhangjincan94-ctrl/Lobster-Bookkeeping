@@ -1,6 +1,60 @@
+/* ===== 主题变量：默认奶油橄榄，.theme-lilac 覆盖为灰紫 ===== */
+page,
+.theme-cream {
+  --bg: #faf9f5;
+  --surface: #ffffff;
+  --surface-2: #f5f4ee;
+  --border: #eae7dd;
+  --border-strong: #dbd7c9;
+  --text: #1c1b16;
+  --text-muted: #7a776a;
+  --text-faint: #a8a496;
+  --primary: #3f4b31;
+  --primary-rgb: 63, 75, 49;
+  --primary-weak: #eceee4;
+  --on-primary: #ffffff;
+  --sale: #b04a3c;
+  --sale-rgb: 176, 74, 60;
+  --sale-weak: #f8ebe7;
+  --purchase: #55703f;
+  --purchase-rgb: 85, 112, 63;
+  --purchase-weak: #edf2e6;
+  --warn: #96702b;
+  --warn-rgb: 150, 112, 43;
+  --warn-weak: #f7f0e1;
+  --mask-rgb: 28, 27, 22;
+  --shadow: 0 1rpx 2rpx rgba(28, 27, 22, 0.05);
+}
+
+.theme-lilac {
+  --bg: #f8f7fa;
+  --surface: #ffffff;
+  --surface-2: #f3f2f7;
+  --border: #e8e6ee;
+  --border-strong: #d6d3e0;
+  --text: #17151c;
+  --text-muted: #74707d;
+  --text-faint: #a8a3b2;
+  --primary: #6d5b9e;
+  --primary-rgb: 109, 91, 158;
+  --primary-weak: #f0edf7;
+  --on-primary: #ffffff;
+  --sale: #c0504d;
+  --sale-rgb: 192, 80, 77;
+  --sale-weak: #f9eceb;
+  --purchase: #4d7a5f;
+  --purchase-rgb: 77, 122, 95;
+  --purchase-weak: #ecf2ee;
+  --warn: #a07827;
+  --warn-rgb: 160, 120, 39;
+  --warn-weak: #f8f2e4;
+  --mask-rgb: 23, 21, 28;
+  --shadow: 0 1rpx 2rpx rgba(23, 21, 28, 0.04);
+}
+
 page {
-  background-color: #0b1617;
-  color: #f2f7f5;
+  background-color: var(--bg);
+  color: var(--text);
   font-size: 28rpx;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
   font-variant-numeric: tabular-nums;
@@ -10,9 +64,7 @@ page {
 .container {
   box-sizing: border-box;
   min-height: 100vh;
-  background-color: #0b1617;
-  background-image: linear-gradient(rgba(41, 65, 66, 0.16) 1rpx, transparent 1rpx), linear-gradient(90deg, rgba(41, 65, 66, 0.16) 1rpx, transparent 1rpx);
-  background-size: 40rpx 40rpx;
+  background-color: var(--bg);
 }
 
 .container {
@@ -21,12 +73,12 @@ page {
 
 .card {
   box-sizing: border-box;
-  background-color: #122526;
-  border: 1rpx solid #294142;
+  background-color: var(--surface);
+  border: 1rpx solid var(--border);
   border-radius: 8rpx;
   margin-bottom: 20rpx;
   padding: 24rpx;
-  box-shadow: none;
+  box-shadow: var(--shadow);
 }
 
 button {
@@ -43,31 +95,31 @@ button::after {
 .btn-primary,
 .submit-btn,
 .save-cost-btn {
-  background-color: #00a9a5;
-  color: #002b2a;
-  border: 1rpx solid #5de6dc;
+  background-color: var(--primary);
+  color: var(--on-primary);
+  border: 1rpx solid var(--primary);
   border-radius: 6rpx;
-  box-shadow: 0 0 12rpx rgba(93, 230, 220, 0.18);
+  box-shadow: none;
 }
 
 .btn-secondary {
-  background-color: #122526;
-  color: #5de6dc;
-  border: 1rpx solid #3c6867;
+  background-color: var(--surface);
+  color: var(--primary);
+  border: 1rpx solid var(--border-strong);
   border-radius: 6rpx;
 }
 
 .btn-share {
-  background-color: #122526;
-  color: #5de6dc;
-  border: 1rpx solid #3c6867;
+  background-color: var(--surface);
+  color: var(--primary);
+  border: 1rpx solid var(--border-strong);
   border-radius: 6rpx;
 }
 
 .btn-danger {
-  background-color: rgba(255, 104, 104, 0.08);
-  color: #ff8c8c;
-  border: 1rpx solid rgba(255, 104, 104, 0.55);
+  background-color: var(--sale-weak);
+  color: var(--sale);
+  border: 1rpx solid rgba(var(--sale-rgb), 0.4);
   border-radius: 6rpx;
 }
 
@@ -77,33 +129,33 @@ button::after {
 }
 
 .text-price {
-  color: #ff765e;
+  color: var(--sale);
   font-weight: 700;
 }
 
 .text-debt,
 .text-danger {
-  color: #ff8c8c;
+  color: var(--sale);
   font-weight: 700;
 }
 
 .text-income,
 .text-success {
-  color: #4bce91;
+  color: var(--purchase);
   font-weight: 700;
 }
 
 .text-cost {
-  color: #e7b447;
+  color: var(--warn);
   font-weight: 700;
 }
 
 .text-muted {
-  color: #a1b2b0;
+  color: var(--text-muted);
 }
 
 .text-primary {
-  color: #5de6dc;
+  color: var(--primary);
 }
 
 .tag {
@@ -122,37 +174,37 @@ button::after {
 
 .tag-unpaid,
 .tag-danger {
-  background-color: rgba(255, 104, 104, 0.1);
-  border-color: rgba(255, 104, 104, 0.35);
-  color: #ff8c8c;
+  background-color: var(--sale-weak);
+  border-color: rgba(var(--sale-rgb), 0.28);
+  color: var(--sale);
 }
 
 .tag-paid,
 .tag-success,
 .tag-delivered {
-  background-color: rgba(75, 206, 145, 0.1);
-  border-color: rgba(75, 206, 145, 0.35);
-  color: #4bce91;
+  background-color: var(--purchase-weak);
+  border-color: rgba(var(--purchase-rgb), 0.28);
+  color: var(--purchase);
 }
 
 .tag-partial,
 .tag-warning,
 .tag-delivering {
-  background-color: rgba(231, 180, 71, 0.1);
-  border-color: rgba(231, 180, 71, 0.35);
-  color: #e7b447;
+  background-color: var(--warn-weak);
+  border-color: rgba(var(--warn-rgb), 0.28);
+  color: var(--warn);
 }
 
 .tag-pending {
-  background-color: rgba(93, 230, 220, 0.1);
-  border-color: rgba(93, 230, 220, 0.35);
-  color: #5de6dc;
+  background-color: var(--primary-weak);
+  border-color: rgba(var(--primary-rgb), 0.28);
+  color: var(--primary);
 }
 
 .tag-cancelled {
-  background-color: #1b2829;
-  border-color: #445554;
-  color: #a1b2b0;
+  background-color: var(--surface-2);
+  border-color: var(--border-strong);
+  color: var(--text-muted);
 }
 
 .form-input,
@@ -162,12 +214,12 @@ button::after {
 .modal-picker,
 .date-picker,
 .picker-item {
-  color: #f2f7f5;
+  color: var(--text);
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: #718381;
+  color: var(--text-faint);
 }
 
 .empty-state {
@@ -182,25 +234,25 @@ textarea::placeholder {
 
 .empty-state .empty-icon {
   margin-bottom: 16rpx;
-  color: #5de6dc;
+  color: var(--primary);
   font-size: 56rpx;
 }
 
 .empty-state .empty-text {
-  color: #a1b2b0;
+  color: var(--text-muted);
   font-size: 26rpx;
 }
 
 .loading-tip {
   padding: 28rpx 0;
-  color: #a1b2b0;
+  color: var(--text-muted);
   font-size: 24rpx;
   text-align: center;
 }
 
 .modal-mask,
 .source-modal-mask {
-  background-color: rgba(0, 9, 10, 0.76);
+  background-color: rgba(var(--mask-rgb), 0.45);
 }
 
 .modal-mask {
@@ -218,14 +270,15 @@ textarea::placeholder {
 .modal-content,
 .source-modal-content,
 .cost-modal {
-  background-color: #122526;
-  border: 1rpx solid #3c6867;
-  color: #f2f7f5;
+  background-color: var(--surface);
+  border: 1rpx solid var(--border-strong);
+  color: var(--text);
+  box-shadow: 0 8rpx 32rpx rgba(var(--mask-rgb), 0.12);
 }
 
 .modal-title,
 .source-modal-title {
-  color: #f2f7f5;
+  color: var(--text);
 }
 
 .modal-btn {
@@ -233,19 +286,58 @@ textarea::placeholder {
 }
 
 .modal-btn-cancel {
-  color: #a1b2b0;
+  color: var(--text-muted);
 }
 
 .modal-btn-confirm {
-  color: #5de6dc;
+  color: var(--primary);
 }
 
 .fab {
-  background-color: #ff6246;
-  border: 1rpx solid #ff967f;
-  box-shadow: 0 0 20rpx rgba(255, 98, 70, 0.24);
+  background-color: var(--primary);
+  border: 1rpx solid var(--primary);
+  box-shadow: 0 4rpx 16rpx rgba(var(--primary-rgb), 0.24);
 }
 
 .fab-icon {
-  color: #1b1615;
+  color: var(--on-primary);
+}
+
+.error-bar {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin: 12rpx 0 16rpx;
+  padding: 16rpx 20rpx;
+  border: 1rpx solid rgba(var(--sale-rgb), 0.28);
+  border-radius: 6rpx;
+  background-color: var(--sale-weak);
+}
+
+.error-text {
+  min-width: 0;
+  flex: 1;
+  color: var(--sale);
+  font-size: 23rpx;
+}
+
+.error-retry {
+  flex: 0 0 auto;
+  padding: 4rpx 18rpx;
+  border: 1rpx solid rgba(var(--sale-rgb), 0.4);
+  border-radius: 4rpx;
+  color: var(--sale);
+  font-size: 23rpx;
+}
+
+.retry-btn {
+  margin-top: 24rpx;
+  padding: 24rpx 36rpx;
+}
+
+.load-more {
+  padding: 26rpx;
+  background-color: var(--surface);
+  color: var(--primary);
+  font-size: 26rpx;
 }

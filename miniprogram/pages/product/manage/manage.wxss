@@ -1,1 +1,151 @@
-.manage-page { padding: 24rpx; }.title-band { margin: 4rpx 0 24rpx; }.page-title { display: block; color: #f2f7f5; font-size: 40rpx; font-weight: 700; }.page-subtitle { display: block; margin-top: 8rpx; color: #a1b2b0; font-size: 24rpx; }.form-card { padding: 0 24rpx; }.form-row { display: flex; align-items: center; justify-content: space-between; min-height: 96rpx; border-bottom: 1rpx solid #294142; color: #a1b2b0; }.form-row:last-child { border-bottom: 0; }.form-row > text { min-width: 132rpx; }.form-row input { flex: 1; color: #f2f7f5; font-size: 27rpx; text-align: right; }.picker-value { min-width: 300rpx; color: #f2f7f5; font-size: 27rpx; text-align: right; }.picker-value text { margin-left: 12rpx; color: #5de6dc; font-size: 36rpx; }.save-btn { margin-top: 28rpx; }
+.manage-page {
+  padding: 24rpx 24rpx 48rpx;
+}
+
+.page-head {
+  margin: 4rpx 0 24rpx;
+}
+
+.page-title {
+  display: block;
+  color: var(--text);
+  font-size: 40rpx;
+  font-weight: 700;
+}
+
+.page-subtitle {
+  display: block;
+  margin-top: 8rpx;
+  color: var(--text-muted);
+  font-size: 23rpx;
+}
+
+.form-card {
+  padding: 0 24rpx;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+  min-height: 100rpx;
+  border-bottom: 1rpx solid var(--border);
+}
+
+.form-row:last-child {
+  border-bottom: 0;
+}
+
+.form-label {
+  flex: 0 0 150rpx;
+  color: var(--text-muted);
+  font-size: 26rpx;
+}
+
+.form-input {
+  flex: 1;
+  min-width: 0;
+  color: var(--text);
+  font-size: 27rpx;
+  text-align: right;
+}
+
+.picker-value {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.picker-text {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 27rpx;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.picker-arrow {
+  flex: 0 0 auto;
+  margin-left: 10rpx;
+  color: var(--text-faint);
+  font-size: 32rpx;
+  line-height: 1;
+}
+
+.save-btn {
+  margin-top: 28rpx;
+  padding: 22rpx 0;
+  font-size: 29rpx;
+}
+
+/* 自定义分类选择面板：替换系统 picker，避免样式割裂和大片空白 */
+.sheet-mask {
+  align-items: flex-end;
+}
+
+.bottom-sheet {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: 72vh;
+  padding: 0 24rpx calc(24rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  border-radius: 14rpx 14rpx 0 0;
+  background: var(--surface);
+}
+
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 26rpx 4rpx 16rpx;
+}
+
+.sheet-title {
+  color: var(--text);
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.sheet-close {
+  padding: 0 6rpx;
+  color: var(--text-faint);
+  font-size: 30rpx;
+  line-height: 1;
+}
+
+.sheet-list {
+  width: 100%;
+}
+
+.sheet-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 88rpx;
+  border-bottom: 1rpx solid var(--border);
+}
+
+.sheet-name {
+  color: var(--text);
+  font-size: 27rpx;
+}
+
+.sheet-row.active .sheet-name {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.sheet-check {
+  color: var(--primary);
+  font-size: 26rpx;
+}
+
+.sheet-cancel {
+  margin-top: 20rpx;
+  padding: 20rpx 0;
+  font-size: 26rpx;
+}

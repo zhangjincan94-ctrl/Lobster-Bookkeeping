@@ -1,11 +1,7 @@
 var { get } = require('../../../utils/request')
+var { formatNumber } = require('../../../utils/format')
 var config = require('../../../utils/config')
-
-function number(value) {
-  var parsed = parseFloat(value)
-  if (!isFinite(parsed)) return '0'
-  return parsed.toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1')
-}
+var theme = require('../../../utils/theme')
 
 function buildBillText(bill) {
   var lines = [
@@ -16,18 +12,22 @@ function buildBillText(bill) {
   ]
   ;(bill.items || []).forEach(function (item) {
     lines.push(
-      item.productName + '：' + number(item.quantity) + (item.unit || '') +
-      ' × ' + number(item.unitPrice) + ' = ' + number(item.subtotal)
+      item.productName + '：' + formatNumber(item.quantity) + (item.unit || '') +
+      ' × ' + formatNumber(item.unitPrice) + ' = ' + formatNumber(item.subtotal)
     )
   })
   lines.push('----------------')
-  lines.push('共：' + number(bill.totalAmount) + ' 元')
+  lines.push('共：' + formatNumber(bill.totalAmount) + ' 元')
   if (bill.remark) lines.push('备注：' + bill.remark)
   return lines.join('\n')
 }
 
 Page({
-  data: { id: '', text: '', loading: true, copying: false },
+  data: { theme: '', id: '', text: '', loading: true, copying: false },
+
+  onShow: function () {
+    this.setData({ theme: theme.get() })
+  },
 
   onLoad: function (options) {
     var id = options && options.id ? options.id : ''

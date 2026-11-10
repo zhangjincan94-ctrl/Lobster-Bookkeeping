@@ -1,15 +1,21 @@
 var { request } = require('../../../utils/request')
 var { formatPrice, formatDate, paymentStatusText, paymentStatusClass } = require('../../../utils/format')
 var config = require('../../../utils/config')
+var theme = require('../../../utils/theme')
 
 Page({
   data: {
+    theme: '',
     token: '',
     buyer: null,
     transactions: [],
     totalSpent: '¥0.00',
     totalDebt: '¥0.00',
     errorMessage: ''
+  },
+
+  onShow: function () {
+    this.setData({ theme: theme.get() })
   },
 
   onLoad: function (options) {
@@ -54,7 +60,7 @@ Page({
           id: item.id,
           lobsterSize: item.lobsterSize || '',
           weightDisplay: item.weight ? item.weight + '斤' : '',
-          unitPriceDisplay: item.unitPrice ? '¥' + item.unitPrice + '/斤' : '',
+          unitPriceDisplay: item.unitPrice ? formatPrice(item.unitPrice) + '/斤' : '',
           totalAmountDisplay: formatPrice(item.totalAmount),
           paymentStatusText: paymentStatusText(item.paymentStatus),
           paymentStatusClass: paymentStatusClass(item.paymentStatus),

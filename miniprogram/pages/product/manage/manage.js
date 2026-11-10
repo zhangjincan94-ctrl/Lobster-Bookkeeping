@@ -1,14 +1,18 @@
 var { get, post } = require('../../../utils/request')
 var config = require('../../../utils/config')
+var theme = require('../../../utils/theme')
 
 Page({
   data: {
+    theme: '',
     name: '',
     unit: '斤',
     defaultUnitPrice: '',
     categories: [],
     categoryNames: ['未分类'],
     categoryIndex: 0,
+    showCategorySheet: false,
+    sheetListHeight: 88,
     saving: false
   },
 
@@ -16,23 +20,45 @@ Page({
     this.loadCategories()
   },
 
+  onShow: function () {
+    this.setData({ theme: theme.get() })
+  },
+
   loadCategories: function () {
     var that = this
     get(config.api.ledgerCategoryList, {}).then(function (categories) {
       categories = categories || []
+      var names = ['未分类'].concat(categories.map(function (item) { return item.name }))
       that.setData({
         categories: categories,
-        categoryNames: ['未分类'].concat(categories.map(function (item) { return item.name }))
+        categoryNames: names,
+        sheetListHeight: Math.min(names.length, 6) * 88
       })
     }).catch(function () {
-      that.setData({ categories: [], categoryNames: ['未分类'] })
+      that.setData({ categories: [], categoryNames: ['未分类'], sheetListHeight: 88 })
     })
   },
 
   onNameInput: function (e) { this.setData({ name: e.detail.value }) },
   onUnitInput: function (e) { this.setData({ unit: e.detail.value }) },
   onPriceInput: function (e) { this.setData({ defaultUnitPrice: e.detail.value }) },
-  onCategoryChange: function (e) { this.setData({ categoryIndex: Number(e.detail.value) }) },
+
+  openCategorySheet: function () {
+    this.setData({ showCategorySheet: true })
+  },
+
+  closeCategorySheet: function () {
+    this.setData({ showCategorySheet: false })
+  },
+
+  chooseCategory: function (e) {
+    this.setData({
+      categoryIndex: Number(e.currentTarget.dataset.index),
+      showCategorySheet: false
+    })
+  },
+
+  noop: function () {},
 
   save: function () {
     var name = this.data.name.trim()

@@ -1,4 +1,4 @@
-<view class="page customer-page">
+<view class="page customer-page theme-{{theme}}">
   <view class="page-head">
     <view>
       <text class="page-title">选择往来对象</text>
@@ -12,18 +12,31 @@
     <text bindtap="onSearch">搜索</text>
   </view>
 
-  <view wx:if="{{loading}}" class="loading-tip">正在加载往来对象...</view>
+  <view wx:if="{{error && hasLoaded}}" class="error-bar">
+    <text class="error-text">{{error}}</text>
+    <text class="error-retry" bindtap="retry">重试</text>
+  </view>
+  <view wx:if="{{loading && !hasLoaded}}" class="loading-tip">正在加载往来对象...</view>
+  <view wx:elif="{{error && !hasLoaded}}" class="empty-state">
+    <text class="empty-icon">!</text>
+    <text class="empty-text">{{error}}</text>
+    <button class="btn-secondary retry-btn" bindtap="retry">重试</button>
+  </view>
   <view wx:elif="{{!customers.length}}" class="empty-state">
     <text class="empty-icon">○</text>
     <text class="empty-text">还没有往来对象</text>
     <button class="btn-primary empty-action" bindtap="openAdd">新增往来对象</button>
   </view>
   <view wx:else>
+    <view class="load-summary">已加载 {{loadedCount}} / 共 {{totalCount}}</view>
     <view wx:for="{{customers}}" wx:key="id" class="customer-row" data-index="{{index}}" bindtap="selectCustomer">
       <view class="avatar">{{item.name.slice(0, 1)}}</view>
       <view class="customer-info">
         <text class="customer-name">{{item.name}}</text>
-        <text class="customer-phone">{{item.phone || '未设置电话'}}</text>
+        <view class="phone-row" data-index="{{index}}" catchtap="openEditCustomer">
+          <text class="customer-phone {{item.phone ? '' : 'phone-empty'}}">{{item.phone || '未设置电话'}}</text>
+          <text class="phone-edit">编辑</text>
+        </view>
       </view>
       <view class="balance-box">
         <view wx:if="{{item.receivableBalance > 0}}" class="balance-line receivable"><text>待收</text><text>{{item.receivableDisplay}}</text></view>
@@ -32,6 +45,7 @@
       </view>
       <text class="chevron">›</text>
     </view>
+    <button wx:if="{{hasMore}}" class="load-more" loading="{{loadingMore}}" disabled="{{loadingMore}}" bindtap="loadMore">加载更多（{{loadedCount}} / {{totalCount}}）</button>
   </view>
 </view>
 
@@ -43,6 +57,17 @@
     <view class="dialog-actions">
       <button class="btn-secondary" bindtap="closeAdd">取消</button>
       <button class="btn-primary" loading="{{creating}}" disabled="{{creating}}" bindtap="createCustomer">保存并选择</button>
+    </view>
+  </view>
+</view>
+<view wx:if="{{showEditCustomer}}" class="modal-mask theme-{{theme}}" bindtap="closeEditCustomer">
+  <view class="dialog" catchtap="noop">
+    <text class="dialog-title">编辑往来对象</text>
+    <input class="dialog-input" placeholder="名称" maxlength="30" value="{{editCustomerName}}" bindinput="onEditNameInput" />
+    <input class="dialog-input" placeholder="联系电话（选填）" type="number" maxlength="20" value="{{editPhone}}" bindinput="onEditPhoneInput" />
+    <view class="dialog-actions">
+      <button class="btn-secondary" bindtap="closeEditCustomer">取消</button>
+      <button class="btn-primary" loading="{{savingEditCustomer}}" disabled="{{savingEditCustomer}}" bindtap="saveCustomer">保存</button>
     </view>
   </view>
 </view>

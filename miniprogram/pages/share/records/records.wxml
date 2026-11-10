@@ -1,4 +1,4 @@
-<view class="page" wx:if="{{buyer}}">
+<view class="page theme-{{theme}}" wx:if="{{buyer}}">
   <view class="buyer-card card">
     <text class="buyer-name">{{buyer.name}}</text>
     <text class="buyer-phone text-muted">{{buyer.phone || '未填写电话'}}</text>
@@ -48,6 +48,6 @@
   </view>
 </view>
 
-<view class="empty-state" wx:elif="{{errorMessage}}">
+<view class="empty-state theme-{{theme}}" wx:elif="{{errorMessage}}">
   <text class="empty-text">{{errorMessage}}</text>
 </view>

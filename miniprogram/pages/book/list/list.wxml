@@ -1,4 +1,4 @@
-<view class="page ledger-page">
+<view class="page ledger-page theme-{{theme}}">
   <view class="page-head">
     <view><text class="page-title">总账本</text><text class="page-subtitle">按月、日期逐层查看收支与账单</text></view>
     <text class="create-link" bindtap="goAdd">+ 开单</text>
@@ -10,7 +10,16 @@
     <view class="filter {{direction === 'purchase' ? 'filter-purchase-active' : ''}}" data-direction="purchase" bindtap="chooseDirection">进货</view>
   </view>
 
-  <view wx:if="{{loading}}" class="loading-tip">正在汇总账本...</view>
+  <view wx:if="{{error && hasLoaded}}" class="error-bar">
+    <text class="error-text">{{error}}</text>
+    <text class="error-retry" bindtap="retry">重试</text>
+  </view>
+  <view wx:if="{{loading && !hasLoaded}}" class="loading-tip">正在加载账单…</view>
+  <view wx:elif="{{error && !hasLoaded}}" class="empty-state">
+    <text class="empty-icon">!</text>
+    <text class="empty-text">{{error}}</text>
+    <button class="btn-secondary retry-btn" bindtap="retry">重试</button>
+  </view>
   <view wx:elif="{{!months.length}}" class="empty-state">
     <text class="empty-icon">□</text>
     <text class="empty-text">还没有账单，先开一笔吧</text>
@@ -18,6 +27,7 @@
   </view>
 
   <view wx:else class="month-list">
+    <view class="load-summary">已加载 {{loadedCount}} / 共 {{totalCount}} 条，分组金额为已加载账单汇总</view>
     <block wx:for="{{months}}" wx:key="key" wx:for-index="monthIndex">
       <view class="month-band" data-month-index="{{monthIndex}}" bindtap="toggleMonth">
         <view class="band-summary">
@@ -56,13 +66,16 @@
                 </view>
 
                 <view wx:if="{{bill.detailExpanded}}" class="bill-detail">
-                  <view class="detail-row detail-head">
-                    <text>商品({{bill.itemCount}})</text><text>数量</text><text>单价</text><text>总额</text>
-                  </view>
-                  <view wx:if="{{!bill.items.length}}" class="detail-empty">该账单没有商品明细</view>
-                  <view wx:for="{{bill.items}}" wx:key="id" wx:for-item="line" class="detail-row">
-                    <text class="product-name">{{line.productName}}</text><text>{{line.quantityDisplay}}</text><text>{{line.unitPriceDisplay}}</text><text>{{line.subtotalDisplay}}</text>
-                  </view>
+                  <view wx:if="{{bill.detailLoading}}" class="detail-empty">明细加载中…</view>
+                  <block wx:else>
+                    <view class="detail-row detail-head">
+                      <text>商品({{bill.itemCount}})</text><text>数量</text><text>单价</text><text>总额</text>
+                    </view>
+                    <view wx:if="{{!bill.items.length}}" class="detail-empty">该账单没有商品明细</view>
+                    <view wx:for="{{bill.items}}" wx:key="id" wx:for-item="line" class="detail-row">
+                      <text class="product-name">{{line.productName}}</text><text>{{line.quantityDisplay}}</text><text>{{line.unitPriceDisplay}}</text><text>{{line.subtotalDisplay}}</text>
+                    </view>
+                  </block>
                 </view>
               </view>
             </block>
@@ -70,5 +83,6 @@
         </block>
       </view>
     </block>
+    <view wx:if="{{loadingMore}}" class="load-summary">正在加载更多…</view>
   </view>
 </view>

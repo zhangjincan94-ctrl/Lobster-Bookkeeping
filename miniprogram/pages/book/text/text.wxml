@@ -1,4 +1,4 @@
-<view class="page text-page">
+<view class="page text-page theme-{{theme}}">
   <view wx:if="{{loading}}" class="loading-tip">正在生成文字...</view>
   <block wx:else>
     <view class="title-band"><text class="page-title">账单文字</text><text class="page-subtitle">{{text.length}} 个字符</text></view>

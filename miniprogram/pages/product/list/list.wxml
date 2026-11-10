@@ -1,2 +1,114 @@
-<view class="page product-page"><view class="page-head"><view><text class="page-title">{{selectMode ? '选择商品' : '商品库'}}</text><text class="page-subtitle">商品和分类由你自己定义</text></view><view class="page-actions"><text class="add-link" bindtap="openProduct">+ 添加</text><text wx:if="{{!selectMode}}" class="add-link" bindtap="toggleEdit">{{editMode ? '完成' : '编辑'}}</text></view></view><view class="toolbar"><input placeholder="搜索商品" value="{{keyword}}" bindinput="onSearchInput" confirm-type="search" bindconfirm="onSearch" /><text bindtap="onSearch">搜索</text><text class="category-link" bindtap="openCategory">分类管理</text></view><view wx:if="{{loading}}" class="loading-tip">正在加载商品...</view><view wx:elif="{{!products.length}}" class="empty-state"><text class="empty-icon">◇</text><text class="empty-text">商品库为空，先添加一个商品</text><button class="btn-primary empty-action" bindtap="openProduct">添加商品</button></view><view wx:else><view wx:for="{{products}}" wx:key="id" class="product-row" data-index="{{index}}" bindtap="selectProduct"><view><text class="product-name">{{item.name}}</text><text class="product-meta">{{item.categoryName || '未分类'}} · {{item.unit}} · {{item.defaultUnitPrice === null ? '默认价待定' : '¥' + item.defaultUnitPrice}}</text></view><text wx:if="{{editMode}}" class="archive-link" data-id="{{item.id}}" bindtap="removeProduct">删除</text><text wx:if="{{selectMode}}" class="select-link">选择 ›</text></view></view></view>
-<view wx:if="{{showCategory}}" class="modal-mask" bindtap="closeCategory"><view class="dialog" catchtap="noop"><text class="dialog-title">商品分类</text><view class="category-add"><input class="dialog-input" placeholder="新增分类名称" value="{{categoryName}}" bindinput="onCategoryName" /><button class="btn-secondary category-btn" loading="{{saving}}" disabled="{{saving}}" bindtap="saveCategory">新增</button></view><scroll-view class="category-list" scroll-y><view wx:for="{{categories}}" wx:key="id" class="category-row"><text>{{item.name}}</text><text class="archive-link" data-id="{{item.id}}" bindtap="removeCategory">删除</text></view><view wx:if="{{!categories.length}}" class="inline-empty">还没有分类</view></scroll-view><button class="btn-primary close-btn" bindtap="closeCategory">完成</button></view></view>
+<view class="page product-page theme-{{theme}}">
+  <view class="page-head">
+    <view class="page-head-main">
+      <text class="page-title">{{selectMode ? '选择商品' : '商品库'}}</text>
+      <text class="page-subtitle">商品和分类由你自己定义</text>
+    </view>
+    <view class="page-actions">
+      <text class="action-link" bindtap="openProduct">+ 添加</text>
+      <text class="action-link" bindtap="openCategory">分类管理</text>
+      <text class="action-link" bindtap="toggleEdit">{{editMode ? '完成' : '编辑'}}</text>
+    </view>
+  </view>
+
+  <view class="toolbar">
+    <input
+      class="search-input"
+      placeholder="搜索商品"
+      placeholder-class="search-placeholder"
+      value="{{keyword}}"
+      bindinput="onSearchInput"
+      confirm-type="search"
+      bindconfirm="onSearch"
+    />
+    <text class="search-btn" bindtap="onSearch">搜索</text>
+  </view>
+
+  <view wx:if="{{error && hasLoaded}}" class="error-bar">
+    <text class="error-text">{{error}}</text>
+    <text class="error-retry" bindtap="retry">重试</text>
+  </view>
+
+  <view wx:if="{{loading && !hasLoaded}}" class="loading-tip">正在加载商品...</view>
+
+  <view wx:elif="{{error && !hasLoaded}}" class="empty-state">
+    <text class="empty-icon">!</text>
+    <text class="empty-text">{{error}}</text>
+    <button class="btn-secondary retry-btn" bindtap="retry">重试</button>
+  </view>
+
+  <view wx:elif="{{!products.length}}" class="empty-state">
+    <text class="empty-icon">◇</text>
+    <text class="empty-text">商品库为空，先添加一个商品</text>
+    <button class="btn-primary empty-action" bindtap="openProduct">添加商品</button>
+  </view>
+
+  <view wx:else>
+    <view class="load-summary">已加载 {{loadedCount}} / 共 {{totalCount}}</view>
+    <view
+      wx:for="{{products}}"
+      wx:key="id"
+      class="product-row"
+      data-index="{{index}}"
+      bindtap="selectProduct"
+    >
+      <view class="product-main">
+        <text class="product-name">{{item.name}}</text>
+        <text class="product-meta">{{item.categoryName || '未分类'}} · {{item.unit}} · {{item.defaultUnitPrice === null ? '默认价待定' : '¥' + item.defaultUnitPrice}}</text>
+      </view>
+      <text wx:if="{{editMode}}" class="archive-link" data-id="{{item.id}}" catchtap="removeProduct">删除</text>
+      <text wx:if="{{selectMode && !editMode}}" class="select-link">选择 ›</text>
+    </view>
+    <button
+      wx:if="{{hasMore}}"
+      class="load-more"
+      loading="{{loadingMore}}"
+      disabled="{{loadingMore}}"
+      bindtap="loadMore"
+    >加载更多（{{loadedCount}} / {{totalCount}}）</button>
+  </view>
+</view>
+
+<view wx:if="{{showCategory}}" class="modal-mask theme-{{theme}}" bindtap="closeCategory">
+  <view class="dialog" catchtap="noop">
+    <view class="dialog-head">
+      <view class="dialog-head-main">
+        <text class="dialog-title">商品分类</text>
+        <text class="dialog-subtitle">开单时可快速筛选商品</text>
+      </view>
+      <text class="dialog-close" bindtap="closeCategory">✕</text>
+    </view>
+
+    <view class="category-add">
+      <input
+        class="dialog-input"
+        placeholder="新增分类名称"
+        placeholder-class="dialog-placeholder"
+        value="{{categoryName}}"
+        bindinput="onCategoryName"
+        bindconfirm="saveCategory"
+        confirm-type="done"
+      />
+      <button
+        class="btn-primary category-btn"
+        loading="{{saving}}"
+        disabled="{{saving}}"
+        bindtap="saveCategory"
+      >新增</button>
+    </view>
+
+    <scroll-view class="category-list" scroll-y style="height: {{categoryListHeight}}rpx;">
+      <view wx:for="{{categories}}" wx:key="id" class="category-row">
+        <text class="category-name">{{item.name}}</text>
+        <text wx:if="{{item.productCount > 0}}" class="category-count">{{item.productCount}} 个商品</text>
+        <text wx:else class="category-del" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="removeCategory">删除</text>
+      </view>
+      <view wx:if="{{!categories.length}}" class="inline-empty">还没有分类，先在上方新增一个</view>
+    </scroll-view>
+
+    <view class="dialog-foot">
+      <text class="dialog-count">共 {{categories.length}} 个分类</text>
+      <button class="btn-primary dialog-done" bindtap="closeCategory">完成</button>
+    </view>
+  </view>
+</view>

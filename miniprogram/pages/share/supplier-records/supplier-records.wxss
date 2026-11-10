@@ -1,21 +1,21 @@
 .page { min-height: 100vh; padding: 24rpx; }
-.buyer-card, .stats-card, .transaction-item { border: 1rpx solid #294142; border-radius: 6rpx; background-color: #122526; }
-.buyer-card { padding: 24rpx; border-color: #3c6867; }
-.buyer-card::before { display: block; margin-bottom: 12rpx; color: #5de6dc; font-family: "SFMono-Regular", Consolas, monospace; font-size: 19rpx; letter-spacing: 2rpx; content: "SUPPLIER STATEMENT"; }
-.buyer-name { display: block; color: #f2f7f5; font-size: 34rpx; font-weight: 700; }
-.buyer-phone { display: block; margin-top: 8rpx; color: #a1b2b0; font-family: "SFMono-Regular", Consolas, monospace; font-size: 22rpx; }
+.buyer-card, .stats-card, .transaction-item { border: 1rpx solid var(--border); border-radius: 6rpx; background-color: var(--surface); }
+.buyer-card { padding: 24rpx; border-color: var(--border-strong); }
+.buyer-card::before { display: block; margin-bottom: 12rpx; color: var(--primary); font-family: "SFMono-Regular", Consolas, monospace; font-size: 19rpx; letter-spacing: 2rpx; content: "SUPPLIER STATEMENT"; }
+.buyer-name { display: block; color: var(--text); font-size: 34rpx; font-weight: 700; }
+.buyer-phone { display: block; margin-top: 8rpx; color: var(--text-muted); font-family: "SFMono-Regular", Consolas, monospace; font-size: 22rpx; }
 .stats-card { display: flex; margin-top: 16rpx; overflow: hidden; }
 .stats-row { display: flex; width: 100%; }
 .stats-item { display: flex; flex: 1; flex-direction: column; min-width: 0; padding: 22rpx 18rpx; }
-.stats-item + .stats-item { border-left: 1rpx solid #294142; }
-.stats-value { overflow: hidden; color: #f2f7f5; font-family: "SFMono-Regular", Consolas, monospace; font-size: 30rpx; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
-.stats-label { margin-top: 8rpx; color: #a1b2b0; font-size: 20rpx; }
-.section-header { margin-top: 28rpx; margin-bottom: 14rpx; padding-bottom: 10rpx; border-bottom: 1rpx solid #294142; }
-.section-title { color: #5de6dc; font-family: "SFMono-Regular", Consolas, monospace; font-size: 21rpx; letter-spacing: 2rpx; }
-.transaction-item { margin-bottom: 12rpx; padding: 20rpx; border-left: 3rpx solid #e7b447; }
+.stats-item + .stats-item { border-left: 1rpx solid var(--border); }
+.stats-value { overflow: hidden; color: var(--text); font-family: "SFMono-Regular", Consolas, monospace; font-size: 30rpx; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.stats-label { margin-top: 8rpx; color: var(--text-muted); font-size: 20rpx; }
+.section-header { margin-top: 28rpx; margin-bottom: 14rpx; padding-bottom: 10rpx; border-bottom: 1rpx solid var(--border); }
+.section-title { color: var(--primary); font-family: "SFMono-Regular", Consolas, monospace; font-size: 21rpx; letter-spacing: 2rpx; }
+.transaction-item { margin-bottom: 12rpx; padding: 20rpx; border-left: 3rpx solid var(--warn); }
 .transaction-top, .transaction-bottom { display: flex; align-items: center; justify-content: space-between; }
 .transaction-left { display: flex; flex: 1; flex-direction: column; min-width: 0; margin-right: 16rpx; }
-.transaction-type { color: #f2f7f5; font-size: 26rpx; font-weight: 700; }
-.transaction-sub, .transaction-time { margin-top: 6rpx; color: #a1b2b0; font-size: 20rpx; }
-.transaction-amount { color: #f2f7f5; font-family: "SFMono-Regular", Consolas, monospace; font-size: 28rpx; font-weight: 700; }
-.transaction-bottom { margin-top: 12rpx; padding-top: 10rpx; border-top: 1rpx dashed #294142; }
+.transaction-type { color: var(--text); font-size: 26rpx; font-weight: 700; }
+.transaction-sub, .transaction-time { margin-top: 6rpx; color: var(--text-muted); font-size: 20rpx; }
+.transaction-amount { color: var(--text); font-family: "SFMono-Regular", Consolas, monospace; font-size: 28rpx; font-weight: 700; }
+.transaction-bottom { margin-top: 12rpx; padding-top: 10rpx; border-top: 1rpx dashed var(--border); }

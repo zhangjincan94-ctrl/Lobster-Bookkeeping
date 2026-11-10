@@ -1,5 +1,14 @@
-<view class="page detail-page">
+<view class="page detail-page theme-{{theme}}">
+  <view wx:if="{{error && bill}}" class="error-bar">
+    <text class="error-text">{{error}}</text>
+    <text class="error-retry" bindtap="retry">重试</text>
+  </view>
   <view wx:if="{{loading}}" class="loading-tip">正在加载账单...</view>
+  <view wx:elif="{{error && !bill}}" class="empty-state">
+    <text class="empty-icon">!</text>
+    <text class="empty-text">{{error}}</text>
+    <button class="btn-secondary retry-btn" bindtap="retry">重试</button>
+  </view>
   <view wx:elif="{{bill}}">
     <view class="bill-panel">
       <view class="bill-meta">

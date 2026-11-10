@@ -1,6 +1,7 @@
 var { request } = require('../../../utils/request')
 var { formatPrice, formatDate } = require('../../../utils/format')
 var config = require('../../../utils/config')
+var theme = require('../../../utils/theme')
 
 function settlementStatusText(status) {
   var s = Number(status)
@@ -17,11 +18,16 @@ function settlementStatusClass(status) {
 
 Page({
   data: {
+    theme: '',
     token: '',
     supplier: null,
     purchases: [],
     totalCost: '¥0.00',
     totalDebt: '¥0.00'
+  },
+
+  onShow: function () {
+    this.setData({ theme: theme.get() })
   },
 
   onLoad: function (options) {

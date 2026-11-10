@@ -19,7 +19,9 @@ function createPage(get) {
     console: { warn: () => {} },
     require: name => name.includes('request') ? { get }
       : name.includes('auth') ? { checkLogin: () => true }
-        : { api: { ledgerTradeStats: '/stats/trade' } }
+        : name.includes('format') ? require('../utils/format')
+          : name.includes('theme') ? { palette: () => ({ sale: '#b04a3c', purchase: '#55703f', track: '#eceee4' }) }
+            : { api: { ledgerTradeStats: '/stats/trade' } }
   })
   page.setData = values => Object.assign(page.data, values)
   return page

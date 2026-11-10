@@ -1,10 +1,22 @@
-<view class="page book-page">
+<view class="page book-page theme-{{theme}}">
+  <view wx:if="{{error && book}}" class="error-bar">
+    <text class="error-text">{{error}}</text>
+    <text class="error-retry" bindtap="retry">重试</text>
+  </view>
   <view wx:if="{{loading}}" class="loading-tip">正在加载往来账本...</view>
+  <view wx:elif="{{error && !book}}" class="empty-state">
+    <text class="empty-icon">!</text>
+    <text class="empty-text">{{error}}</text>
+    <button class="btn-secondary retry-btn" bindtap="retry">重试</button>
+  </view>
   <view wx:elif="{{book}}">
     <view class="customer-head">
       <text class="customer-name">{{book.customer.name}}</text>
       <text wx:if="{{book.customer.archived}}" class="archive-label">已归档 · 只读</text>
-      <text class="customer-phone">{{book.customer.phone || '未设置联系电话'}}</text>
+      <view class="phone-row">
+        <text class="customer-phone {{book.customer.phone ? '' : 'phone-empty'}}">{{book.customer.phone || '未设置联系电话'}}</text>
+        <text wx:if="{{!book.customer.archived}}" class="phone-edit" catchtap="openEditCustomer">编辑</text>
+      </view>
       <view class="balance-grid">
         <view>
           <text class="balance-label">当前待收</text>
@@ -71,6 +83,17 @@
     <view class="dialog-actions">
       <button class="btn-secondary" bindtap="closePayment">取消</button>
       <button class="btn-primary" loading="{{savingPayment}}" disabled="{{savingPayment}}" bindtap="savePayment">{{paymentFlowType === 'paid' ? '确认付款' : '确认回款'}}</button>
+    </view>
+  </view>
+</view>
+<view wx:if="{{showEditCustomer}}" class="modal-mask theme-{{theme}}" bindtap="closeEditCustomer">
+  <view class="dialog" catchtap="noop">
+    <text class="dialog-title">编辑往来对象</text>
+    <input class="dialog-input" placeholder="名称" maxlength="30" value="{{editCustomerName}}" bindinput="onEditNameInput" />
+    <input class="dialog-input" placeholder="联系电话（选填）" type="number" maxlength="20" value="{{editPhone}}" bindinput="onEditPhoneInput" />
+    <view class="dialog-actions">
+      <button class="btn-secondary" bindtap="closeEditCustomer">取消</button>
+      <button class="btn-primary" loading="{{savingEditCustomer}}" disabled="{{savingEditCustomer}}" bindtap="saveCustomer">保存</button>
     </view>
   </view>
 </view>

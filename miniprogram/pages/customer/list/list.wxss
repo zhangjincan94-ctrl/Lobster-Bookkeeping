@@ -1,29 +1,34 @@
 .customer-page { padding: 24rpx; }
 .page-head { display: flex; align-items: flex-end; justify-content: space-between; margin: 4rpx 0 24rpx; }
-.page-title { display: block; color: #f2f7f5; font-size: 40rpx; font-weight: 700; }
-.page-subtitle { display: block; margin-top: 8rpx; color: #a1b2b0; font-size: 23rpx; }
-.add-link { color: #5de6dc; font-size: 27rpx; }
-.search-bar { display: flex; align-items: center; height: 76rpx; margin-bottom: 20rpx; padding: 0 18rpx; border: 1rpx solid #3c6867; border-radius: 5rpx; background: #122526; }
-.search-bar input { flex: 1; color: #f2f7f5; font-size: 25rpx; }
-.search-bar text { color: #5de6dc; font-size: 24rpx; }
-.status-tabs { display: flex; margin-bottom: 20rpx; border-bottom: 1rpx solid #294142; }
-.status-tab { flex: 1; padding: 16rpx 0; color: #a1b2b0; font-size: 26rpx; text-align: center; }
-.status-tab.active { color: #5de6dc; border-bottom: 3rpx solid #5de6dc; }
-.customer-row { display: flex; align-items: center; min-height: 112rpx; margin-bottom: 14rpx; padding: 0 20rpx; border: 1rpx solid #294142; border-radius: 6rpx; background: #122526; }
-.avatar { display: flex; align-items: center; justify-content: center; width: 56rpx; height: 56rpx; margin-right: 16rpx; border: 1rpx solid #3c6867; border-radius: 50%; color: #5de6dc; font-size: 26rpx; }
+.page-title { display: block; color: var(--text); font-size: 40rpx; font-weight: 700; }
+.page-subtitle { display: block; margin-top: 8rpx; color: var(--text-muted); font-size: 23rpx; }
+.add-link { color: var(--primary); font-size: 27rpx; }
+.search-bar { display: flex; align-items: center; height: 76rpx; margin-bottom: 20rpx; padding: 0 18rpx; border: 1rpx solid var(--border-strong); border-radius: 5rpx; background: var(--surface); }
+.search-bar input { flex: 1; color: var(--text); font-size: 25rpx; }
+.search-bar text { color: var(--primary); font-size: 24rpx; }
+.status-tabs { display: flex; margin-bottom: 20rpx; border-bottom: 1rpx solid var(--border); }
+.status-tab { flex: 1; padding: 16rpx 0; color: var(--text-muted); font-size: 26rpx; text-align: center; }
+.status-tab.active { color: var(--primary); border-bottom: 3rpx solid var(--primary); }
+.load-summary { display: block; margin-bottom: 14rpx; color: var(--text-muted); font-size: 22rpx; }
+.customer-row { display: flex; align-items: center; min-height: 112rpx; margin-bottom: 14rpx; padding: 0 20rpx; border: 1rpx solid var(--border); border-radius: 6rpx; background: var(--surface); }
+.avatar { display: flex; align-items: center; justify-content: center; width: 56rpx; height: 56rpx; margin-right: 16rpx; border: 1rpx solid var(--border-strong); border-radius: 50%; color: var(--primary); font-size: 26rpx; }
 .customer-info { min-width: 0; flex: 1; }
-.customer-name { display: block; overflow: hidden; color: #f2f7f5; font-size: 29rpx; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
-.customer-phone { display: block; margin-top: 6rpx; color: #a1b2b0; font-size: 21rpx; }
+.customer-name { display: block; overflow: hidden; color: var(--text); font-size: 29rpx; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.customer-phone { display: block; margin-top: 6rpx; color: var(--text-muted); font-size: 21rpx; }
+.phone-row { display: flex; align-items: center; margin-top: 4rpx; }
+.phone-row .customer-phone { margin-top: 0; }
+.phone-row .phone-empty { color: var(--primary); }
+.phone-edit { margin-left: 10rpx; padding: 2rpx 10rpx; border: 1rpx solid var(--border-strong); border-radius: 20rpx; color: var(--primary); font-size: 19rpx; }
 .balance-box { min-width: 178rpx; text-align: right; }
 .balance-line { display: flex; justify-content: space-between; gap: 10rpx; font-size: 21rpx; font-weight: 600; }
 .balance-line + .balance-line { margin-top: 7rpx; }
-.receivable { color: #ff8c8c; }
-.payable { color: #f2ca72; }
-.settled { color: #4bce91; }
-.chevron { margin-left: 12rpx; color: #5de6dc; font-size: 34rpx; }
+.receivable { color: var(--sale); }
+.payable { color: var(--warn); }
+.settled { color: var(--purchase); }
+.chevron { margin-left: 12rpx; color: var(--primary); font-size: 34rpx; }
 .empty-action { width: 240rpx; margin-top: 28rpx; }
-.dialog { width: 620rpx; padding: 30rpx; box-sizing: border-box; background: #122526; border: 1rpx solid #3c6867; border-radius: 8rpx; }
-.dialog-title { display: block; margin-bottom: 24rpx; color: #f2f7f5; font-size: 32rpx; font-weight: 600; }
-.dialog-input { display: block; width: 100%; min-height: 72rpx; box-sizing: border-box; margin-bottom: 16rpx; padding: 0 18rpx; border: 1rpx solid #3c6867; border-radius: 4rpx; color: #f2f7f5; }
+.dialog { width: 620rpx; padding: 30rpx; box-sizing: border-box; background: var(--surface); border: 1rpx solid var(--border-strong); border-radius: 8rpx; }
+.dialog-title { display: block; margin-bottom: 24rpx; color: var(--text); font-size: 32rpx; font-weight: 600; }
+.dialog-input { display: block; width: 100%; min-height: 72rpx; box-sizing: border-box; margin-bottom: 16rpx; padding: 0 18rpx; border: 1rpx solid var(--border-strong); border-radius: 4rpx; color: var(--text); }
 .dialog-actions { display: flex; gap: 16rpx; margin-top: 24rpx; }
 .dialog-actions button { flex: 1; }

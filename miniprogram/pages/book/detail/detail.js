@@ -1,15 +1,7 @@
 var { get } = require('../../../utils/request')
+var { formatPrice, formatNumber } = require('../../../utils/format')
 var config = require('../../../utils/config')
-
-function number(value) {
-  var parsed = parseFloat(value)
-  if (!isFinite(parsed)) return '0'
-  return parsed.toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1')
-}
-
-function money(value) {
-  return (Math.round((parseFloat(value) || 0) * 100) / 100).toFixed(2)
-}
+var theme = require('../../../utils/theme')
 
 function truncate(value, length) {
   var text = String(value || '')
@@ -18,10 +10,13 @@ function truncate(value, length) {
 
 Page({
   data: {
+    theme: '',
     id: '',
     readOnly: false,
     bill: null,
     loading: true,
+    hasLoaded: false,
+    error: '',
     generatingPoster: false,
     posterHeight: 500
   },
@@ -40,32 +35,41 @@ Page({
   },
 
   onShow: function () {
+    this.setData({ theme: theme.get() })
     if (this.data.id) this.loadBill()
   },
 
   loadBill: function () {
     var that = this
     if (!this.data.bill) this.setData({ loading: true })
-    get(config.api.ledgerBillDetail(this.data.id), {}).then(function (bill) {
-      bill.totalDisplay = '¥' + money(bill.totalAmount)
+    get(config.api.ledgerBillDetail(this.data.id), {}, { silent: true }).then(function (bill) {
+      bill.totalDisplay = formatPrice(bill.totalAmount)
       bill.directionText = bill.direction === 'purchase' ? '进货' : '出货'
       bill.directionClass = bill.direction === 'purchase' ? 'purchase' : 'sale'
       bill.itemCount = (bill.items || []).length
       bill.items = (bill.items || []).map(function (item) {
-        item.quantityDisplay = number(item.quantity) + (item.unit || '')
-        item.unitPriceDisplay = money(item.unitPrice)
-        item.subtotalDisplay = money(item.subtotal)
+        item.quantityDisplay = formatNumber(item.quantity) + (item.unit || '')
+        item.unitPriceDisplay = formatNumber(item.unitPrice)
+        item.subtotalDisplay = formatNumber(item.subtotal)
         return item
       })
-      that.setData({ bill: bill, loading: false })
+      that.setData({ bill: bill, loading: false, hasLoaded: true, error: '' })
     }).catch(function (err) {
       console.warn('[账单详情加载失败]', {
         feature: '账单详情',
         reason: err && err.message ? err.message : '请求失败',
         billId: that.data.id
       })
-      that.setData({ loading: false })
+      var hasLoaded = that.data.hasLoaded || Boolean(that.data.bill)
+      that.setData({
+        loading: false,
+        error: hasLoaded ? '刷新失败，正在显示上次数据' : '加载失败，请检查网络后重试'
+      })
     })
+  },
+
+  retry: function () {
+    return this.loadBill()
   },
 
   sendImage: function () {
@@ -149,7 +153,7 @@ Page({
     ctx.setFillStyle(directionColor)
     ctx.setFontSize(38)
     ctx.setTextAlign('right')
-    ctx.fillText('¥ ' + money(bill.totalAmount), 702, tableBottom + 54)
+    ctx.fillText(bill.totalDisplay, 702, tableBottom + 54)
 
     var footerY = tableBottom + 105
     if (bill.remark) {

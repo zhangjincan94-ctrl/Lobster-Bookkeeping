@@ -18,7 +18,8 @@ function createPage(del) {
     require: name => name.includes('request')
       ? { get: () => Promise.resolve({ list: [] }), post: () => {}, del }
       : name.includes('auth') ? { checkLogin: () => true }
-        : { api: { ledgerCustomerList: '/customers', ledgerCustomerDelete: id => '/customers/' + id } }
+        : name.includes('format') ? require('../utils/format')
+          : { api: { ledgerCustomerList: '/customers', ledgerCustomerDelete: id => '/customers/' + id } }
   })
   page.data.customers = [{ id: 2, name: '张先生', receivableBalance: 0, payableBalance: 0 }]
   page.setData = values => Object.assign(page.data, values)

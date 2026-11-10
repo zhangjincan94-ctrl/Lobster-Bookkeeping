@@ -1,14 +1,8 @@
 var { get, del } = require('../../../utils/request')
 var { checkLogin } = require('../../../utils/auth')
+var { formatPrice, formatNumber } = require('../../../utils/format')
 var config = require('../../../utils/config')
-
-function numberText(value) {
-  return (Math.round((parseFloat(value) || 0) * 100) / 100).toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1')
-}
-
-function money(value) {
-  return '¥' + numberText(value)
-}
+var theme = require('../../../utils/theme')
 
 function roundMoney(value) {
   return Math.round(value * 100) / 100
@@ -28,6 +22,18 @@ function collectExpansionState(months) {
   return state
 }
 
+function mapDetailItems(items) {
+  return (items || []).map(function (line) {
+    return {
+      id: line.id,
+      productName: line.productName || '未命名商品',
+      quantityDisplay: formatNumber(line.quantity),
+      unitPriceDisplay: formatNumber(line.unitPrice),
+      subtotalDisplay: formatNumber(line.subtotal)
+    }
+  })
+}
+
 function mapBill(item, expansionState) {
   var amount = roundMoney(parseFloat(item.totalAmount) || 0)
   var billId = String(item.id)
@@ -39,18 +45,12 @@ function mapBill(item, expansionState) {
     directionText: item.direction === 'purchase' ? '进货' : '出货',
     directionClass: item.direction === 'purchase' ? 'purchase' : 'sale',
     totalAmount: amount,
-    totalDisplay: money(amount),
-    itemCount: item.itemCount || (item.items || []).length,
-    detailExpanded: expansionState.bills[billId] === undefined ? true : expansionState.bills[billId],
-    items: (item.items || []).map(function (line) {
-      return {
-        id: line.id,
-        productName: line.productName || '未命名商品',
-        quantityDisplay: numberText(line.quantity),
-        unitPriceDisplay: numberText(line.unitPrice),
-        subtotalDisplay: numberText(line.subtotal)
-      }
-    })
+    totalDisplay: formatPrice(amount),
+    itemCount: parseInt(item.itemCount, 10) || 0,
+    detailExpanded: expansionState.bills[billId] === undefined ? false : expansionState.bills[billId],
+    detailLoading: false,
+    itemsLoaded: Boolean(item.itemsLoaded),
+    items: mapDetailItems(item.items)
   }
 }
 
@@ -58,9 +58,9 @@ function applySummary(group) {
   group.saleTotal = roundMoney(group.saleTotal)
   group.purchaseTotal = roundMoney(group.purchaseTotal)
   group.netTotal = roundMoney(group.saleTotal - group.purchaseTotal)
-  group.saleDisplay = money(group.saleTotal)
-  group.purchaseDisplay = money(group.purchaseTotal)
-  group.netDisplay = money(group.netTotal)
+  group.saleDisplay = formatPrice(group.saleTotal)
+  group.purchaseDisplay = formatPrice(group.purchaseTotal)
+  group.netDisplay = formatPrice(group.netTotal)
   group.netClass = group.netTotal < 0 ? 'negative' : 'positive'
   return group
 }
@@ -126,43 +126,76 @@ function buildMonthGroups(rawBills, previousMonths) {
   })
 }
 
-function fetchAllBills(direction, page, collected) {
-  return get(config.api.ledgerBillList, { page: page, pageSize: 100, direction: direction }).then(function (data) {
-    var list = (data && data.list) || []
-    var all = collected.concat(list)
-    var total = parseInt(data && data.total, 10) || all.length
-    if (list.length && all.length < total) return fetchAllBills(direction, page + 1, all)
-    return all
-  })
+function fetchBillPage(direction, page) {
+  return get(config.api.ledgerBillList, { page: page, pageSize: 30, direction: direction }, { silent: true })
+}
+
+function findBillPath(months, billId) {
+  for (var monthIndex = 0; monthIndex < months.length; monthIndex++) {
+    var days = months[monthIndex].days || []
+    for (var dayIndex = 0; dayIndex < days.length; dayIndex++) {
+      var bills = days[dayIndex].bills || []
+      for (var billIndex = 0; billIndex < bills.length; billIndex++) {
+        if (String(bills[billIndex].id) === String(billId)) {
+          return {
+            bill: bills[billIndex],
+            base: 'months[' + monthIndex + '].days[' + dayIndex + '].bills[' + billIndex + ']'
+          }
+        }
+      }
+    }
+  }
+  return null
 }
 
 Page({
   data: {
+    theme: '',
     direction: '',
     months: [],
     loading: false,
+    loadingMore: false,
     hasLoaded: false,
-    deletingBillId: ''
+    error: '',
+    deletingBillId: '',
+    loadedCount: 0,
+    totalCount: 0,
+    hasMore: false
   },
 
   onShow: function () {
+    this.setData({ theme: theme.get() })
     if (!checkLogin()) return
     this.loadBills()
+  },
+
+  applyBillPage: function (requestId, page, list, total) {
+    if (requestId !== this._loadRequestId) return
+    this._bills = page === 1 ? list : this._bills.concat(list)
+    this._page = page
+    var loadedCount = this._bills.length
+    this.setData({
+      months: buildMonthGroups(this._bills, this.data.months),
+      loading: false,
+      loadingMore: false,
+      hasLoaded: true,
+      error: '',
+      deletingBillId: '',
+      loadedCount: loadedCount,
+      totalCount: total,
+      hasMore: loadedCount < total && list.length > 0
+    })
   },
 
   loadBills: function () {
     var that = this
     var requestId = (this._loadRequestId || 0) + 1
     this._loadRequestId = requestId
-    this.setData({ loading: true })
-    return fetchAllBills(this.data.direction, 1, []).then(function (bills) {
+    this.setData({ loading: true, loadingMore: false })
+    return fetchBillPage(this.data.direction, 1).then(function (data) {
       if (requestId !== that._loadRequestId) return
-      that.setData({
-        months: buildMonthGroups(bills, that.data.months),
-        loading: false,
-        hasLoaded: true,
-        deletingBillId: ''
-      })
+      var list = (data && data.list) || []
+      that.applyBillPage(requestId, 1, list, parseInt(data && data.total, 10) || 0)
     }).catch(function (err) {
       if (requestId !== that._loadRequestId) return
       console.warn('[总账本加载失败]', {
@@ -170,8 +203,48 @@ Page({
         reason: err && err.message ? err.message : '请求失败',
         direction: that.data.direction
       })
-      that.setData({ loading: false, hasLoaded: true, months: [], deletingBillId: '' })
+      var hasLoaded = that.data.hasLoaded
+      that.setData({
+        loading: false,
+        loadingMore: false,
+        deletingBillId: '',
+        error: hasLoaded ? '刷新失败，正在显示上次数据' : '加载失败，请检查网络后重试',
+        months: hasLoaded ? that.data.months : [],
+        loadedCount: hasLoaded ? that.data.loadedCount : 0,
+        totalCount: hasLoaded ? that.data.totalCount : 0,
+        hasMore: hasLoaded ? that.data.hasMore : false
+      })
+      if (!hasLoaded) that._bills = []
     })
+  },
+
+  retry: function () {
+    return this.loadBills()
+  },
+
+  loadMore: function () {
+    if (this.data.loading || this.data.loadingMore || !this.data.hasMore) return Promise.resolve()
+    var that = this
+    var requestId = this._loadRequestId
+    var nextPage = (this._page || 1) + 1
+    this.setData({ loadingMore: true })
+    return fetchBillPage(this.data.direction, nextPage).then(function (data) {
+      if (requestId !== that._loadRequestId) return
+      var list = (data && data.list) || []
+      that.applyBillPage(requestId, nextPage, list, parseInt(data && data.total, 10) || 0)
+    }).catch(function (err) {
+      if (requestId !== that._loadRequestId) return
+      console.warn('[总账本加载更多失败]', {
+        feature: '总账本月份日期分组',
+        reason: err && err.message ? err.message : '请求失败',
+        direction: that.data.direction
+      })
+      that.setData({ loadingMore: false, error: '加载更多失败，正在显示已有数据' })
+    })
+  },
+
+  onReachBottom: function () {
+    return this.loadMore()
   },
 
   chooseDirection: function (e) {
@@ -198,9 +271,51 @@ Page({
     var monthIndex = e.currentTarget.dataset.monthIndex
     var dayIndex = e.currentTarget.dataset.dayIndex
     var billIndex = e.currentTarget.dataset.billIndex
-    var path = 'months[' + monthIndex + '].days[' + dayIndex + '].bills[' + billIndex + '].detailExpanded'
     var bill = this.data.months[monthIndex].days[dayIndex].bills[billIndex]
-    this.setData({ [path]: !bill.detailExpanded })
+    if (!bill) return
+    var base = 'months[' + monthIndex + '].days[' + dayIndex + '].bills[' + billIndex + ']'
+    if (bill.detailExpanded || bill.detailLoading) {
+      this.setData({ [base + '.detailExpanded']: false })
+      return
+    }
+    if (bill.itemsLoaded) {
+      this.setData({ [base + '.detailExpanded']: true })
+      return
+    }
+    var that = this
+    this.setData({ [base + '.detailExpanded']: true, [base + '.detailLoading']: true })
+    get(config.api.ledgerBillDetail(bill.id), {}, { silent: true }).then(function (detail) {
+      var items = (detail && detail.items) || []
+      that._bills.forEach(function (rawBill) {
+        if (String(rawBill.id) === String(bill.id)) {
+          rawBill.items = items
+          rawBill.itemCount = items.length
+          rawBill.itemsLoaded = true
+        }
+      })
+      var located = findBillPath(that.data.months, bill.id)
+      if (!located) return
+      var updates = {}
+      updates[located.base + '.items'] = mapDetailItems(items)
+      updates[located.base + '.itemCount'] = items.length
+      updates[located.base + '.itemsLoaded'] = true
+      updates[located.base + '.detailLoading'] = false
+      that.setData(updates)
+    }).catch(function (err) {
+      console.warn('[账单明细加载失败]', {
+        feature: '总账本查看账单明细',
+        reason: err && err.message ? err.message : '请求失败',
+        billId: bill.id
+      })
+      var located = findBillPath(that.data.months, bill.id)
+      if (located) {
+        var updates = {}
+        updates[located.base + '.detailLoading'] = false
+        updates[located.base + '.detailExpanded'] = false
+        that.setData(updates)
+      }
+      wx.showToast({ title: '明细加载失败，请重试', icon: 'none' })
+    })
   },
 
   goDetail: function (e) {
@@ -260,6 +375,6 @@ Page({
   },
 
   onPullDownRefresh: function () {
-    this.loadBills().then(function () { wx.stopPullDownRefresh() })
+    return this.loadBills().then(function () { wx.stopPullDownRefresh() }, function () { wx.stopPullDownRefresh() })
   }
 })

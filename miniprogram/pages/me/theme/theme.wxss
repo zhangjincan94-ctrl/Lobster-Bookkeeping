@@ -1,0 +1,106 @@
+.theme-page {
+  padding: 24rpx;
+}
+
+.tip {
+  padding: 4rpx 8rpx 24rpx;
+  color: var(--text-muted);
+  font-size: 24rpx;
+}
+
+.theme-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.theme-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  padding: 24rpx;
+  background-color: var(--surface);
+  border: 1rpx solid var(--border);
+  border-radius: 10rpx;
+  box-shadow: var(--shadow);
+}
+
+.theme-item.active {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2rpx rgba(var(--primary-rgb), 0.18);
+}
+
+.preview {
+  flex: 0 0 auto;
+  width: 132rpx;
+  height: 132rpx;
+  padding: 14rpx;
+  border: 1rpx solid var(--border);
+  border-radius: 10rpx;
+  box-sizing: border-box;
+}
+
+.pv-card {
+  height: 62rpx;
+  padding: 8rpx;
+  background-color: #ffffff;
+  border: 1rpx solid;
+  border-radius: 6rpx;
+  box-sizing: border-box;
+}
+
+.pv-bar {
+  width: 42%;
+  height: 8rpx;
+  border-radius: 4rpx;
+  margin-bottom: 7rpx;
+}
+
+.pv-line {
+  width: 88%;
+  height: 5rpx;
+  border-radius: 3rpx;
+  margin-bottom: 4rpx;
+}
+
+.pv-line.short {
+  width: 58%;
+}
+
+.pv-btn {
+  width: 100%;
+  height: 26rpx;
+  margin-top: 12rpx;
+  border-radius: 6rpx;
+}
+
+.meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.meta .name {
+  margin-bottom: 8rpx;
+  color: var(--text);
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.meta .desc {
+  color: var(--text-muted);
+  font-size: 24rpx;
+}
+
+.check {
+  flex: 0 0 auto;
+  width: 40rpx;
+  height: 40rpx;
+  line-height: 40rpx;
+  text-align: center;
+  border-radius: 50%;
+  background-color: var(--primary);
+  color: var(--on-primary);
+  font-size: 24rpx;
+  font-weight: 700;
+}

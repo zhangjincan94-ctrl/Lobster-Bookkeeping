@@ -1,4 +1,4 @@
-<view class="page statement-page">
+<view class="page statement-page theme-{{theme}}">
   <view wx:if="{{loading}}" class="loading-tip">正在加载结账信息...</view>
   <view wx:elif="{{statement}}">
     <view class="statement-head">

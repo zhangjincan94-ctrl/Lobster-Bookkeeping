@@ -1,4 +1,4 @@
-<view class="page trade-page">
+<view class="page trade-page theme-{{theme}}">
   <view class="trade-head">
     <view><text class="page-title">交易统计</text><text class="range-text">{{range}}</text></view>
     <view class="period-switch"><view class="period-option {{days === 7 ? 'selected' : ''}}" data-days="7" bindtap="switchDays">近7天</view><view class="period-option {{days === 30 ? 'selected' : ''}}" data-days="30" bindtap="switchDays">近30天</view></view>
@@ -6,20 +6,35 @@
   <view wx:if="{{loading && !range}}" class="state-text">正在汇总交易...</view>
   <view wx:elif="{{error}}" class="state-text"><text>统计暂时无法加载</text><button class="retry-button" bindtap="loadStats">重试</button></view>
   <block wx:else>
-    <view class="summary-band">
-      <view class="summary-top"><text>账单成交额</text><text>{{count}} 笔</text></view>
-      <text class="total-amount">{{totalDisplay}}</text>
-      <view class="ring-layout">
-        <view class="ring-wrap"><canvas canvas-id="tradeRing" class="ring-canvas" width="280" height="280"></canvas><cover-view class="ring-center"><cover-view>出货占比</cover-view><cover-view class="ring-percent">{{salePercent}}%</cover-view></cover-view></view>
-        <view class="ring-legend">
-          <view class="legend-item"><view class="legend-name"><text class="legend-dot sale-dot"></text><text>出货</text><text class="legend-share">{{salePercent}}%</text></view><text class="legend-amount">{{saleDisplay}}</text><text class="legend-change">{{saleChange}}</text></view>
-          <view class="legend-item"><view class="legend-name"><text class="legend-dot purchase-dot"></text><text>进货</text><text class="legend-share">{{purchasePercent}}%</text></view><text class="legend-amount">{{purchaseDisplay}}</text><text class="legend-change">{{purchaseChange}}</text></view>
+    <view class="stat-tiles">
+      <view class="stat-tile"><text class="tile-key">成交额</text><text class="tile-value">{{totalDisplay}}</text></view>
+      <view class="stat-tile"><text class="tile-key">出货</text><text class="tile-value">{{saleDisplay}}</text></view>
+      <view class="stat-tile"><text class="tile-key">进货</text><text class="tile-value">{{purchaseDisplay}}</text></view>
+    </view>
+
+    <view class="ring-card">
+      <view class="ring-wrap-sm">
+        <canvas canvas-id="tradeRing" class="ring-canvas-sm" width="184" height="184"></canvas>
+        <cover-view class="ring-center-sm"><cover-view class="ring-label">出货占比</cover-view><cover-view class="ring-percent-sm">{{salePercentText}}</cover-view></cover-view>
+      </view>
+      <view class="c-legend">
+        <view class="c-legend-item">
+          <view class="c-legend-main"><text class="legend-dot sale-dot"></text><text class="c-name">出货</text><text class="c-pct">{{salePercentText}}</text><text class="c-amt">{{saleDisplay}}</text></view>
+          <text class="c-change">{{saleChange}}</text>
+        </view>
+        <view class="c-legend-item">
+          <view class="c-legend-main"><text class="legend-dot purchase-dot"></text><text class="c-name">进货</text><text class="c-pct">{{purchasePercentText}}</text><text class="c-amt">{{purchaseDisplay}}</text></view>
+          <text class="c-change">{{purchaseChange}}</text>
+        </view>
+        <view class="c-legend-item">
+          <view class="c-legend-main"><text class="legend-dot count-dot"></text><text class="c-name">账单</text><text class="c-pct">本期</text><text class="c-amt">{{count}} 笔</text></view>
         </view>
       </view>
     </view>
+
     <view class="insight-band"><text>{{insight}}</text></view>
     <view class="chart-section">
-      <view class="section-head"><text>交易节奏</text><text>{{days === 7 ? '每日' : '每5天'}} · 按账单日期</text></view>
+      <view class="section-head"><text>交易节奏</text><text>{{days === 7 ? '每日' : '每5天'}} · 峰值 {{axisMaxDisplay}}</text></view>
       <view wx:if="{{empty}}" class="empty-chart">本期暂无交易</view>
       <view wx:else class="bar-chart">
         <view wx:for="{{bars}}" wx:key="label" class="bar-group {{selectedIndex === index ? 'selected' : ''}}" data-index="{{index}}" bindtap="selectBar">

@@ -9,6 +9,27 @@ function formatPrice(num) {
   return '¥' + val.toFixed(2)
 }
 
+// 两位小数并去掉无意义的末尾 0，用于数量、单价、小计等不带 ¥ 的场景
+function formatNumber(num) {
+  if (num === null || num === undefined) {
+    return '0'
+  }
+  var val = parseFloat(num)
+  if (isNaN(val)) {
+    return '0'
+  }
+  return val.toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1')
+}
+
+// 带符号金额：正数 +¥x.xx、负数 -¥x.xx、零 ¥0.00
+function formatSignedPrice(num) {
+  var val = parseFloat(num)
+  if (isNaN(val) || val === 0) {
+    return '¥0.00'
+  }
+  return (val > 0 ? '+' : '-') + formatPrice(Math.abs(val))
+}
+
 function formatDate(dateStr) {
   if (!dateStr) return ''
   var d = new Date(dateStr)
@@ -71,6 +92,8 @@ function orderStatusClass(status) {
 
 module.exports = {
   formatPrice: formatPrice,
+  formatNumber: formatNumber,
+  formatSignedPrice: formatSignedPrice,
   formatDate: formatDate,
   paymentStatusText: paymentStatusText,
   deliveryStatusText: deliveryStatusText,

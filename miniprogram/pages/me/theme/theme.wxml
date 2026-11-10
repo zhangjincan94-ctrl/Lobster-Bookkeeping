@@ -1,0 +1,29 @@
+<view class="page theme-{{theme}} theme-page">
+  <view class="tip">选择后立即生效，下次打开会自动保持</view>
+
+  <view class="theme-list">
+    <view
+      wx:for="{{themes}}"
+      wx:key="key"
+      class="theme-item {{theme === item.key ? 'active' : ''}}"
+      data-key="{{item.key}}"
+      bindtap="chooseTheme"
+    >
+      <view class="preview" style="background: {{item.bg}}">
+        <view class="pv-card" style="border-color: {{item.swatchSoft}}">
+          <view class="pv-bar" style="background: {{item.swatch}}"></view>
+          <view class="pv-line" style="background: {{item.swatchSoft}}"></view>
+          <view class="pv-line short" style="background: {{item.swatchSoft}}"></view>
+        </view>
+        <view class="pv-btn" style="background: {{item.swatch}}"></view>
+      </view>
+
+      <view class="meta">
+        <view class="name">{{item.name}}</view>
+        <view class="desc">{{item.desc}}</view>
+      </view>
+
+      <view class="check" wx:if="{{theme === item.key}}">✓</view>
+    </view>
+  </view>
+</view>

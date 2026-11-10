@@ -14,7 +14,9 @@ function createPage(del) {
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../pages/customer/detail/detail.js'), 'utf8'), {
     Page: value => { page = value }, wx,
     console: { warn: () => {} },
-    require: name => name.includes('request') ? { get: () => {}, post: () => {}, del } : { api: { ledgerCustomerDelete: id => '/customers/' + id } }
+    require: name => name.includes('request') ? { get: () => {}, post: () => {}, del }
+      : name.includes('format') ? require('../utils/format')
+        : { api: { ledgerCustomerDelete: id => '/customers/' + id } }
   })
   page.data.id = 2
   page.data.book = { customer: { id: 2, name: '张先生', receivableBalance: 0, payableBalance: 0 } }
